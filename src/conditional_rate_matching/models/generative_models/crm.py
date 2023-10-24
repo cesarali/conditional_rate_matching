@@ -20,37 +20,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from torch.distributions import Dirichlet
 from torch.utils.tensorboard import SummaryWriter
 from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
-
-
-@dataclass
-class Config:
-    # data
-    number_of_spins :int = 3
-    number_of_states :int = 4
-    sample_size :int = 200
-
-    dirichlet_alpha_0 :float = 0.1
-    dirichlet_alpha_1 :float = 100.
-
-    bernoulli_probability_0 :float = 0.2
-    bernoulli_probability_0 :float = 0.8
-
-    # process
-    gamma :float = .9
-
-    # model
-
-    # temporal network
-    time_embed_dim :int = 9
-    hidden_dim :int = 50
-
-    # rate
-
-    # training
-    number_of_epochs = 300
-    learning_rate = 0.01
-    batch_size :int = 5
-    device = "cuda:0"
+from conditional_rate_matching.configs.config_crm import Config
 
 class ConditionalBackwardRate(nn.Module):
     """
@@ -170,7 +140,6 @@ def conditional_probability(config, x, x0, t, t0):
 
     return probability
 
-
 def conditional_transition_probability(config, x, x1, x0, t):
     """
     \begin{equation}
@@ -185,7 +154,6 @@ def conditional_transition_probability(config, x, x1, x0, t):
     conditional_transition_probability = (P_x_to_x1 * P_x0_to_x) / P_x0_to_x1
     return conditional_transition_probability
 
-
 def constant_rate(config, x, t):
     right_time_size = lambda t: t if isinstance(t, torch.Tensor) else torch.full((x.size(0),), t)
     t = right_time_size(t).to(x.device)
@@ -198,7 +166,6 @@ def constant_rate(config, x, t):
     rate_ = torch.full((batch_size, dimension, config.number_of_states),
                        config.gamma)
     return rate_
-
 
 def conditional_transition_rate(config, x, x1, t):
     """
@@ -217,7 +184,6 @@ def conditional_transition_rate(config, x, x1, t):
     rate_transition = (P_xp_to_x1 / P_x_to_x1) * forward_rate
 
     return rate_transition
-
 
 def uniform_pair_x0_x1(batch_1, batch_0):
     """
@@ -250,9 +216,10 @@ def sample_x(config,x_1, x_0, time):
     sampled_x = Categorical(probs).sample().to(device).float()
     return sampled_x
 
-config = Config()
+
 if __name__=="__main__":
 
+    config = Config()
     # Parameters
     dataset_0 = sample_categorical_from_dirichlet(probs=None,
                                                   alpha=config.dirichlet_alpha_0,
@@ -269,11 +236,6 @@ if __name__=="__main__":
                                                   number_of_states=config.number_of_states)
     tensordataset_1 = TensorDataset(dataset_1)
     dataloader_1 = DataLoader(tensordataset_1, batch_size=config.batch_size)
-
-
-
-
-
 
     from conditional_rate_matching.configs.config_files import ExperimentFiles
 

@@ -1,9 +1,10 @@
 from dataclasses import dataclass,asdict,field,fields
-from graph_bridges.configs.config_files import ExperimentFiles0
-from graph_bridges.data.image_dataloaders import NISTLoaderConfig
-from graph_bridges.models.pipelines.pipelines_config import OopsPipelineConfig
-from graph_bridges.data.register_configs import all_dataloaders_configs
-from typing import List
+from conditional_rate_matching.configs.config_files import ExperimentFiles
+
+#from conditional_rate_matching.data.image_dataloaders import NISTLoaderConfig
+#from conditional_rate_matching.models.pipelines.pipelines_config import OopsPipelineConfig
+#from conditional_rate_matching.data.register_configs import all_dataloaders_configs
+#from typing import List
 
 import json
 
@@ -54,10 +55,10 @@ class OopsConfig:
 
     def __post_init__(self):
         if isinstance(self.experiment_files,dict):
-            self.experiment_files = ExperimentFiles0(delete=self.delete,
+            self.experiment_files = ExperimentFiles(delete=self.delete,
                                                      experiment_dir=self.experiment_files["experiment_dir"])
         else:
-            self.experiment_files = ExperimentFiles0(delete=self.delete,
+            self.experiment_files = ExperimentFiles(delete=self.delete,
                                                      experiment_name=self.experiment_name,
                                                      experiment_indentifier=self.experiment_indentifier,
                                                      experiment_type=self.experiment_type)

@@ -13,11 +13,30 @@ from dataclasses import dataclass, asdict
 def get_git_revisions_hash():
     hashes = []
     hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD']))
-    hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD^']))
+#    hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD^']))
     return hashes
 
+def create_experiment_dir(experiment_dir,experiment_name,experiment_type,experiment_indentifier):
+    """
+    if experiment_dir is None:
+        experiment_dir := projects_results_dir/experiment_name/experiment_type/experiment_indentifier/
+
+    :return:
+    """
+    if experiment_dir is None:
+        projects_results_dir = str(results_path)
+        if experiment_indentifier is None:
+            experiment_indentifier = str(int(time.time()))
+
+        experiment_name_dir = os.path.join(projects_results_dir, experiment_name)
+        experiment_type_dir = os.path.join(experiment_name_dir, experiment_type)
+        experiment_dir = os.path.join(experiment_type_dir, experiment_indentifier)
+
+    return experiment_dir
+
+
 @dataclass
-class ExperimentFiles0:
+class ExperimentFiles:
     """
     if experiment_dir is None:
         experiment_dir := projects_results_dir/experiment_name/experiment_type/experiment_indentifier/

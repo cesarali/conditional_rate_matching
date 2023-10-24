@@ -6,19 +6,19 @@ import json
 import os
 import torch
 
-from graph_bridges.models.losses.loss_configs import CTDDLossConfig
-from graph_bridges.data.graph_dataloaders_config import TargetConfig, CommunityConfig, GraphDataConfig
-from graph_bridges.data.register_configs import all_dataloaders_configs
-from graph_bridges.models.backward_rates.ctdd_backward_rate_config import BackRateMLPConfig
-from graph_bridges.models.backward_rates.ctdd_backward_rate_config import all_backward_rates_configs
-from graph_bridges.models.reference_process.reference_process_config import GaussianTargetRateConfig
-from graph_bridges.models.reference_process.reference_process_config import all_reference_process_configs
-from graph_bridges.configs.config_files import ExperimentFiles
-from graph_bridges.models.temporal_networks.transformers.temporal_hollow_transformers import TemporalHollowTransformerConfig
-from graph_bridges.models.temporal_networks.convnets.autoencoder import ConvNetAutoencoderConfig
+from conditional_rate_matching.models.losses.loss_configs import CTDDLossConfig
+from conditional_rate_matching.data.graph_dataloaders_config import TargetConfig, CommunityConfig, GraphDataConfig
+from conditional_rate_matching.data.register_configs import all_dataloaders_configs
+from conditional_rate_matching.models.backward_rates.ctdd_backward_rate_config import BackRateMLPConfig
+from conditional_rate_matching.models.backward_rates.ctdd_backward_rate_config import all_backward_rates_configs
+from conditional_rate_matching.models.reference_process.reference_process_config import GaussianTargetRateConfig
+from conditional_rate_matching.models.reference_process.reference_process_config import all_reference_process_configs
+from conditional_rate_matching.configs.config_files import ExperimentFiles
+from conditional_rate_matching.models.temporal_networks.transformers.temporal_hollow_transformers import TemporalHollowTransformerConfig
+from conditional_rate_matching.models.temporal_networks.convnets.autoencoder import ConvNetAutoencoderConfig
 
-from graph_bridges.models.temporal_networks.unets.unet_wrapper import UnetTauConfig
-from graph_bridges.models.temporal_networks.temporal_networks_configs import all_temp_nets_configs
+from conditional_rate_matching.models.temporal_networks.unets.unet_wrapper import UnetTauConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_configs import all_temp_nets_configs
 
 from pprint import pprint
 
@@ -192,13 +192,13 @@ class CTDDConfig:
     #    self.results_dir = self.experiment_files.results_dir
 
     def align_configurations(self):
-        from graph_bridges.models.backward_rates.ctdd_backward_rate_config import BackRateMLPConfig, BackwardRateTemporalHollowTransformerConfig
-        from graph_bridges.models.temporal_networks.transformers.temporal_hollow_transformers import TemporalHollowTransformerConfig
-        from graph_bridges.models.backward_rates.ctdd_backward_rate_config import GaussianTargetRateImageX0PredEMAConfig
+        from conditional_rate_matching.models.backward_rates.ctdd_backward_rate_config import BackRateMLPConfig, BackwardRateTemporalHollowTransformerConfig
+        from conditional_rate_matching.models.temporal_networks.transformers.temporal_hollow_transformers import TemporalHollowTransformerConfig
+        from conditional_rate_matching.models.backward_rates.ctdd_backward_rate_config import GaussianTargetRateImageX0PredEMAConfig
 
-        from graph_bridges.models.temporal_networks.convnets.autoencoder import ConvNetAutoencoderConfig
-        from graph_bridges.models.temporal_networks.mlp.temporal_mlp import TemporalMLPConfig
-        from graph_bridges.models.temporal_networks.unets.unet_wrapper import UnetTauConfig
+        from conditional_rate_matching.models.temporal_networks.convnets.autoencoder import ConvNetAutoencoderConfig
+        from conditional_rate_matching.models.temporal_networks.mlp.temporal_mlp import TemporalMLPConfig
+        from conditional_rate_matching.models.temporal_networks.unets.unet_wrapper import UnetTauConfig
 
         if isinstance(self.model,BackRateMLPConfig):
             self.data.as_image = False
@@ -241,7 +241,7 @@ class CTDDConfig:
         self.reference.time_base = self.model.time_base
 
 def get_config_from_file(experiment_name,experiment_type,experiment_indentifier)->CTDDConfig:
-    from graph_bridges import results_path
+    from conditional_rate_matching import results_path
 
     experiment_dir = os.path.join(results_path, experiment_name)
     experiment_type_dir = os.path.join(experiment_dir, experiment_type)

@@ -12,11 +12,11 @@ import pandas as pd
 import numpy as np
 import subprocess
 import os
-from graph_bridges import results_path
+from conditional_rate_matching import results_path
 
 from abc import ABC, abstractmethod
-from graph_bridges.configs.config_sb import SBConfig
-from graph_bridges.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.config_sb import SBConfig
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 def get_git_revisions_hash():
     hashes = []
     hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD']))

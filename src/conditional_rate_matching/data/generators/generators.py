@@ -286,7 +286,7 @@ def generate_dataset(data_dir='data', dataset='community_small'):
 
 
 if __name__ == "__main__":
-    from graph_bridges import data_path
+    from conditional_rate_matching import data_path
 
     data_dir = os.path.join(data_path,"raw","graph")
     print(data_dir)
