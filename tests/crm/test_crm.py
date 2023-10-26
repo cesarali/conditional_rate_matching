@@ -7,10 +7,9 @@ from conditional_rate_matching.models.generative_models.crm import sample_catego
 
 from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
 from conditional_rate_matching.models.generative_models.crm import conditional_probability
-from conditional_rate_matching.models.generative_models.crm import conditional_transition_probability
+from conditional_rate_matching.models.generative_models.crm import telegram_bridge_probability
 
 from torch.utils.data import DataLoader, TensorDataset
-
 
 
 class TestCRM(unittest.TestCase):
@@ -20,20 +19,16 @@ class TestCRM(unittest.TestCase):
     def test_conditional_probability(self):
         config = ConditionalRateMatchingConfig()
 
-        dataset_0 = sample_categorical_from_dirichlet(probs=None,
+        dataloader_0,_ = sample_categorical_from_dirichlet(probs=None,
                                                       alpha=config.dirichlet_alpha_0,
                                                       sample_size=config.sample_size,
                                                       dimension=config.number_of_spins,
                                                       number_of_states=config.number_of_states)
-        tensordataset_0 = TensorDataset(dataset_0)
-        dataloader_0 = DataLoader(tensordataset_0, batch_size=config.batch_size)
-        dataset_1 = sample_categorical_from_dirichlet(probs=None,
+        dataloader_1,_ = sample_categorical_from_dirichlet(probs=None,
                                                       alpha=config.dirichlet_alpha_1,
                                                       sample_size=183,
                                                       dimension=config.number_of_spins,
                                                       number_of_states=config.number_of_states)
-        tensordataset_1 = TensorDataset(dataset_1)
-        dataloader_1 = DataLoader(tensordataset_1, batch_size=config.batch_size)
 
         batch_1, batch_0 = next(zip(dataloader_1, dataloader_0).__iter__())
         x_0 = batch_0[0]
@@ -46,10 +41,10 @@ class TestCRM(unittest.TestCase):
         where_to_x = where_to_x.to(x_0.device)
 
         probs = conditional_probability(config, where_to_x, x_0, time, t0=0.)
-        probs_transition = conditional_transition_probability(config, where_to_x, x_1, x_0, time)
+        probs_transition = telegram_bridge_probability(config, where_to_x, x_1, x_0, time)
 
         print(probs.sum(axis=-1))
-        print(probs_transition)
+        print(probs_transition.sum(axis=-1))
 
 if __name__=="__main__":
     unittest.main()

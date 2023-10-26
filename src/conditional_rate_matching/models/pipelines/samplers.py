@@ -67,44 +67,4 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
         p_0gt = rate_model(x, min_t * torch.ones((number_of_paths,), device=device)) # (N, D, S)
         x_0max = torch.max(p_0gt, dim=2)[1]
-        return x_0max.detach().cpu().numpy().astype(int), x_hist, x0_hist
-
-
-if __name__=="__main__":
-    from torch.utils.data import TensorDataset,DataLoader
-    from conditional_rate_matching.models.generative_models.crm import constant_rate
-    from conditional_rate_matching.models.generative_models.crm import sample_categorical_from_dirichlet
-
-    config = ConditionalRateMatchingConfig()
-    config.number_of_states = 2
-    config.gamma = 10.
-
-    # Parameters
-    dataset_0 = sample_categorical_from_dirichlet(probs=None,
-                                                  alpha=config.dirichlet_alpha_0,
-                                                  sample_size=config.sample_size,
-                                                  dimension=config.number_of_spins,
-                                                  number_of_states=config.number_of_states)
-    tensordataset_0 = TensorDataset(dataset_0)
-    dataloader_0 = DataLoader(tensordataset_0, batch_size=config.batch_size)
-
-    dataset_1 = sample_categorical_from_dirichlet(probs=None,
-                                                  alpha=config.dirichlet_alpha_1,
-                                                  sample_size=183,
-                                                  dimension=config.number_of_spins,
-                                                  number_of_states=config.number_of_states)
-    tensordataset_1 = TensorDataset(dataset_1)
-    dataloader_1 = DataLoader(tensordataset_1, batch_size=config.batch_size)
-
-    device = torch.device(config.device) if torch.cuda.is_available() else torch.device("cpu")
-
-    databatch0 = next(dataloader_0.__iter__())
-    x_0 = databatch0[0]
-    x_0 = x_0.to(device)
-
-    rate_model = lambda x,t: constant_rate(config,x,t)
-
-    x_f,x_hist, x0_hist = TauLeaping(config,rate_model,x_0,forward=True)
-    print(x_f.shape)
-    print(dataset_1.shape)
-    print(x_f)
+        return x_0max.detach(), x_hist, x0_hist

@@ -41,6 +41,7 @@ class ClassificationBackwardRate(nn.Module):
         self.expected_data_shape = [config.number_of_spins]
         self.define_deep_models()
         self.init_weights()
+        self.to(device)
 
     def define_deep_models(self):
         self.f1 = nn.Linear(self.dimension, self.hidden_layer)
@@ -187,7 +188,7 @@ def conditional_probability(config, x, x0, t, t0):
 
     return probability
 
-def conditional_transition_probability(config, x, x1, x0, t):
+def telegram_bridge_probability(config, x, x1, x0, t):
     """
     \begin{equation}
     P(x_t=x|x_0,x_1) = \frac{p(x_1|x_t=x) p(x_t = x|x_0)}{p(x_1|x_0)}
@@ -258,13 +259,9 @@ def uniform_pair_x0_x1(batch_1, batch_0):
     return x_1, x_0
 
 def sample_x(config,x_1, x_0, time):
-    x_to_go = torch.arange(0, config.number_of_states)
-    x_to_go = x_to_go[None, None, :].repeat((x_1.size(0), config.number_of_spins, 1)).float()
-    x_to_go = x_to_go.to(device)
-
-    prob_logits = conditional_transition_probability(config, x_to_go, x_1, x_0, time)
-    probs = torch.softmax(prob_logits, dim=-1)
-    sampled_x = Categorical(probs).sample().to(device).float()
+    x_to_go = where_to_go_x(config, x_0)
+    transition_probs = telegram_bridge_probability(config, x_to_go, x_1, x_0, time)
+    sampled_x = Categorical(transition_probs).sample().to(device)
     return sampled_x
 
 if __name__=="__main__":
@@ -278,9 +275,13 @@ if __name__=="__main__":
     experiment_files.create_directories()
 
     # Configuration
+
     #config = Config()
     config = NistConfig()
 
+    #=====================================================
+    # DATA STUFF
+    #=====================================================
     if config.dataset_name_0 == "categorical_dirichlet":
         # Parameters
         dataloader_0,_ = sample_categorical_from_dirichlet(probs=None,
@@ -307,6 +308,9 @@ if __name__=="__main__":
     elif config.dataset_name_1 in ["mnist","fashion","emnist"]:
         dataloader_1,_ = get_data(config.dataset_name_1,config)
 
+    #=========================================================
+    # Initialize
+    #=========================================================
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     config.loss = "classifier"
 
@@ -317,10 +321,12 @@ if __name__=="__main__":
         model = ClassificationBackwardRate(config, device).to(device)
         loss_fn = nn.CrossEntropyLoss()
 
-    # initialize
     writer = SummaryWriter(experiment_files.tensorboard_path)
     optimizer = Adam(model.parameters(), lr=config.learning_rate)
 
+    #=========================================================
+    # Training
+    #=========================================================
     number_of_training_steps = 0
     for epoch in range(config.number_of_epochs):
         for batch_1, batch_0 in zip(dataloader_1, dataloader_0):
@@ -334,9 +340,7 @@ if __name__=="__main__":
             time = torch.rand(batch_size).to(device)
 
             # sample x from z
-            x_to_go = where_to_go_x(config, x_0)
-            transition_probs = conditional_transition_probability(config, x_to_go, x_1, x_0, time)
-            sampled_x = Categorical(transition_probs).sample().to(device)
+            sampled_x = sample_x(config, x_1, x_0, time)
 
             # conditional rate
             if config.loss == "naive":
