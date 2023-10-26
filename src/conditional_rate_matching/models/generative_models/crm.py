@@ -6,21 +6,86 @@ from torch import functional as F
 
 import numpy as np
 import pandas as pd
-
-import sympy
 from dataclasses import dataclass
 from torchvision import transforms
+
 from torch.optim.adam import Adam
+from torch.distributions import Dirichlet
 from torch.distributions import Bernoulli
 from torch.distributions import Categorical
 from torch.nn.functional import softplus,softmax
 
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-from torch.distributions import Dirichlet
 from torch.utils.tensorboard import SummaryWriter
+
+
 from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
-from conditional_rate_matching.configs.config_crm import Config
+from conditional_rate_matching.data.states_dataloaders import sample_categorical_from_dirichlet
+from conditional_rate_matching.configs.config_files import ExperimentFiles
+from conditional_rate_matching.configs.config_crm import Config,NistConfig
+
+
+class ClassificationBackwardRate(nn.Module):
+
+    def __init__(self, config, device):
+        super().__init__()
+
+        self.S = config.number_of_states
+        self.D = config.number_of_spins
+        self.time_embed_dim = config.time_embed_dim
+        self.hidden_layer = config.hidden_dim
+        self.dimension = self.D
+        self.num_states = self.S
+
+        self.expected_data_shape = [config.number_of_spins]
+        self.define_deep_models()
+        self.init_weights()
+
+    def define_deep_models(self):
+        self.f1 = nn.Linear(self.dimension, self.hidden_layer)
+        self.f2 = nn.Linear(self.hidden_layer + self.time_embed_dim, self.dimension * self.num_states)
+
+        # self.f1 = nn.Linear(self.dimension, self.hidden_layer)
+        # self.f2 = nn.Linear(self.hidden_layer + self.time_embed_dim, self.dimension * self.num_states)
+
+    def to_go(self, x, t):
+        x_to_go = torch.arange(0, self.S)
+        x_to_go = x_to_go[None, None, :].repeat((batch_size, self.D, 1)).float()
+        x_to_go = x_to_go.to(device)
+        return x_to_go
+
+    def classify(self, x, times):
+        batch_size = x.shape[0]
+        time_embbedings = transformer_timestep_embedding(times,
+                                                         embedding_dim=self.time_embed_dim)
+
+        step_one = self.f1(x)
+        step_two = torch.concat([step_one, time_embbedings], dim=1)
+        rate_logits = self.f2(step_two)
+        rate_logits = rate_logits.reshape(batch_size, self.dimension, self.num_states)
+
+        return rate_logits
+
+    def forward(self, x, t):
+        right_shape = lambda x: x if len(x.shape) == 3 else x[:, :, None]
+        right_time_size = lambda t: t if isinstance(t, torch.Tensor) else torch.full((x.size(0),), t).to(x.device)
+
+        batch_size = x.size(0)
+
+        w_1t = beta_integral(config.gamma, right_time_size(1.), right_time_size(t))
+        A = 1.
+        B = (w_1t * self.S) / (1. - w_1t)
+        C = w_1t
+
+        x_to_go = self.to_go(x, t)
+        x_to_go = x_to_go.view((batch_size * self.S, self.D))
+        rate_logits = self.classify(x, time)
+        return rate_logits
+
+    def init_weights(self):
+        nn.init.xavier_uniform_(self.f1.weight)
+        nn.init.xavier_uniform_(self.f2.weight)
 
 class ConditionalBackwardRate(nn.Module):
     """
@@ -83,24 +148,6 @@ class TemporalMLP(nn.Module):
         nn.init.xavier_uniform_(self.f1.weight)
         nn.init.xavier_uniform_(self.f2.weight)
 
-def sample_categorical_from_dirichlet(probs, alpha=None, sample_size=100, dimension=3, number_of_states=2):
-    # ensure we have the probabilites
-    if probs is None:
-        if isinstance(alpha, float):
-            alpha = torch.full((number_of_states,), alpha)
-        else:
-            assert len(alpha.shape) == 1
-            assert alpha.size(0) == number_of_states
-        # Sample from the Dirichlet distribution
-        probs = Dirichlet(alpha).sample([sample_size])
-    else:
-        assert probs.max() <= 10.
-        assert probs.max() >= 0.
-
-    # Sample from the categorical distribution using the Dirichlet samples as probabilities
-    categorical_samples = torch.multinomial(probs, dimension, replacement=True)
-    return categorical_samples
-
 def beta_integral(gamma, t1, t0):
     """
     Dummy integral for constant rate
@@ -122,7 +169,7 @@ def conditional_probability(config, x, x0, t, t0):
 
     """
     right_shape = lambda x: x if len(x.shape) == 3 else x[:, :, None]
-    right_time_size = lambda t: t if isinstance(t, torch.Tensor) else torch.full((x.size(0),), t)
+    right_time_size = lambda t: t if isinstance(t, torch.Tensor) else torch.full((x.size(0),), t).to(x.device)
 
     t = right_time_size(t).to(x0.device)
     t0 = right_time_size(t0).to(x0.device)
@@ -167,17 +214,22 @@ def constant_rate(config, x, t):
                        config.gamma)
     return rate_
 
+def where_to_go_x(config,x):
+    x_to_go = torch.arange(0, config.number_of_states)
+    x_to_go = x_to_go[None, None, :].repeat((x.size(0), config.number_of_spins, 1)).float()
+    x_to_go = x_to_go.to(x.device)
+    return x_to_go
+
+
 def conditional_transition_rate(config, x, x1, t):
     """
     \begin{equation}
     f_t(\*x'|\*x,\*x_1) = \frac{p(\*x_1|x_t=\*x')}{p(\*x_1|x_t=\*x)}f_t(\*x'|\*x)
     \end{equation}
     """
-    where_to_x = torch.arange(0, config.number_of_states)
-    where_to_x = where_to_x[None, None, :].repeat((x.size(0), config.number_of_spins, 1)).float()
-    where_to_x = where_to_x.to(x.device)
+    x_to_go = where_to_go_x(config, x)
 
-    P_xp_to_x1 = conditional_probability(config, x1, where_to_x, t=1., t0=t)
+    P_xp_to_x1 = conditional_probability(config, x1, x_to_go, t=1., t0=t)
     P_x_to_x1 = conditional_probability(config, x1, x, t=1., t0=t)
 
     forward_rate = constant_rate(config, x, t).to(x.device)
@@ -203,7 +255,6 @@ def uniform_pair_x0_x1(batch_1, batch_0):
 
     x_0 = x_0[:batch_size, :]
     x_1 = x_1[:batch_size, :]
-
     return x_1, x_0
 
 def sample_x(config,x_1, x_0, time):
@@ -216,37 +267,60 @@ def sample_x(config,x_1, x_0, time):
     sampled_x = Categorical(probs).sample().to(device).float()
     return sampled_x
 
-
 if __name__=="__main__":
+    from conditional_rate_matching.data.image_dataloaders import get_data
 
-    config = Config()
-    # Parameters
-    dataset_0 = sample_categorical_from_dirichlet(probs=None,
-                                                  alpha=config.dirichlet_alpha_0,
-                                                  sample_size=config.sample_size,
-                                                  dimension=config.number_of_spins,
-                                                  number_of_states=config.number_of_states)
-    tensordataset_0 = TensorDataset(dataset_0)
-    dataloader_0 = DataLoader(tensordataset_0, batch_size=config.batch_size)
-
-    dataset_1 = sample_categorical_from_dirichlet(probs=None,
-                                                  alpha=config.dirichlet_alpha_1,
-                                                  sample_size=183,
-                                                  dimension=config.number_of_spins,
-                                                  number_of_states=config.number_of_states)
-    tensordataset_1 = TensorDataset(dataset_1)
-    dataloader_1 = DataLoader(tensordataset_1, batch_size=config.batch_size)
-
-    from conditional_rate_matching.configs.config_files import ExperimentFiles
-
-    device = torch.device(config.device) if torch.cuda.is_available() else torch.device("cpu")
-    model = ConditionalBackwardRate(config, device)
-    optimizer = Adam(model.parameters(), lr=config.learning_rate)
-
-    experiment_files = ExperimentFiles(experiment_name="crm",experiment_type="dirichlet",experiment_indentifier="test2",delete=True)
+    # Files to save the experiments
+    experiment_files = ExperimentFiles(experiment_name="crm",
+                                       experiment_type="dirichlet",
+                                       experiment_indentifier="test2",
+                                       delete=True)
     experiment_files.create_directories()
 
+    # Configuration
+    #config = Config()
+    config = NistConfig()
+
+    if config.dataset_name_0 == "categorical_dirichlet":
+        # Parameters
+        dataloader_0,_ = sample_categorical_from_dirichlet(probs=None,
+                                                           alpha=config.dirichlet_alpha_0,
+                                                           sample_size=config.sample_size,
+                                                           dimension=config.number_of_spins,
+                                                           number_of_states=config.number_of_states,
+                                                           test_split=config.test_split,
+                                                           batch_size=config.batch_size)
+
+    elif config.dataset_name_0 in ["mnist","fashion","emnist"]:
+        dataloder_0,_ = get_data(config.dataset_name_0,config)
+
+    if config.dataset_name_1 == "categorical_dirichlet":
+        # Parameters
+        dataloader_1,_ = sample_categorical_from_dirichlet(probs=None,
+                                                           alpha=config.dirichlet_alpha_1,
+                                                           sample_size=config.sample_size,
+                                                           dimension=config.number_of_spins,
+                                                           number_of_states=config.number_of_states,
+                                                           test_split=config.test_split,
+                                                           batch_size=config.batch_size)
+
+    elif config.dataset_name_1 in ["mnist","fashion","emnist"]:
+        dataloader_1,_ = get_data(config.dataset_name_1,config)
+
+    device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+    config.loss = "classifier"
+
+    if config.loss == "naive":
+        model = ConditionalBackwardRate(config, device)
+        loss_fn = nn.MSELoss()
+    elif config.loss == "classifier":
+        model = ClassificationBackwardRate(config, device).to(device)
+        loss_fn = nn.CrossEntropyLoss()
+
+    # initialize
     writer = SummaryWriter(experiment_files.tensorboard_path)
+    optimizer = Adam(model.parameters(), lr=config.learning_rate)
+
     number_of_training_steps = 0
     for epoch in range(config.number_of_epochs):
         for batch_1, batch_0 in zip(dataloader_1, dataloader_0):
@@ -257,26 +331,31 @@ if __name__=="__main__":
             x_1 = x_1.float().to(device)
 
             batch_size = x_0.size(0)
-            time = torch.randn(batch_size).to(device)
+            time = torch.rand(batch_size).to(device)
 
             # sample x from z
-            sampled_x = sample_x(config,x_1,x_0,time)
+            x_to_go = where_to_go_x(config, x_0)
+            transition_probs = conditional_transition_probability(config, x_to_go, x_1, x_0, time)
+            sampled_x = Categorical(transition_probs).sample().to(device)
 
             # conditional rate
-            conditional_rate = conditional_transition_rate(config, sampled_x, x_1, time)
-            model_rate = model(sampled_x, time)
+            if config.loss == "naive":
+                conditional_rate = conditional_transition_rate(config, sampled_x, x_1, time)
+                model_rate = model(sampled_x, time)
+                loss = loss_fn(model_rate, conditional_rate)
+            elif config.loss == "classifier":
+                model_classification = model(x_1, time)
+                loss = loss_fn(model_classification.view(-1, config.number_of_states),
+                               sampled_x.view(-1))
 
+            writer.add_scalar('training loss', loss.item(), number_of_training_steps)
+
+            # optimization
             optimizer.zero_grad()
-            loss = (conditional_rate - model_rate)**2.
-            #loss = loss.sum(axis=-1).sum(axis=-1)
             loss = loss.mean()
             loss.backward()
             optimizer.step()
             number_of_training_steps += 1
 
-            writer.add_scalar('training loss', loss.item(), number_of_training_steps)
-
             if number_of_training_steps % 100 == 0:
                 print(f"loss {round(loss.item(), 2)}")
-
-    writer.close()
