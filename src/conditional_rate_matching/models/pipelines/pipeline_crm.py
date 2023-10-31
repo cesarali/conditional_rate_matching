@@ -1,7 +1,7 @@
 import torch
 
 from conditional_rate_matching.models.pipelines.samplers import TauLeaping
-from conditional_rate_matching.models.generative_models.crm import ConditionalBackwardRate,ClassificationBackwardRate
+
 from conditional_rate_matching.utils.devices import check_model_devices
 
 class CRMPipeline:

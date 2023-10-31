@@ -35,7 +35,10 @@ class Config:
     # rate
 
     # training
-    number_of_epochs = 300
+    number_of_epochs:int = 300
+    save_model_epochs:int = 1e6
+    save_metric_epochs:int = 1e6
+
     learning_rate = 0.01
     batch_size :int = 5
     device = "cuda:0"
@@ -46,6 +49,8 @@ class Config:
 
     def __post_init__(self):
         self.num_intermediates = int(.5*self.number_of_steps)
+        self.save_model_epochs = int(.5*self.number_of_epochs)
+        self.save_metric_epochs = int(.5*self.save_metric_epochs)
 
 from conditional_rate_matching import data_path
 
@@ -67,6 +72,7 @@ class NistConfig(Config):
     data_dir:str = image_data_path
 
     def __post_init__(self):
+        super().__post_init__()
         self.num_intermediates = int(.5*self.number_of_steps)
         self.dimension = self.number_of_spins
 

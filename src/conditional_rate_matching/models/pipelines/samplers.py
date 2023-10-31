@@ -5,7 +5,7 @@ from torch import functional as F
 from typing import Union,Tuple,List
 
 from conditional_rate_matching.configs.config_crm import Config as ConditionalRateMatchingConfig
-from conditional_rate_matching.models.generative_models.crm import ConditionalBackwardRate
+from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import ConditionalBackwardRate
 
 
 

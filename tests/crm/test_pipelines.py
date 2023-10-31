@@ -14,6 +14,7 @@ from conditional_rate_matching.models.generative_models.crm import Classificatio
 from conditional_rate_matching.models.generative_models.crm import ConditionalBackwardRate
 
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
+
 class TestCRMPipeline(unittest.TestCase):
 
     def test_pipeline_classifier(self):
