@@ -75,8 +75,8 @@ if __name__=="__main__":
     experiment_files.create_directories()
 
     # Configuration
-    #config = Config()
-    config = NistConfig(number_of_epochs=20)
+    config = Config(number_of_epochs=100)
+    #config = NistConfig(number_of_epochs=4)
 
     #=====================================================
     # DATA STUFF
@@ -125,7 +125,7 @@ if __name__=="__main__":
             results = save_results(crm, experiment_files, epoch + 1, checkpoint=True)
 
         if (epoch + 1) % config.save_metric_epochs == 0:
-            all_metrics = log_metrics(crm=crm, epoch=epoch + 1, device=device, writer=writer)
+            all_metrics = log_metrics(crm=crm, epoch=epoch + 1, writer=writer)
 
     writer.close()
 

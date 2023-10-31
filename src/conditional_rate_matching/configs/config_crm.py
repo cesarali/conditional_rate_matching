@@ -1,5 +1,7 @@
 import os
 from dataclasses import dataclass
+from typing import List
+from dataclasses import field
 
 @dataclass
 class Config:
@@ -38,7 +40,7 @@ class Config:
     number_of_epochs:int = 300
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
-
+    metrics: List[str] = field(default_factory=lambda :["mse_histograms","kdmm"])
     learning_rate = 0.01
     batch_size :int = 5
     device = "cuda:0"
@@ -50,7 +52,7 @@ class Config:
     def __post_init__(self):
         self.num_intermediates = int(.5*self.number_of_steps)
         self.save_model_epochs = int(.5*self.number_of_epochs)
-        self.save_metric_epochs = int(.5*self.save_metric_epochs)
+        self.save_metric_epochs = int(.5*self.number_of_epochs)
 
 from conditional_rate_matching import data_path
 
