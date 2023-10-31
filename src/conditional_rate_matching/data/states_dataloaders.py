@@ -33,7 +33,7 @@ def sample_categorical_from_dirichlet(probs,
         assert probs.max() >= 0.
 
     # Sample from the categorical distribution using the Dirichlet samples as probabilities
-    categorical_samples = torch.multinomial(probs, dimension, replacement=True)
+    categorical_samples = torch.multinomial(probs, dimension, replacement=True).float()
 
     test_size = int(test_split * categorical_samples.size(0))
     train_dataset, test_dataset = TensorDataset(categorical_samples[test_size:]), TensorDataset(categorical_samples[:test_size])

@@ -8,9 +8,10 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 from torchvision import transforms
+from torch.utils.data import DataLoader
 
 from torch.optim.adam import Adam
-
+from typing import Union,List,Tuple
 from torch.distributions import Categorical
 from torch.nn.functional import softplus,softmax
 
@@ -26,6 +27,7 @@ class ClassificationBackwardRate(nn.Module):
     def __init__(self, config, device):
         super().__init__()
 
+        self.config = config
         self.S = config.number_of_states
         self.D = config.number_of_spins
         self.time_embed_dim = config.time_embed_dim
@@ -46,9 +48,10 @@ class ClassificationBackwardRate(nn.Module):
         # self.f2 = nn.Linear(self.hidden_layer + self.time_embed_dim, self.dimension * self.num_states)
 
     def to_go(self, x, t):
+        batch_size = x.size(0)
         x_to_go = torch.arange(0, self.S)
         x_to_go = x_to_go[None, None, :].repeat((batch_size, self.D, 1)).float()
-        x_to_go = x_to_go.to(device)
+        x_to_go = x_to_go.to(x.device)
         return x_to_go
 
     def classify(self, x, times):
@@ -63,21 +66,25 @@ class ClassificationBackwardRate(nn.Module):
 
         return rate_logits
 
-    def forward(self, x, t):
+    def forward(self, x, time):
         right_shape = lambda x: x if len(x.shape) == 3 else x[:, :, None]
         right_time_size = lambda t: t if isinstance(t, torch.Tensor) else torch.full((x.size(0),), t).to(x.device)
 
         batch_size = x.size(0)
 
-        w_1t = beta_integral(config.gamma, right_time_size(1.), right_time_size(t))
+        w_1t = beta_integral(self.config.gamma, right_time_size(1.), right_time_size(time))
         A = 1.
         B = (w_1t * self.S) / (1. - w_1t)
         C = w_1t
 
-        x_to_go = self.to_go(x, t)
+        x_to_go = self.to_go(x, time)
         x_to_go = x_to_go.view((batch_size * self.S, self.D))
+
         rate_logits = self.classify(x, time)
-        return rate_logits
+        rate_probabilities = softmax(rate_logits)
+        rates = A + B[:,None,None]*rate_probabilities +  C[:,None,None]*rate_probabilities
+
+        return rates
 
     def init_weights(self):
         nn.init.xavier_uniform_(self.f1.weight)
@@ -258,6 +265,46 @@ def sample_x(config,x_1, x_0, time):
     sampled_x = Categorical(transition_probs).sample().to(device)
     return sampled_x
 
+def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
+    # data pair and time sample
+    x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
+    x_0 = x_0.float().to(device)
+    x_1 = x_1.float().to(device)
+
+    batch_size = x_0.size(0)
+    time = torch.rand(batch_size).to(device)
+
+    # sample x from z
+    sampled_x = sample_x(config, x_1, x_0, time)
+
+    # conditional rate
+    if config.loss == "naive":
+        conditional_rate = conditional_transition_rate(config, sampled_x, x_1, time)
+        model_rate = model(sampled_x, time)
+        loss = loss_fn(model_rate, conditional_rate)
+    elif config.loss == "classifier":
+        model_classification = model(x_1, time)
+        loss = loss_fn(model_classification.view(-1, config.number_of_states),
+                       sampled_x.view(-1))
+
+    # optimization
+    optimizer.zero_grad()
+    loss = loss.mean()
+    loss.backward()
+    optimizer.step()
+
+    return loss
+
+@dataclass
+class CRM:
+    config: Config
+    experiment_files: ExperimentFiles
+
+    dataloader_0: DataLoader
+    dataloader_1: DataLoader
+    backward_rate: Union[ConditionalBackwardRate,ClassificationBackwardRate]
+
+
 if __name__=="__main__":
     from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 
@@ -282,6 +329,7 @@ if __name__=="__main__":
     #=========================================================
     # Initialize
     #=========================================================
+
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     config.loss = "classifier"
 
@@ -302,35 +350,10 @@ if __name__=="__main__":
     for epoch in range(config.number_of_epochs):
         for batch_1, batch_0 in zip(dataloader_1, dataloader_0):
 
-            # data pair and time sample
-            x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
-            x_0 = x_0.float().to(device)
-            x_1 = x_1.float().to(device)
-
-            batch_size = x_0.size(0)
-            time = torch.rand(batch_size).to(device)
-
-            # sample x from z
-            sampled_x = sample_x(config, x_1, x_0, time)
-
-            # conditional rate
-            if config.loss == "naive":
-                conditional_rate = conditional_transition_rate(config, sampled_x, x_1, time)
-                model_rate = model(sampled_x, time)
-                loss = loss_fn(model_rate, conditional_rate)
-            elif config.loss == "classifier":
-                model_classification = model(x_1, time)
-                loss = loss_fn(model_classification.view(-1, config.number_of_states),
-                               sampled_x.view(-1))
+            loss = train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device)
+            number_of_training_steps += 1
 
             writer.add_scalar('training loss', loss.item(), number_of_training_steps)
-
-            # optimization
-            optimizer.zero_grad()
-            loss = loss.mean()
-            loss.backward()
-            optimizer.step()
-            number_of_training_steps += 1
 
             if number_of_training_steps % 100 == 0:
                 print(f"loss {round(loss.item(), 2)}")

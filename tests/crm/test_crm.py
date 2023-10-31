@@ -2,6 +2,8 @@ import os
 import unittest
 
 import torch
+from torch import nn
+
 from conditional_rate_matching.configs.config_crm import Config as ConditionalRateMatchingConfig
 
 from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
@@ -9,11 +11,13 @@ from conditional_rate_matching.models.generative_models.crm import conditional_p
 from conditional_rate_matching.models.generative_models.crm import telegram_bridge_probability
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 from torch.utils.data import DataLoader, TensorDataset
-
+from conditional_rate_matching.models.generative_models.crm import (
+    ConditionalBackwardRate,
+    ClassificationBackwardRate
+)
 
 class TestCRM(unittest.TestCase):
     """
-
     """
     def test_conditional_probability(self):
         config = ConditionalRateMatchingConfig()
@@ -34,6 +38,43 @@ class TestCRM(unittest.TestCase):
 
         print(probs.sum(axis=-1))
         print(probs_transition.sum(axis=-1))
+
+    def test_model_rates_classifier(self):
+        config = ConditionalRateMatchingConfig()
+        dataloader_0,dataloader_1 = get_dataloaders(config)
+        device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+        config.loss = "classifier"
+
+        model = ClassificationBackwardRate(config, device).to(device)
+
+        batch_1, batch_0 = next(zip(dataloader_1, dataloader_0).__iter__())
+        x_0 = batch_0[0].to(device)
+        x_1 = batch_1[0].to(device)
+        time = torch.rand((x_0.size(0))).to(device)
+
+        rates_ = model(x_0,time)
+        is_positive = torch.all(rates_.gt(0))
+        print(rates_.shape)
+        print(is_positive)
+
+    def test_model_rates(self):
+        config = ConditionalRateMatchingConfig()
+        dataloader_0,dataloader_1 = get_dataloaders(config)
+        device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+
+        config.loss = "naive"
+        model = ConditionalBackwardRate(config, device)
+        loss_fn = nn.MSELoss()
+
+        batch_1, batch_0 = next(zip(dataloader_1, dataloader_0).__iter__())
+        x_0 = batch_0[0].to(device)
+        x_1 = batch_1[0].to(device)
+        time = torch.rand((x_0.size(0))).to(device)
+
+        rates_ = model(x_0,time)
+        is_positive = torch.all(rates_.gt(0))
+        print(rates_.shape)
+        print(is_positive)
 
 if __name__=="__main__":
     unittest.main()
