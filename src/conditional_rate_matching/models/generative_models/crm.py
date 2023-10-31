@@ -29,7 +29,7 @@ from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backw
 @dataclass
 class CRM:
     config: Config = None
-    experiment_files: ExperimentFiles  = None
+    experiment_files: ExperimentFiles = None
 
     dataloader_0: DataLoader = None
     dataloader_1: DataLoader = None

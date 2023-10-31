@@ -19,7 +19,6 @@ from conditional_rate_matching.models.generative_models.crm import (
     uniform_pair_x0_x1
 )
 
-
 def save_results(crm:CRM,
                  experiment_files:ExperimentFiles,
                  epoch: int = 0,
@@ -27,7 +26,6 @@ def save_results(crm:CRM,
     RESULTS = {
         "model": crm.backward_rate,
     }
-
     if checkpoint:
         torch.save(RESULTS, experiment_files.best_model_path_checkpoint.format(epoch))
     else:
@@ -53,7 +51,7 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
         model_rate = model(sampled_x, time)
         loss = loss_fn(model_rate, conditional_rate)
     elif config.loss == "classifier":
-        model_classification = model(x_1, time)
+        model_classification = model.classify(x_1, time)
         loss = loss_fn(model_classification.view(-1, config.number_of_states),
                        sampled_x.view(-1))
 
@@ -66,28 +64,23 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
     return loss
 
 if __name__=="__main__":
-
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="dirichlet",
                                        experiment_indentifier="test4",
                                        delete=True)
     experiment_files.create_directories()
-
     # Configuration
-    config = Config(number_of_epochs=100)
+    config = Config(number_of_epochs=300)
     #config = NistConfig(number_of_epochs=4)
 
     #=====================================================
     # DATA STUFF
     #=====================================================
-
     dataloader_1, dataloader_0 = get_dataloaders(config)
-
     #=========================================================
     # Initialize
     #=========================================================
-
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     config.loss = "classifier"
 
@@ -100,11 +93,9 @@ if __name__=="__main__":
 
     # all model
     crm = CRM(config,experiment_files,dataloader_0,dataloader_1,model)
-
     #=========================================================
     # Training
     #=========================================================
-
     writer = SummaryWriter(experiment_files.tensorboard_path)
     optimizer = Adam(model.parameters(), lr=config.learning_rate)
     tqdm_object = tqdm(range(config.number_of_epochs))
