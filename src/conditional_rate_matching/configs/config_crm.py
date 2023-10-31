@@ -47,7 +47,8 @@ class Config:
     def __post_init__(self):
         self.num_intermediates = int(.5*self.number_of_steps)
 
-from graph_bridges import data_path
+from conditional_rate_matching import data_path
+
 image_data_path = os.path.join(data_path,"raw")
 
 @dataclass

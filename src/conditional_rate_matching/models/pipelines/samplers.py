@@ -8,10 +8,12 @@ from conditional_rate_matching.configs.config_crm import Config as ConditionalRa
 from conditional_rate_matching.models.generative_models.crm import ConditionalBackwardRate
 
 
+
 def TauLeaping(config:ConditionalRateMatchingConfig,
                rate_model:Union[ConditionalBackwardRate],
                x_0:torch.Tensor,
-               forward=True):
+               forward=True,
+               return_path=False):
     """
     :param rate_model:
     :param x_0:
@@ -29,9 +31,12 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
     with torch.no_grad():
         x = x_0
-
         ts = np.concatenate((np.linspace(1.0, min_t, num_steps), np.array([0])))
-        save_ts = ts[np.linspace(0, len(ts)-2, config.num_intermediates, dtype=int)]
+
+        if return_path:
+            save_ts = np.concatenate((np.linspace(1.0, min_t, num_steps), np.array([0])))
+        else:
+            save_ts = ts[np.linspace(0, len(ts)-2, config.num_intermediates, dtype=int)]
 
         if forward:
             ts = ts[::-1]
@@ -48,8 +53,8 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
             x_0max = torch.max(reverse_rates, dim=2)[1]
 
             if t in save_ts:
-                x_hist.append(x.clone().detach().cpu().numpy())
-                x0_hist.append(x_0max.clone().detach().cpu().numpy())
+                x_hist.append(x.clone().detach().unsqueeze(1))
+                x0_hist.append(x_0max.clone().detach().unsqueeze(1))
 
             #TAU LEAPING
             diffs = torch.arange(S, device=device).view(1,1,S) - x.view(number_of_paths,D,1)
@@ -62,9 +67,15 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
             x = x_new
 
-        x_hist = np.array(x_hist).astype(int)
-        x0_hist = np.array(x0_hist).astype(int)
-
+        # last step
         p_0gt = rate_model(x, min_t * torch.ones((number_of_paths,), device=device)) # (N, D, S)
         x_0max = torch.max(p_0gt, dim=2)[1]
-        return x_0max.detach(), x_hist, x0_hist
+
+        # save last step
+        x_hist.append(x.clone().detach().unsqueeze(1))
+        x0_hist.append(x_0max.clone().detach().unsqueeze(1))
+        if len(x_hist) > 0:
+            x_hist = torch.cat(x_hist,dim=1)
+            x0_hist = torch.cat(x0_hist,dim=1)
+
+        return x_0max.detach(), x_hist, x0_hist, torch.Tensor(ts.copy())

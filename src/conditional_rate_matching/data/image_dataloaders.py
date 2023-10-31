@@ -5,9 +5,9 @@ import numpy as np
 from torch.utils.data import Dataset
 
 from torchvision import transforms,datasets
-from graph_bridges.data.transforms import SqueezeTransform
-from graph_bridges.data.transforms import FlattenTransform
-from graph_bridges.data.transforms import BinaryTensorToSpinsTransform
+from conditional_rate_matching.data.transforms import SqueezeTransform
+from conditional_rate_matching.data.transforms import FlattenTransform
+from conditional_rate_matching.data.transforms import BinaryTensorToSpinsTransform
 
 def get_data(dataset_name,config):
     data_= dataset_name

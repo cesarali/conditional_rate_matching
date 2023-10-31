@@ -10,21 +10,16 @@ from dataclasses import dataclass
 from torchvision import transforms
 
 from torch.optim.adam import Adam
-from torch.distributions import Dirichlet
-from torch.distributions import Bernoulli
+
 from torch.distributions import Categorical
 from torch.nn.functional import softplus,softmax
 
 import torch
-from torch.utils.data import DataLoader, TensorDataset
 from torch.utils.tensorboard import SummaryWriter
 
-
 from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
-from conditional_rate_matching.data.states_dataloaders import sample_categorical_from_dirichlet
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.configs.config_crm import Config,NistConfig
-
 
 class ClassificationBackwardRate(nn.Module):
 
@@ -221,7 +216,6 @@ def where_to_go_x(config,x):
     x_to_go = x_to_go.to(x.device)
     return x_to_go
 
-
 def conditional_transition_rate(config, x, x1, t):
     """
     \begin{equation}
@@ -265,7 +259,7 @@ def sample_x(config,x_1, x_0, time):
     return sampled_x
 
 if __name__=="__main__":
-    from conditional_rate_matching.data.image_dataloaders import get_data
+    from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
@@ -282,31 +276,8 @@ if __name__=="__main__":
     #=====================================================
     # DATA STUFF
     #=====================================================
-    if config.dataset_name_0 == "categorical_dirichlet":
-        # Parameters
-        dataloader_0,_ = sample_categorical_from_dirichlet(probs=None,
-                                                           alpha=config.dirichlet_alpha_0,
-                                                           sample_size=config.sample_size,
-                                                           dimension=config.number_of_spins,
-                                                           number_of_states=config.number_of_states,
-                                                           test_split=config.test_split,
-                                                           batch_size=config.batch_size)
 
-    elif config.dataset_name_0 in ["mnist","fashion","emnist"]:
-        dataloder_0,_ = get_data(config.dataset_name_0,config)
-
-    if config.dataset_name_1 == "categorical_dirichlet":
-        # Parameters
-        dataloader_1,_ = sample_categorical_from_dirichlet(probs=None,
-                                                           alpha=config.dirichlet_alpha_1,
-                                                           sample_size=config.sample_size,
-                                                           dimension=config.number_of_spins,
-                                                           number_of_states=config.number_of_states,
-                                                           test_split=config.test_split,
-                                                           batch_size=config.batch_size)
-
-    elif config.dataset_name_1 in ["mnist","fashion","emnist"]:
-        dataloader_1,_ = get_data(config.dataset_name_1,config)
+    dataloader_1, dataloader_0 = get_dataloaders(config)
 
     #=========================================================
     # Initialize
