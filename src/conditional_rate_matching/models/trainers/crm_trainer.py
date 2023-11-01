@@ -52,8 +52,10 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
         loss = loss_fn(model_rate, conditional_rate)
     elif config.loss == "classifier":
         model_classification = model.classify(x_1, time)
-        loss = loss_fn(model_classification.view(-1, config.number_of_states),
-                       sampled_x.view(-1))
+        model_classification_ = model_classification.view(-1, config.number_of_states)
+        sampled_x = sampled_x.view(-1)
+        loss = loss_fn(model_classification_,
+                       sampled_x)
 
     # optimization
     optimizer.zero_grad()
@@ -66,18 +68,18 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
 if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="dirichlet",
-                                       experiment_indentifier="test4",
+                                       experiment_type="dirichlet_K",
+                                       experiment_indentifier=None,
                                        delete=True)
     experiment_files.create_directories()
     # Configuration
-    config = Config(number_of_epochs=300)
+    config = Config(number_of_epochs=300,number_of_states=2)
     #config = NistConfig(number_of_epochs=4)
 
     #=====================================================
     # DATA STUFF
     #=====================================================
-    dataloader_1, dataloader_0 = get_dataloaders(config)
+    dataloader_0, dataloader_1 = get_dataloaders(config)
     #=========================================================
     # Initialize
     #=========================================================
@@ -93,6 +95,7 @@ if __name__=="__main__":
 
     # all model
     crm = CRM(config,experiment_files,dataloader_0,dataloader_1,model)
+
     #=========================================================
     # Training
     #=========================================================

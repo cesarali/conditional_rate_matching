@@ -40,6 +40,13 @@ class CRMPipeline:
         return x_0
 
     def __call__(self,sample_size,train=True):
+        """
+        For Conditional Rate Matching We Move Forward in Time
+
+        :param sample_size:
+        :param train:
+        :return:
+        """
         x_0 = self.get_x0_sample(sample_size=sample_size,train=train).to(self.device)
         rate_model = self.model
         x_f, x_hist, x0_hist,ts = TauLeaping(self.config, rate_model, x_0, forward=True)

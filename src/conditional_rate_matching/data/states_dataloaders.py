@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import TensorDataset,DataLoader
+from torch.distributions import Categorical
 
 def sample_categorical_from_dirichlet(probs,
                                       alpha=None,
@@ -18,7 +19,6 @@ def sample_categorical_from_dirichlet(probs,
     :param test_split:
     :return:
     """
-
     # ensure we have the probabilites
     if probs is None:
         if isinstance(alpha, float):
@@ -27,13 +27,14 @@ def sample_categorical_from_dirichlet(probs,
             assert len(alpha.shape) == 1
             assert alpha.size(0) == number_of_states
         # Sample from the Dirichlet distribution
-        probs = torch.distributions.Dirichlet(alpha).sample([sample_size])
+        probs = torch.distributions.Dirichlet(alpha).sample([dimension])
     else:
         assert probs.max() <= 1.
         assert probs.max() >= 0.
 
     # Sample from the categorical distribution using the Dirichlet samples as probabilities
-    categorical_samples = torch.multinomial(probs, dimension, replacement=True).float()
+    distribution_per_dimension = Categorical(probs)
+    categorical_samples = distribution_per_dimension.sample([sample_size]).float()
 
     test_size = int(test_split * categorical_samples.size(0))
     train_dataset, test_dataset = TensorDataset(categorical_samples[test_size:]), TensorDataset(categorical_samples[:test_size])

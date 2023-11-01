@@ -10,13 +10,13 @@ class Config:
     dataset_name_0:str = "categorical_dirichlet"
     dataset_name_1:str = "categorical_dirichlet"
 
-    number_of_spins :int = 3
+    number_of_spins :int =  5
     number_of_states :int = 4
-    sample_size :int = 200
+    sample_size :int = 1000
     test_split:float = .2
 
-    dirichlet_alpha_0 :float = 0.1
-    dirichlet_alpha_1 :float = 100.
+    dirichlet_alpha_0 :float = 100.
+    dirichlet_alpha_1 :float = 0.1
 
     bernoulli_probability_0 :float = 0.2
     bernoulli_probability_0 :float = 0.8
@@ -28,8 +28,8 @@ class Config:
     # model
 
     # temporal network
-    time_embed_dim :int = 9
-    hidden_dim :int = 50
+    time_embed_dim :int = 39
+    hidden_dim :int = 200
 
     # rate
     loss:str = "classifier" # classifier,naive
@@ -40,7 +40,8 @@ class Config:
     number_of_epochs:int = 300
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
-    metrics: List[str] = field(default_factory=lambda :["mse_histograms","kdmm"])
+    maximum_test_sample_size:int=2000
+    metrics: List[str] = field(default_factory=lambda :["mse_histograms","kdmm","categorical_histograms"])
     learning_rate = 0.01
     batch_size :int = 5
     device = "cuda:0"

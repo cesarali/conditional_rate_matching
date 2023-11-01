@@ -86,13 +86,8 @@ def telegram_bridge_probability(config, x, x1, x0, t):
     return conditional_transition_probability
 
 def constant_rate(config, x, t):
-    right_time_size = lambda t: t if isinstance(t, torch.Tensor) else torch.full((x.size(0),), t)
-    t = right_time_size(t).to(x.device)
-
     batch_size = x.size(0)
     dimension = x.size(1)
-
-    assert batch_size == t.size(0)
 
     rate_ = torch.full((batch_size, dimension, config.number_of_states),
                        config.gamma)
@@ -120,13 +115,14 @@ def conditional_transition_rate(config, x, x1, t):
 
     return rate_transition
 
-def uniform_pair_x0_x1(batch_1, batch_0):
+def uniform_pair_x0_x1(batch_1, batch_0,device=torch.device("cpu")):
     """
     Most simple Z sampler
 
     :param batch_1:
     :param batch_0:
-    :return:
+
+    :return:x_1, x_0
     """
     x_0 = batch_0[0]
     x_1 = batch_1[0]
@@ -136,8 +132,9 @@ def uniform_pair_x0_x1(batch_1, batch_0):
 
     batch_size = min(batch_size_0, batch_size_1)
 
-    x_0 = x_0[:batch_size, :]
-    x_1 = x_1[:batch_size, :]
+    x_0 = x_0[:batch_size, :].to(device)
+    x_1 = x_1[:batch_size, :].to(device)
+
     return x_1, x_0
 
 def sample_x(config,x_1, x_0, time):
