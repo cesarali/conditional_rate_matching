@@ -48,7 +48,7 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
     # conditional rate
     if config.loss == "naive":
         conditional_rate = conditional_transition_rate(config, sampled_x, x_1, time)
-        model_rate = model(sampled_x, time)
+        model_rate = model(sampled_x.float(), time)
         loss = loss_fn(model_rate, conditional_rate)
     elif config.loss == "classifier":
         model_classification = model.classify(x_1, time)
@@ -69,13 +69,11 @@ if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="dirichlet_K",
-                                       experiment_indentifier=None,
+                                       experiment_indentifier="save_n_load_3",
                                        delete=True)
-    experiment_files.create_directories()
     # Configuration
-    config = Config(number_of_epochs=300,number_of_states=2)
-    #config = NistConfig(number_of_epochs=4)
-
+    config = Config(number_of_epochs=10,number_of_states=2)
+    #config = NistConfig(number_of_epochs=10,hidden_dim=300,batch_size=128,sample_size=60000)
     #=====================================================
     # DATA STUFF
     #=====================================================
@@ -83,6 +81,7 @@ if __name__=="__main__":
     #=========================================================
     # Initialize
     #=========================================================
+
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     config.loss = "classifier"
 
@@ -94,7 +93,8 @@ if __name__=="__main__":
         loss_fn = nn.CrossEntropyLoss()
 
     # all model
-    crm = CRM(config,experiment_files,dataloader_0,dataloader_1,model)
+    crm = CRM(config,None,experiment_files,dataloader_0,dataloader_1,model)
+    crm.start_new_experiment()
 
     #=========================================================
     # Training

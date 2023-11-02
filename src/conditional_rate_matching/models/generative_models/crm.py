@@ -1,43 +1,98 @@
-import os
-import sys
+import json
 import torch
 from torch import nn
-from torch import functional as F
-
-import numpy as np
-import pandas as pd
 from dataclasses import dataclass
-from torchvision import transforms
 from torch.utils.data import DataLoader
 
-
-from typing import Union,List,Tuple
+from typing import Union
+from dataclasses import asdict
 from torch.distributions import Categorical
 
-import torch
-
-from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.configs.config_crm import Config,NistConfig
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
+
 from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import (
     ConditionalBackwardRate,
     ClassificationBackwardRate,
     beta_integral
 )
 
+from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
+
 @dataclass
 class CRM:
     config: Config = None
-    experiment_files: ExperimentFiles = None
+    experiment_dir:str = None
 
+    experiment_files: ExperimentFiles = None
     dataloader_0: DataLoader = None
     dataloader_1: DataLoader = None
     backward_rate: Union[ConditionalBackwardRate,ClassificationBackwardRate] = None
     pipeline:CRMPipeline = None
 
     def __post_init__(self):
-        self.pipeline = CRMPipeline(self.config,self.backward_rate,self.dataloader_0,self.dataloader_1)
+        if self.dataloader_0 is not None:
+            self.pipeline = CRMPipeline(self.config,self.backward_rate,self.dataloader_0,self.dataloader_1)
+        else:
+            if self.experiment_dir is not None:
+                self.load_from_experiment(self.experiment_dir)
+            elif self.config is not None:
+                self.initialize_from_config(config=self.config)
+
+    def initialize_from_config(self,config):
+        # =====================================================
+        # DATA STUFF
+        # =====================================================
+        self.dataloader_0, self.dataloader_1 = get_dataloaders(config)
+        # =========================================================
+        # Initialize
+        # =========================================================
+        device = torch.device(self.config.device) if torch.cuda.is_available() else torch.device("cpu")
+
+        if config.loss == "naive":
+            self.backward_rate = ConditionalBackwardRate(config, device)
+            self.loss_fn = nn.MSELoss()
+        elif config.loss == "classifier":
+            self.backward_rate = ClassificationBackwardRate(config, device).to(device)
+            self.loss_fn = nn.CrossEntropyLoss()
+
+        self.pipeline = CRMPipeline(self.config, self.backward_rate, self.dataloader_0, self.dataloader_1)
+
+    def load_from_experiment(self,experiment_dir):
+        self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
+        results_ = self.experiment_files.load_results()
+        self.backward_rate = results_["model"]
+
+        config_path_json = json.load(open(self.experiment_files.config_path, "r"))
+        if hasattr(config_path_json,"delete"):
+            config_path_json["delete"] = False
+        self.config = Config(**config_path_json)
+
+        device = torch.device(self.config.device) if torch.cuda.is_available() else torch.device("cpu")
+
+        self.dataloader_0, self.dataloader_1 = get_dataloaders(self.config)
+        if self.config.loss == "naive":
+            self.backward_rate = ConditionalBackwardRate(self.config, device)
+            self.loss_fn = nn.MSELoss()
+        elif self.config.loss == "classifier":
+            self.backward_rate = ClassificationBackwardRate(self.config, device).to(device)
+            self.loss_fn = nn.CrossEntropyLoss()
+
+    def start_new_experiment(self):
+        #create directories
+        self.experiment_files.create_directories()
+
+        #align configs
+        self.align_configs()
+
+        #save config
+        config_as_dict = asdict(self.config)
+        with open(self.experiment_files.config_path, "w") as file:
+            json.dump(config_as_dict, file)
+
+    def align_configs(self):
+        pass
 
 
 def conditional_probability(config, x, x0, t, t0):
@@ -144,3 +199,11 @@ def sample_x(config,x_1, x_0, time):
     sampled_x = Categorical(transition_probs).sample().to(device)
     return sampled_x
 
+if __name__=="__main__":
+    from conditional_rate_matching.configs.config_files import create_experiment_dir
+
+    experiment_dir = create_experiment_dir(experiment_name="crm",
+                                           experiment_type="dirichlet_K",
+                                           experiment_indentifier="save_n_load_3")
+
+    crm = CRM(experiment_dir=experiment_dir)

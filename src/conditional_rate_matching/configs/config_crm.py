@@ -73,6 +73,7 @@ class NistConfig(Config):
 
     pepper_threshold:float = 0.5
     data_dir:str = image_data_path
+    metrics: List[str] = field(default_factory=lambda :["mse_histograms","kdmm"])
 
     def __post_init__(self):
         super().__post_init__()

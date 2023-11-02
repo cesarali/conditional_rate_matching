@@ -92,6 +92,7 @@ class OopsConfig:
         config_as_dict = asdict(self)
         with open(self.experiment_files.config_path, "w") as file:
             json.dump(config_as_dict, file)
+
     def align_configurations(self):
         pass
 
