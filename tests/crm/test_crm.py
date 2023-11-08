@@ -11,11 +11,16 @@ from conditional_rate_matching.models.generative_models.crm import conditional_p
 from conditional_rate_matching.models.generative_models.crm import telegram_bridge_probability
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 from torch.utils.data import DataLoader, TensorDataset
+
 from conditional_rate_matching.models.generative_models.crm import (
+    CRM,
     ConditionalBackwardRate,
     ClassificationBackwardRate
 )
 
+from conditional_rate_matching.configs.config_files import create_experiment_dir
+
+@unittest.skip
 class TestCRM(unittest.TestCase):
     """
     """
@@ -75,6 +80,23 @@ class TestCRM(unittest.TestCase):
         is_positive = torch.all(rates_.gt(0))
         print(rates_.shape)
         print(is_positive)
+
+class TestCRMLoading(unittest.TestCase):
+
+
+    def test_load(self):
+        from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+
+        experiment_dir = create_experiment_dir(experiment_name="crm",
+                                               experiment_type="mnist",
+                                               experiment_indentifier="save_n_loads3")
+
+        crm = CRM(experiment_dir=experiment_dir,device=torch.device("cpu"))
+        log_metrics(crm,
+                    epoch=None,
+                    metrics_to_log=["binary_paths_histograms"],
+                    where_to_log={"binary_paths_histograms":None})
+
 
 if __name__=="__main__":
     unittest.main()

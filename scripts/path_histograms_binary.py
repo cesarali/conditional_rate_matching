@@ -18,6 +18,7 @@ from conditional_rate_matching.configs.config_crm import NistConfig
 
 # data
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
+from conditional_rate_matching.models.pipelines.samplers_utils import sample_from_dataloader
 
 # models
 from conditional_rate_matching.models.generative_models.crm import (
@@ -36,10 +37,11 @@ from conditional_rate_matching.models.pipelines.samplers import TauLeaping
 # metrics
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
 from conditional_rate_matching.models.metrics.histograms import binary_histogram_dataloader
+from conditional_rate_matching.models.metrics.crm_path_metrics import telegram_bridge_sample_paths
 
 # plots
 from conditional_rate_matching.utils.plots.histograms_plots import plot_histograms
-
+from conditional_rate_matching.utils.plots.paths_plots import histograms_per_time_step
 
 from conditional_rate_matching.models.metrics.crm_path_metrics import (
     telegram_bridge_probability_path,
@@ -68,21 +70,17 @@ if __name__ == "__main__":
                                              train=True, maximum_test_sample_size=config.maximum_test_sample_size)
     histogram1 = binary_histogram_dataloader(dataloader_1, dimensions=config.dimension,
                                              train=True, maximum_test_sample_size=config.maximum_test_sample_size)
-
     #marginal_histograms = (histogram0, torch.zeros_like(histogram0), histogram1, torch.zeros_like(histogram1))
     #plot_histograms(marginal_histograms)
 
-    path_ = telegram_bridge_probability_path(config,ts,x_1,x_0)
-    #print(path_.shape)
+    X_0 = sample_from_dataloader(dataloader_0,sample_size=250).to(device)
+    X_1 = sample_from_dataloader(dataloader_1,sample_size=250).to(device)
+    time_steps = torch.linspace(0.,1.,10).to(device)
 
-    #rate to flip
-    time = torch.full_like(x_0[:, 0], 0.)
-    conditional_rate = conditional_model(x_0,time)
-    not_x_0 = (~x_0.bool()).long()
-    flip_rate = torch.gather(conditional_rate, 2, not_x_0.unsqueeze(2)).squeeze()
-    print(flip_rate.shape)
+    telegram_histograms_path,time_grid = telegram_bridge_sample_paths(config,X_0,X_1,time_steps,histogram=True)
 
-    #histogram_per_dimension_plot(histogram0,histogram1,path_,ts)
-    # telegram_bridge_probability(config, x, x1, x0, t)
-    # conditional_transition_rate()
-    # conditional_probability()
+    #histograms_per_time_step(telegram_histograms_path,None,time_grid)
+
+    
+
+

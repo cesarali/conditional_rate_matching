@@ -14,8 +14,8 @@ def marginal_histograms(generative_sample,test_sample):
     #================================
     # HISTOGRAMS OF DATA
     #================================
-    marginal_histograms_data = test_sample.sum(axis=0).detach().cpu().numpy()
-    marginal_histograms_sample = generative_sample.sum(axis=0).detach().cpu().numpy()
+    marginal_histograms_data = test_sample.mean(axis=0).detach().cpu().numpy()
+    marginal_histograms_sample = generative_sample.mean(axis=0).detach().cpu().numpy()
     #================================
     # HISTOGRAMS OF SAMPLE
     #================================

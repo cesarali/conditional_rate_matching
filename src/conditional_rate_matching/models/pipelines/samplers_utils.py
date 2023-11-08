@@ -1,23 +1,30 @@
-
-import os
-import unittest
-
 import torch
 from conditional_rate_matching.configs.config_crm import Config
 from conditional_rate_matching.configs.config_crm import NistConfig
-
-from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
-from conditional_rate_matching.models.generative_models.crm import conditional_probability
-from conditional_rate_matching.models.generative_models.crm import telegram_bridge_probability
 from conditional_rate_matching.models.pipelines.samplers import TauLeaping
 
-from torch.utils.data import DataLoader, TensorDataset
-from conditional_rate_matching.data.image_dataloaders import get_data
-from conditional_rate_matching.models.pipelines.samplers import TauLeaping
+def sample_from_dataloader(dataloder_iterator,sample_size):
+    size_left = sample_size
+    x_0 = []
+    for databath in dataloder_iterator:
+        x_ = databath[0]
+        batch_size = x_.size(0)
+        take_size = min(size_left, batch_size)
+        x_0.append(x_[:take_size])
+        size_left -= take_size
+        if size_left == 0:
+            break
+    x_0 = torch.vstack(x_0)
+    return x_0
+
+def flip_rates(conditional_model,x_0,time):
+    conditional_rate = conditional_model(x_0, time)
+    not_x_0 = (~x_0.bool()).long()
+    flip_rate = torch.gather(conditional_rate, 2, not_x_0.unsqueeze(2)).squeeze()
+    return flip_rate
 
 def paths_iterators(config,dataloader,rate_model,forward=True,train=True):
     """
-
     :param config:
     :param dataloader:
     :return: x_hist,ts
@@ -60,7 +67,6 @@ def paths_iterators_train(config,dataloader,rate_model,forward=True,train=True):
 
         for path_chunk, time_chunk in zip(x_path, ts):
             yield path_chunk, time_chunk
-
 
 def sinkhorn_paths_iterator_train(config,dataloader_0,dataloader_1,sinkhorn_iteration=0):
     """

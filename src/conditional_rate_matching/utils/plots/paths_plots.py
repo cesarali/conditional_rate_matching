@@ -101,3 +101,34 @@ def histogram_per_dimension_plot(states_histogram_at_0,
         plt.show()
     else:
         plt.savefig(save_path)
+
+def histograms_per_time_step(histograms,histograms_2,time_grid,save_path=None):
+    """
+
+    :param histograms:
+    :param histograms_2:
+    :param time_grid:
+    :param save_path:
+    :return:
+    """
+    if histograms_2 is not None:
+        assert histograms_2.size(0) == histograms.size(0)
+
+    bin_edges = range(histograms.size(1))
+    fig, axs = plt.subplots(figsize=(16, 2),ncols=len(histograms))
+
+    for histogram_index in range(histograms.size(0)):
+        histogram = histograms[histogram_index]
+        time_ = time_grid[histogram_index]
+        ax1 = axs[histogram_index]
+        ax1.set_title(f"Time {round(time_.item(),2)}")
+        ax1.bar(bin_edges, histogram.detach().cpu().numpy(), align='edge', width=1.0, alpha=0.2, label="generated_0")
+        if histograms_2 is not None:
+            histogram2 = histograms_2[histogram_index]
+            ax1.bar(bin_edges, histogram2.detach().cpu().numpy(), align='edge', width=1.0, alpha=0.2, label="generated_0")
+        ax1.tick_params(axis='both', which='both', bottom=False, top=False, left=False, right=False, labelbottom=False,labelleft=False)
+        ax1.set_ylim(0.,1.)
+    if save_path is None:
+        plt.show()
+    else:
+        plt.savefig(save_path)

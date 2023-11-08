@@ -5,6 +5,7 @@ from conditional_rate_matching.models.generative_models.crm import (
     telegram_bridge_probability,
     conditional_transition_rate,
     conditional_probability,
+    sample_x,
     where_to_go_x
 )
 
@@ -19,6 +20,18 @@ def telegram_bridge_probability_path(config,ts,x_1,x_0):
     probability_path = torch.cat(probability_path,dim=0)
     return probability_path
 
+def telegram_bridge_sample_paths(config,X_0,X_1,time_steps,histogram=True):
+    sample = []
+    for time_value in time_steps:
+        time_ = torch.full((X_0.size(0),),time_value)
+        sampled_x = sample_x(config, X_1, X_0, time_)
+        if histogram:
+            histogram_t = sampled_x.sum(axis=0)
+            sample.append(histogram_t.unsqueeze(0))
+        else:
+            sample.append(sampled_x)
+    sample = torch.cat(sample,dim=0)
+    return sample,time_steps
 
 # CONDITIONAL TRANSITION RATE
 def conditional_transition_rate_path(config,ts,x_1):

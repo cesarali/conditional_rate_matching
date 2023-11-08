@@ -78,4 +78,4 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
             x_hist = torch.cat(x_hist,dim=1).float()
             x0_hist = torch.cat(x0_hist,dim=1).float()
 
-        return x_0max.detach().float(), x_hist, x0_hist, torch.Tensor(ts.copy())
+        return x_0max.detach().float(), x_hist, x0_hist, torch.Tensor(save_ts.copy())

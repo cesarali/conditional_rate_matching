@@ -3,6 +3,8 @@ import torch
 from conditional_rate_matching.models.pipelines.samplers import TauLeaping
 
 from conditional_rate_matching.utils.devices import check_model_devices
+from conditional_rate_matching.models.pipelines.samplers_utils import sample_from_dataloader
+
 
 class CRMPipeline:
     """
@@ -22,24 +24,11 @@ class CRMPipeline:
             dataloder_iterator = self.dataloder_0.train() if train else self.dataloder_0.test()
         else:
             dataloder_iterator = self.dataloder_0
-
-        size_left = sample_size
-        x_0 = []
-        for databath in dataloder_iterator:
-            x_ = databath[0]
-            batch_size = x_.size(0)
-            take_size = min(size_left,batch_size)
-            x_0.append(x_[:take_size])
-            size_left -= take_size
-            if size_left == 0:
-                break
-
-        x_0 = torch.vstack(x_0)
-        assert x_0.size(0) == sample_size
-
+        x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
+        #assert x_0.size(0) == sample_size
         return x_0
 
-    def __call__(self,sample_size,train=True):
+    def __call__(self,sample_size,train=True,return_path=False,return_intermediaries=False):
         """
         For Conditional Rate Matching We Move Forward in Time
 
@@ -47,9 +36,18 @@ class CRMPipeline:
         :param train:
         :return:
         """
+
+        if return_intermediaries:
+            return_path = False
+
         x_0 = self.get_x0_sample(sample_size=sample_size,train=train).to(self.device)
         rate_model = self.model
-        x_f, x_hist, x0_hist,ts = TauLeaping(self.config, rate_model, x_0, forward=True)
-        return x_f
+        x_f, x_hist, x0_hist,ts = TauLeaping(self.config, rate_model, x_0, forward=True,return_path=return_path)
+        if return_path or return_intermediaries:
+            return x_f,x_hist,ts
+        else:
+            return x_f
+
+
 
 

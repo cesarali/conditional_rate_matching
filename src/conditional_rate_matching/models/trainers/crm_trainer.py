@@ -68,16 +68,24 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
 if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="dirichlet_K",
-                                       experiment_indentifier="save_n_load_3",
-                                       delete=True)
+                                       experiment_type="mnist",
+                                       experiment_indentifier="save_n_loads3",
+                                       delete=False)
     # Configuration
-    config = Config(number_of_epochs=10,number_of_states=2)
-    #config = NistConfig(number_of_epochs=10,hidden_dim=300,batch_size=128,sample_size=60000)
+    #config = Config(number_of_epochs=10,number_of_states=2)
+    config = NistConfig(number_of_epochs=10,
+                        hidden_dim=300,
+                        batch_size=128,
+                        sample_size=60000,
+                        maximum_test_sample_size=1000,
+                        num_intermediates=5)
+
     #=====================================================
     # DATA STUFF
     #=====================================================
+
     dataloader_0, dataloader_1 = get_dataloaders(config)
+
     #=========================================================
     # Initialize
     #=========================================================
@@ -93,21 +101,21 @@ if __name__=="__main__":
         loss_fn = nn.CrossEntropyLoss()
 
     # all model
-    crm = CRM(config,None,experiment_files,dataloader_0,dataloader_1,model)
+    crm = CRM(config=config,experiment_files=experiment_files)
     crm.start_new_experiment()
 
     #=========================================================
     # Training
     #=========================================================
     writer = SummaryWriter(experiment_files.tensorboard_path)
-    optimizer = Adam(model.parameters(), lr=config.learning_rate)
+    optimizer = Adam(crm.backward_rate.parameters(), lr=config.learning_rate)
     tqdm_object = tqdm(range(config.number_of_epochs))
 
     number_of_training_steps = 0
     for epoch in tqdm_object:
         for batch_1, batch_0 in zip(dataloader_1, dataloader_0):
 
-            loss = train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device)
+            loss = train_step(config,crm.backward_rate,crm.loss_fn,batch_1,batch_0,optimizer,device)
             number_of_training_steps += 1
 
             writer.add_scalar('training loss', loss.item(), number_of_training_steps)

@@ -109,7 +109,7 @@ class ClassificationBackwardRate(nn.Module):
         x_to_go = x_to_go.view((batch_size * self.S, self.D))
 
         rate_logits = self.classify(x, time)
-        rate_probabilities = softmax(rate_logits)
+        rate_probabilities = softmax(rate_logits,dim=1)
         rates = A + B[:,None,None]*rate_probabilities +  C[:,None,None]*rate_probabilities
 
         return rates

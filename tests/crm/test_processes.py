@@ -66,7 +66,6 @@ class TestProcesses(unittest.TestCase):
         #rate_model = lambda x, t: constant_rate(config, x, t)
         rate_model = lambda x, t: conditional_transition_rate(config, x, x_1, t)
         x_f, x_hist, x0_hist,ts = TauLeaping(config, rate_model, x_0, forward=True)
-
         print(x_hist.shape)
 
 if __name__=="__main__":
