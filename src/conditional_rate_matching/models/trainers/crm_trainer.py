@@ -69,14 +69,16 @@ if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="mnist",
-                                       experiment_indentifier="save_n_loads3",
-                                       delete=False)
+                                       experiment_indentifier="save_n_loads7",
+                                       delete=True)
     # Configuration
     #config = Config(number_of_epochs=10,number_of_states=2)
     config = NistConfig(number_of_epochs=10,
-                        hidden_dim=300,
+                        hidden_dim=500,
+                        time_embed_dim=250,
                         batch_size=128,
                         sample_size=60000,
+                        number_of_steps=100,
                         maximum_test_sample_size=1000,
                         num_intermediates=5)
 

@@ -17,12 +17,6 @@ def sample_from_dataloader(dataloder_iterator,sample_size):
     x_0 = torch.vstack(x_0)
     return x_0
 
-def flip_rates(conditional_model,x_0,time):
-    conditional_rate = conditional_model(x_0, time)
-    not_x_0 = (~x_0.bool()).long()
-    flip_rate = torch.gather(conditional_rate, 2, not_x_0.unsqueeze(2)).squeeze()
-    return flip_rate
-
 def paths_iterators(config,dataloader,rate_model,forward=True,train=True):
     """
     :param config:

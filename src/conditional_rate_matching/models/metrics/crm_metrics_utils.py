@@ -65,7 +65,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
 
         generative_histogram = F.one_hot(generative_sample.long(),config.number_of_states).sum(axis=0)
         generative_histogram = generative_histogram/generative_sample.size(0)
-        if key_in_dict(metrics_to_log,metric_string_name):
+        if key_in_dict(where_to_log,metric_string_name):
             plot_path = where_to_log[metric_string_name]
         else:
             plot_path = crm.experiment_files.plot_path.format("categorical_histograms_{0}".format(epoch))
@@ -75,7 +75,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
     if metric_string_name in metrics_to_log:
         assert crm.config.number_of_states == 2
         histograms_generative = generative_path.mean(axis=0)
-        if key_in_dict(metrics_to_log,metric_string_name):
+        if key_in_dict(where_to_log,metric_string_name):
             plot_path = where_to_log[metric_string_name]
         else:
             plot_path = crm.experiment_files.plot_path.format("binary_path_histograms_{0}".format(epoch))

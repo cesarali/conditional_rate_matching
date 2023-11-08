@@ -59,7 +59,6 @@ def classification_path(model,x_1,ts):
     # MODEL RATE
     rate_path = []
     for time in tqdm(ts):
-        print(f"time {time}")
         time_ = torch.full((x_1.size(0),), time.item()).to(device)
         bridge_rate = model.classify(x_1, time_)
         bridge_rate = bridge_rate.mean(dim=0).unsqueeze(dim=0)

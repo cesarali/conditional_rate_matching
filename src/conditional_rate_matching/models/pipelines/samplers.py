@@ -47,6 +47,8 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
         counter = 0
         for idx, t in tqdm(enumerate(ts[0:-1])):
+            if t in save_ts:
+                print("Hey")
             h = min_t
             times = t * torch.ones(number_of_paths,).to(device)
             reverse_rates = rate_model(x,times) # (N, D, S)

@@ -83,7 +83,6 @@ class NistConfig(Config):
 
     def __post_init__(self):
         super().__post_init__()
-        self.num_intermediates = int(.5*self.number_of_steps)
         self.dimension = self.number_of_spins
 
 

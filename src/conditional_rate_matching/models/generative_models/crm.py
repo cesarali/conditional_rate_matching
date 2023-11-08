@@ -80,7 +80,7 @@ class CRM:
             self.device = device
 
         self.backward_rate.to(self.device)
-        
+
         self.dataloader_0, self.dataloader_1 = get_dataloaders(self.config)
         if self.config.loss == "naive":
             self.loss_fn = nn.MSELoss()

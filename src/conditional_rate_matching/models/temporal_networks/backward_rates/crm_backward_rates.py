@@ -3,6 +3,12 @@ from torch import nn
 from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
 from torch.nn.functional import softplus,softmax
 
+def flip_rates(conditional_model,x_0,time):
+    conditional_rate = conditional_model(x_0, time)
+    not_x_0 = (~x_0.bool()).long()
+    flip_rate = torch.gather(conditional_rate, 2, not_x_0.unsqueeze(2)).squeeze()
+    return flip_rate
+
 class TemporalMLP(nn.Module):
 
     def __init__(self, dimensions, number_of_states, time_embed_dim, hidden_dim, device):
@@ -100,17 +106,16 @@ class ClassificationBackwardRate(nn.Module):
 
         batch_size = x.size(0)
 
-        w_1t = beta_integral(self.config.gamma, right_time_size(1.), right_time_size(time))
+        w_1t = torch.exp(-self.S*beta_integral(self.config.gamma, right_time_size(1.), right_time_size(time)))
         A = 1.
         B = (w_1t * self.S) / (1. - w_1t)
         C = w_1t
 
-        x_to_go = self.to_go(x, time)
-        x_to_go = x_to_go.view((batch_size * self.S, self.D))
+        change_logits = self.classify(x, time)
+        change_classifier = softmax(change_logits, dim=2)
+        where_iam_classifier = torch.gather(change_classifier, 2, x.long().unsqueeze(2))
 
-        rate_logits = self.classify(x, time)
-        rate_probabilities = softmax(rate_logits,dim=1)
-        rates = A + B[:,None,None]*rate_probabilities +  C[:,None,None]*rate_probabilities
+        rates = A + B[:,None,None]*change_classifier +  C[:,None,None]*where_iam_classifier
 
         return rates
 

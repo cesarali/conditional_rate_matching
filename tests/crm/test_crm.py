@@ -20,7 +20,6 @@ from conditional_rate_matching.models.generative_models.crm import (
 
 from conditional_rate_matching.configs.config_files import create_experiment_dir
 
-@unittest.skip
 class TestCRM(unittest.TestCase):
     """
     """
@@ -62,6 +61,7 @@ class TestCRM(unittest.TestCase):
         print(rates_.shape)
         print(is_positive)
 
+    @unittest.skip
     def test_model_rates(self):
         config = ConditionalRateMatchingConfig()
         dataloader_0,dataloader_1 = get_dataloaders(config)
@@ -83,7 +83,7 @@ class TestCRM(unittest.TestCase):
 
 class TestCRMLoading(unittest.TestCase):
 
-
+    @unittest.skip
     def test_load(self):
         from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
 
