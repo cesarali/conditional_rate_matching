@@ -10,6 +10,8 @@ from conditional_rate_matching.utils.plots.paths_plots import histograms_per_tim
 
 from conditional_rate_matching.models.metrics.crm_path_metrics import classification_path
 import torch.nn.functional as F
+from conditional_rate_matching.models.metrics.histograms import binary_histogram_dataloader
+from conditional_rate_matching.utils.plots.histograms_plots import plot_marginals_binary_histograms
 
 key_in_dict = lambda dictionary, key: dictionary is not None and key in dictionary
 
@@ -83,5 +85,21 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
         rate_probabilities = F.softmax(rate_logits, dim=2)[:,:,1]
         histograms_per_time_step(histograms_generative,rate_probabilities,ts,save_path=plot_path)
 
+    metric_string_name = "marginal_binary_histograms"
+    if metric_string_name in metrics_to_log:
+        assert crm.config.number_of_states == 2
+        histograms_generative = generative_sample.mean(dim=0)
+
+        if key_in_dict(where_to_log,metric_string_name):
+            plot_path = where_to_log[metric_string_name]
+        else:
+            plot_path = crm.experiment_files.plot_path.format("marginal_binary_histograms_{0}".format(epoch))
+
+        histogram0 = binary_histogram_dataloader(crm.dataloader_0, dimensions=config.dimension,
+                                                 train=True, maximum_test_sample_size=config.maximum_test_sample_size)
+        histogram1 = binary_histogram_dataloader(crm.dataloader_1, dimensions=config.dimension,
+                                                 train=True, maximum_test_sample_size=config.maximum_test_sample_size)
+        marginal_histograms_tuple = (histogram0, histogram0, histogram1, histograms_generative)
+        plot_marginals_binary_histograms(marginal_histograms_tuple,plots_path=plot_path)
 
     return all_metrics

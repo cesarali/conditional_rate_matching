@@ -35,12 +35,12 @@ from conditional_rate_matching.models.generative_models.crm import (
 from conditional_rate_matching.models.pipelines.samplers import TauLeaping
 
 # metrics
-from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
 from conditional_rate_matching.models.metrics.histograms import binary_histogram_dataloader
+from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
 from conditional_rate_matching.models.metrics.crm_path_metrics import telegram_bridge_sample_paths
 
 # plots
-from conditional_rate_matching.utils.plots.histograms_plots import plot_histograms
+from conditional_rate_matching.utils.plots.histograms_plots import plot_marginals_binary_histograms
 from conditional_rate_matching.utils.plots.paths_plots import histograms_per_time_step
 
 from conditional_rate_matching.models.metrics.crm_path_metrics import (
@@ -70,8 +70,8 @@ if __name__ == "__main__":
                                              train=True, maximum_test_sample_size=config.maximum_test_sample_size)
     histogram1 = binary_histogram_dataloader(dataloader_1, dimensions=config.dimension,
                                              train=True, maximum_test_sample_size=config.maximum_test_sample_size)
-    #marginal_histograms = (histogram0, torch.zeros_like(histogram0), histogram1, torch.zeros_like(histogram1))
-    #plot_histograms(marginal_histograms)
+    marginal_histograms = (histogram0, torch.zeros_like(histogram0), histogram1, torch.zeros_like(histogram1))
+    plot_marginals_binary_histograms(marginal_histograms)
 
     X_0 = sample_from_dataloader(dataloader_0,sample_size=250).to(device)
     X_1 = sample_from_dataloader(dataloader_1,sample_size=250).to(device)

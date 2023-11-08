@@ -115,7 +115,7 @@ def plot_categorical_histogram_per_dimension(states_histogram_at_0,
             plt.savefig(save_path)
 
 
-def plot_histograms(marginal_histograms:Tuple[torch.Tensor],plots_path=None):
+def plot_marginals_binary_histograms(marginal_histograms:Tuple[torch.Tensor], plots_path=None):
     """
 
     :param marginal_histograms: List[] marginal_0,marginal_generated_0,marginal_1,marginal_noising_1
@@ -123,7 +123,7 @@ def plot_histograms(marginal_histograms:Tuple[torch.Tensor],plots_path=None):
     :return:
     """
     marginal_0,marginal_generated_0,marginal_1,marginal_noising_1 = marginal_histograms
-    marginal_0,marginal_generated_0,marginal_1,marginal_noising_1 = marginal_0.numpy(),marginal_generated_0.numpy(),marginal_1.numpy(),marginal_noising_1.numpy()
+    marginal_0,marginal_generated_0,marginal_1,marginal_noising_1 = marginal_0.detach().cpu().numpy(),marginal_generated_0.detach().cpu().numpy(),marginal_1.detach().cpu().numpy(),marginal_noising_1.detach().cpu().numpy()
 
     fig, (ax1,ax2) = plt.subplots(ncols=2,nrows=1,figsize=(12,4))
 

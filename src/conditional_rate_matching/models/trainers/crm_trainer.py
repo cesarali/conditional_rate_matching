@@ -77,9 +77,9 @@ if __name__=="__main__":
                         hidden_dim=500,
                         time_embed_dim=250,
                         batch_size=128,
-                        sample_size=60000,
+                        sample_size=500,
                         number_of_steps=100,
-                        maximum_test_sample_size=1000,
+                        maximum_test_sample_size=200,
                         num_intermediates=5)
 
     #=====================================================

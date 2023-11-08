@@ -39,7 +39,7 @@ from conditional_rate_matching.models.metrics.histograms import categorical_hist
 from conditional_rate_matching.models.metrics.histograms import binary_histogram_dataloader
 
 #plots
-from conditional_rate_matching.utils.plots.histograms_plots import plot_histograms
+from conditional_rate_matching.utils.plots.histograms_plots import plot_marginals_binary_histograms
 from conditional_rate_matching.utils.plots.histograms_plots import plot_categorical_histograms
 from conditional_rate_matching.utils.plots.histograms_plots import plot_categorical_histogram_per_dimension
 from conditional_rate_matching.utils.plots.paths_plots import histogram_per_dimension_plot

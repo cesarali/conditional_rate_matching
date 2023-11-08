@@ -75,11 +75,11 @@ class NistConfig(Config):
     as_image:bool = False
     as_spins:bool = False
 
-    maximum_test_sample_size:int=700
+    maximum_test_sample_size:int = 700
 
     pepper_threshold:float = 0.5
     data_dir:str = image_data_path
-    metrics: List[str] = field(default_factory=lambda :["mse_histograms","binary_paths_histograms"])
+    metrics: List[str] = field(default_factory=lambda :["mse_histograms","binary_paths_histograms","marginal_binary_histograms"])
 
     def __post_init__(self):
         super().__post_init__()
