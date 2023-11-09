@@ -8,6 +8,7 @@ from tqdm import tqdm
 from conditional_rate_matching.configs.config_crm import Config,NistConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
+from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
 
 from conditional_rate_matching.models.generative_models.crm import (
@@ -66,27 +67,20 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
     return loss
 
 if __name__=="__main__":
+    from conditional_rate_matching.configs.experiments.testing_state import experiment_1
+    from conditional_rate_matching.configs.experiments.testing_state import experiment_2
+    from conditional_rate_matching.configs.experiments.testing_graphs import small_community
+
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="mnist",
-                                       experiment_indentifier="save_n_loads7",
+                                       experiment_type="graph",
+                                       experiment_indentifier="save_n_loads1",
                                        delete=True)
     # Configuration
-    #config = Config(number_of_epochs=10,number_of_states=2)
-    config = NistConfig(number_of_epochs=10,
-                        hidden_dim=500,
-                        time_embed_dim=250,
-                        batch_size=128,
-                        sample_size=100,
-                        number_of_steps=100,
-                        maximum_test_sample_size=50,
-                        num_intermediates=5)
+    #config = experiment_1()
+    #config = experiment_2()
+    config = small_community()
 
-    #=====================================================
-    # DATA STUFF
-    #=====================================================
-
-    dataloader_0, dataloader_1 = get_dataloaders(config)
 
     #=========================================================
     # Initialize
@@ -115,7 +109,7 @@ if __name__=="__main__":
 
     number_of_training_steps = 0
     for epoch in tqdm_object:
-        for batch_1, batch_0 in zip(dataloader_1, dataloader_0):
+        for batch_1, batch_0 in zip(crm.dataloader_1.train(), crm.dataloader_0.train()):
 
             loss = train_step(config,crm.backward_rate,crm.loss_fn,batch_1,batch_0,optimizer,device)
             number_of_training_steps += 1

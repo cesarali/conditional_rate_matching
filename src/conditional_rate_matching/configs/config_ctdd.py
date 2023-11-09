@@ -211,14 +211,14 @@ class CTDDConfig:
                 #dataloaders for training
                 self.data.as_spins = False
                 self.data.as_image = True
-                self.data.flatten_adjacency = False
+                self.data.flatten = False
             elif isinstance(self.temp_network, UnetTauConfig):
                 raise Exception("Unet Network not implemented for Graphs (Yet)")
 
         elif isinstance(self.model, BackwardRateTemporalHollowTransformerConfig):
             self.data.as_spins = False
             self.data.as_image = False
-            self.data.flatten_adjacency = True
+            self.data.flatten = True
             if not isinstance(self.temp_network,TemporalHollowTransformerConfig):
                 self.temp_network = TemporalHollowTransformerConfig(input_vocab_size=2,
                                                                     output_vocab_size=2,

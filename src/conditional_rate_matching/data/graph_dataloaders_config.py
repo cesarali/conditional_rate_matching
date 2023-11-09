@@ -20,7 +20,7 @@ class GraphDataloaderConfig:
     vocab_size: int = 2
 
     full_adjacency: bool = True
-    flatten_adjacency: bool = True
+    flatten: bool = True
     as_image: bool= True
     init:str = None
 
@@ -28,6 +28,8 @@ class GraphDataloaderConfig:
     training_size:int = None
     test_size:int = None
     test_split: float=None
+    max_training_size:int =None
+    max_test_size:int=None
 
     temporal_net_expected_shape : List[int] = None
     preprocess_datapath:str = "graphs"
@@ -35,7 +37,7 @@ class GraphDataloaderConfig:
 
     def __post_init__(self):
         self.number_of_upper_entries = int(self.max_node_num*(self.max_node_num-1)*.5)
-        self.dimensions, self.temporal_net_expected_shape =  expected_shape(self.max_node_num, self.as_image, self.flatten_adjacency, self.full_adjacency)
+        self.dimensions, self.temporal_net_expected_shape =  expected_shape(self.max_node_num, self.as_image, self.flatten, self.full_adjacency)
         self.number_of_nodes = self.max_node_num
         self.training_proportion = 1. - self.test_split
 

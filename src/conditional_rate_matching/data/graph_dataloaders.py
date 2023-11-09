@@ -11,7 +11,7 @@ from conditional_rate_matching.data.graph_dataloaders_config import CommunityCon
 import torchvision.transforms as transforms
 from torchvision.datasets import MNIST, CIFAR10
 from abc import abstractmethod
-
+from torch.utils.data import Subset
 
 from conditional_rate_matching.data.transforms import (
     FlattenTransform,
@@ -39,8 +39,7 @@ def get_transforms(config:GraphDataloaderConfig):
 
     :return: transform_list,inverse_transform_list
     """
-
-    if config.flatten_adjacency:
+    if config.flatten:
         if config.full_adjacency:
             if config.as_image:
                 transform_list = [FlattenTransform,UnsqueezeTensorTransform(1),UnsqueezeTensorTransform(1)]
@@ -88,6 +87,13 @@ class GraphDataloaders:
         self.transform_to_graph = transforms.Compose(inverse_transform_list)
 
         train_graph_list, test_graph_list = self.read_graph_lists()
+
+        if graph_data_config.max_training_size is not None:
+            train_graph_list = [train_graph_list[i] for i in range(graph_data_config.max_training_size)]
+
+        if graph_data_config.max_test_size is not None:
+            test_graph_list = [test_graph_list[i] for i in range(graph_data_config.max_test_size)]
+
 
         self.training_data_size = len(train_graph_list)
         self.test_data_size = len(test_graph_list)

@@ -18,7 +18,7 @@ from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backw
     beta_integral
 )
 
-from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
+from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 
 @dataclass
 class CRM:
@@ -46,7 +46,7 @@ class CRM:
         # =====================================================
         # DATA STUFF
         # =====================================================
-        self.dataloader_0, self.dataloader_1 = get_dataloaders(config)
+        self.dataloader_0, self.dataloader_1 = get_dataloaders_crm(config)
         # =========================================================
         # Initialize
         # =========================================================
@@ -81,7 +81,7 @@ class CRM:
 
         self.backward_rate.to(self.device)
 
-        self.dataloader_0, self.dataloader_1 = get_dataloaders(self.config)
+        self.dataloader_0, self.dataloader_1 = get_dataloaders_crm(self.config)
         if self.config.loss == "naive":
             self.loss_fn = nn.MSELoss()
         elif self.config.loss == "classifier":

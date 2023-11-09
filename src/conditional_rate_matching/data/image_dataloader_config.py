@@ -1,11 +1,10 @@
 import os
+from typing import List
 from pathlib import Path
 from dataclasses import dataclass,field
-from typing import List
-from graph_bridges import data_path
+from conditional_rate_matching import data_path
 
-data_path = Path(data_path)
-image_data_path = data_path / "raw"
+image_data_path = os.path.join(data_path,"raw")
 
 @dataclass
 class DiscreteCIFAR10Config:
@@ -30,69 +29,59 @@ class DiscreteCIFAR10Config:
     test_size:int = 10000
 
     def __post_init__(self):
-
         self.shape = [3,32,32]
         self.temporal_net_expected_shape = self.shape
         self.D = self.C * self.H * self.W
         self.S = 256
         self.data_min_max = [0,255]
 
+
 @dataclass
 class NISTLoaderConfig:
     name:str = "NISTLoader"
-    data:str = "mnist" # emnist, fashion, mnist
-    dataloader_data_dir:str = None
-    dir:str = None
+    dataset_name:str = "mnist" # emnist, fashion, mnist
+    batch_size: int= 23
+    data_dir:str = image_data_path
 
-    input_dim: int = 784
-    batch_size: int = 32
-    delete_data:bool = False
+    max_node_num: int = None
+    max_feat_num: int = None
+
+    dimensions: int = None
+    vocab_size: int = 2
+
     pepper_threshold: float = 0.5
+    flatten: bool = True
+    as_image: bool = False
 
-    total_data_size:int = 70000
-    training_size:int = 60000
-    test_size:int = 10000
+    max_training_size:int = 2000
+    max_test_size:int=2000
 
-    D = 784
-    C = 1
-    S = 2
-    H = 28
-    W = 28
+    total_data_size: int = None
+    training_size: int = None
+    test_size: int = None
+    test_split: float = None
 
-    number_of_spins: int = 784
-    number_of_states: int = 2
-
-    as_image: bool = True
-    as_spins: bool = False
-    doucet: bool = True
-
-    data_min_max:List[float] = field(default_factory=lambda:[0.,1.])
+    temporal_net_expected_shape : List[int] = None
+    data_min_max: List[float] = field(default_factory=lambda:[0.,1.])
 
     def __post_init__(self):
-        from graph_bridges import data_path
-        self.dataloader_data_dir = os.path.join(data_path,"raw")
-        self.dataloader_data_dir_file = os.path.join(self.dataloader_data_dir,self.data+".tr")
-        self.dir = self.dataloader_data_dir_file
-        self.preprocess_datapath = os.path.join(data_path,"raw",self.data)
+        self.dimensions, self.temporal_net_expected_shape =  self.expected_shape(self.as_image,self.flatten)
+        self.number_of_nodes = self.max_node_num
 
-        if self.as_spins:
-            self.doucet = False
-
-        if self.doucet:
-            self.type = "doucet"
-
-        if self.as_image:
-            self.shape = [1, 28, 28]
-            self.temporal_net_expected_shape = self.shape
-            self.D = self.C * self.H * self.W
-            self.data_min_max = [0, 1]
-            self.S = 2
+    def expected_shape(self,as_image,flatten):
+        if as_image:
+            if flatten:
+                shape = [1,1,784]
+                dimensions = 784
+            else:
+                shape = [1, 28, 28]
+                dimensions = 784
         else:
-            #self.C = self.H, self.W
-            self.shape = [None,None,None]
-            self.temporal_net_expected_shape = [self.D]
-
-        if self.as_spins:
-            self.data_min_max = [-1.,1.]
-
+            if flatten:
+                shape = [784]
+                dimensions = 784
+            else:
+                shape = [28,28]
+                dimensions = 784
+        return dimensions, shape
 

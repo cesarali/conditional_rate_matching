@@ -8,9 +8,11 @@ from torchvision import transforms,datasets
 from conditional_rate_matching.data.transforms import SqueezeTransform
 from conditional_rate_matching.data.transforms import FlattenTransform
 from conditional_rate_matching.data.transforms import BinaryTensorToSpinsTransform
+from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+from torch.utils.data import Subset
 
-def get_data(dataset_name,config):
-    data_= dataset_name
+def get_data(config:NISTLoaderConfig):
+    data_= config.dataset_name
 
     batch_size = config.batch_size
     threshold = config.pepper_threshold
@@ -19,9 +21,12 @@ def get_data(dataset_name,config):
     transform = [transforms.ToTensor(),
                  transforms.Lambda(lambda x: (x > threshold).float())]
 
-    if not config.as_image:
+    if config.flatten:
         transform.append(FlattenTransform)
+
+    if not config.as_image:
         transform.append(SqueezeTransform)
+
 
     transform = transforms.Compose(transform)
 
@@ -53,6 +58,13 @@ def get_data(dataset_name,config):
     else:
         raise Exception("Data Loader Not Found!")
 
+    if config.max_training_size is not None:
+        indices = list(range(config.max_training_size))
+        train_dataset = Subset(train_dataset,indices)
+    if config.max_test_size is not None:
+        indices = list(range(config.max_test_size))
+        test_dataset = Subset(test_dataset,indices)
+
     config.training_size = len(train_dataset)
     config.test_size = len(test_dataset)
     config.total_data_size = config.training_size + config.test_size
@@ -73,22 +85,24 @@ class NISTLoader:
 
     name_ = "NISTLoader"
 
-    def __init__(self, config,device):
+    def __init__(self, config):
         self.config = config
-
         self.batch_size = config.batch_size
-        self.delete_data = config.delete_data
-        self.number_of_spins = config.data.D
-
-        self.dataloader_data_dir = config.data.dataloader_data_dir
-        self.dataloader_data_dir_path = Path(self.dataloader_data_dir)
-        self.dataloader_data_dir_file_path = Path(config.data.dataloader_data_dir_file)
 
         self.train_loader,self.test_loader = get_data(self.config)
+        self.dimensions = config.dimensions
 
     def train(self):
         return self.train_loader
 
     def test(self):
         return self.test_loader
+
+if __name__ =="__main__":
+    from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+
+    data_config = NISTLoaderConfig(flatten=False,batch_size=23)
+    dataloder,_ = get_data(data_config)
+    databatch = next(dataloder.__iter__())
+    print(databatch[0].shape)
 
