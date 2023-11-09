@@ -1,6 +1,8 @@
 import os
 from dataclasses import dataclass
+from conditional_rate_matching import data_path
 
+image_data_path = os.path.join(data_path,"raw")
 @dataclass
 class Config:
 
@@ -48,9 +50,6 @@ class Config:
     def __post_init__(self):
         self.num_intermediates = int(.5*self.number_of_steps)
 
-from graph_bridges import data_path
-image_data_path = os.path.join(data_path,"raw")
-
 @dataclass
 class NistConfig(Config):
 
@@ -61,7 +60,6 @@ class NistConfig(Config):
     number_of_states:int = 2
     sample_size:int = 1000
     as_image:bool = False
-    as_spins:bool = False
 
     pepper_threshold:float = 0.5
     data_dir:str = image_data_path

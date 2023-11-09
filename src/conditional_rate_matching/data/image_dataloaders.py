@@ -22,8 +22,6 @@ def get_data(dataset_name,config):
     if not config.as_image:
         transform.append(FlattenTransform)
         transform.append(SqueezeTransform)
-    if config.as_spins:
-        transform.append(BinaryTensorToSpinsTransform)
 
     transform = transforms.Compose(transform)
 

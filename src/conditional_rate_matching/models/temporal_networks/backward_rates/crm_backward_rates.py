@@ -62,14 +62,14 @@ class ClassificationBackwardRate(nn.Module):
         super().__init__()
 
         self.config = config
-        self.S = config.number_of_states
-        self.D = config.number_of_spins
+        self.S = config.vocab_size
+        self.D = config.dimensions
         self.time_embed_dim = config.time_embed_dim
         self.hidden_layer = config.hidden_dim
         self.dimension = self.D
         self.num_states = self.S
 
-        self.expected_data_shape = [config.number_of_spins]
+        self.expected_data_shape = [config.dimensions]
         self.define_deep_models()
         self.init_weights()
         self.to(device)
@@ -129,9 +129,9 @@ class ConditionalBackwardRate(nn.Module):
     """
     def __init__(self, config, device):
         super().__init__()
-        self.expected_data_shape = [config.number_of_spins]
-        self.temporal_network = TemporalMLP(dimensions=config.number_of_spins,
-                                            number_of_states=config.number_of_states,
+        self.expected_data_shape = [config.dimensions]
+        self.temporal_network = TemporalMLP(dimensions=config.dimensions,
+                                            number_of_states=config.vocab_size,
                                             time_embed_dim=config.time_embed_dim,
                                             hidden_dim=config.hidden_dim,
                                             device=device).to(device)

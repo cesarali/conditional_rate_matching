@@ -123,7 +123,7 @@ def conditional_probability(config, x, x0, t, t0):
     t = right_time_size(t).to(x0.device)
     t0 = right_time_size(t0).to(x0.device)
 
-    S = config.number_of_states
+    S = config.vocab_size
     integral_t0 = beta_integral(config.gamma, t, t0)
 
     w_t0 = torch.exp(-S * integral_t0)
@@ -154,13 +154,13 @@ def constant_rate(config, x, t):
     batch_size = x.size(0)
     dimension = x.size(1)
 
-    rate_ = torch.full((batch_size, dimension, config.number_of_states),
+    rate_ = torch.full((batch_size, dimension, config.vocab_size),
                        config.gamma)
     return rate_
 
 def where_to_go_x(config,x):
-    x_to_go = torch.arange(0, config.number_of_states)
-    x_to_go = x_to_go[None, None, :].repeat((x.size(0), config.number_of_spins, 1)).float()
+    x_to_go = torch.arange(0, config.vocab_size)
+    x_to_go = x_to_go[None, None, :].repeat((x.size(0), config.dimensions, 1)).float()
     x_to_go = x_to_go.to(x.device)
     return x_to_go
 

@@ -13,12 +13,11 @@ class Config:
     dataset_name_0:str = "categorical_dirichlet"
     dataset_name_1:str = "categorical_dirichlet"
 
-    number_of_spins :int =  5
-    number_of_states :int = 4
+    dimensions :int = 5
+    vocab_size :int = 4
     sample_size :int = 1000
     test_split:float = .2
     as_image:bool = False
-    as_spins:bool = False
 
     dirichlet_alpha_0 :float = 100.
     dirichlet_alpha_1 :float = 0.1
@@ -69,21 +68,19 @@ class NistConfig(Config):
     dataset_name_0:str = "categorical_dirichlet"
     dataset_name_1:str = "mnist"
 
-    number_of_spins:int = 784
-    number_of_states:int = 2
+    dimensions:int = 784
+    vocab_size:int = 2
     sample_size:int = 1000
     as_image:bool = False
-    as_spins:bool = False
 
     maximum_test_sample_size:int = 700
 
     pepper_threshold:float = 0.5
     data_dir:str = image_data_path
-    metrics: List[str] = field(default_factory=lambda :["mse_histograms","binary_paths_histograms","marginal_binary_histograms"])
-
-    def __post_init__(self):
-        super().__post_init__()
-        self.dimension = self.number_of_spins
+    metrics: List[str] = field(default_factory=lambda :["mse_histograms",
+                                                        "binary_paths_histograms",
+                                                        "marginal_binary_histograms",
+                                                        "mnist_plot"])
 
 
 

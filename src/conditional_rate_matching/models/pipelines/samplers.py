@@ -24,7 +24,7 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
     number_of_paths = x_0.size(0)
     D = x_0.size(1)
-    S = config.number_of_states
+    S = config.vocab_size
     num_steps = config.number_of_steps
     min_t = 1./num_steps
     device = x_0.device

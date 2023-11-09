@@ -52,7 +52,7 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
         loss = loss_fn(model_rate, conditional_rate)
     elif config.loss == "classifier":
         model_classification = model.classify(x_1, time)
-        model_classification_ = model_classification.view(-1, config.number_of_states)
+        model_classification_ = model_classification.view(-1, config.vocab_size)
         sampled_x = sampled_x.view(-1)
         loss = loss_fn(model_classification_,
                        sampled_x)
@@ -77,9 +77,9 @@ if __name__=="__main__":
                         hidden_dim=500,
                         time_embed_dim=250,
                         batch_size=128,
-                        sample_size=500,
+                        sample_size=100,
                         number_of_steps=100,
-                        maximum_test_sample_size=200,
+                        maximum_test_sample_size=50,
                         num_intermediates=5)
 
     #=====================================================

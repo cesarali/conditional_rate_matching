@@ -19,13 +19,12 @@ class GlauberDynamics:
     """
 
     """
-
     def __init__(self, cfg:SBConfig, device,rank=None):
         ReferenceProcess.__init__(self,cfg,device)
 
         self.D = cfg.data.D
         self.S = cfg.data.S
-        self.as_spins = cfg.data.as_spins
+        self.as_spins = False
         self.gamma = cfg.reference.gamma
         self.beta = cfg.reference.beta
         self.min_t = cfg.sampler.min_t
@@ -44,7 +43,7 @@ class GlauberDynamics:
                 cfg.reference.couplings = self.hamiltonian.couplings.tolist()
             else:
                 from graph_bridges.data.spin_glass_dataloaders import simulate_fields_and_couplings
-                fields,couplings = simulate_fields_and_couplings(cfg.data.number_of_spins)
+                fields,couplings = simulate_fields_and_couplings(cfg.data.dimensions)
                 cfg.reference.fields = fields.tolist()
                 cfg.reference.couplings = couplings.tolist()
                 self.hamiltonian = ParametrizedSpinGlassHamiltonian(cfg.reference,self.device)

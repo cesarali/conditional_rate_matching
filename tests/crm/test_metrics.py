@@ -33,11 +33,11 @@ class TestHistograms(unittest.TestCase):
 
         dataloader_0,dataloader_1 = get_dataloaders(config)
 
-        histogram = categorical_histogram_dataloader(dataloader_0, config.number_of_spins, config.number_of_states)
+        histogram = categorical_histogram_dataloader(dataloader_0, config.dimensions, config.vocab_size)
 
         kHistogramPlot(config, histogram, t=0)
 
-        histogram = categorical_histogram_dataloader(dataloader_1, config.number_of_spins, config.number_of_states)
+        histogram = categorical_histogram_dataloader(dataloader_1, config.dimensions, config.vocab_size)
 
         kHistogramPlot(config, histogram, t=1)
 

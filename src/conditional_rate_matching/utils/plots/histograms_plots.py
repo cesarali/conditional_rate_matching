@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 def plot_categorical_histograms(config,histogram,t,save_path=None,show=True):
-    K = config.number_of_states
-    dimension = config.number_of_spins
+    K = config.vocab_size
+    dimension = config.dimensions
 
     # Create a single figure with subplots for each dimension
     fig, axes = plt.subplots(1, dimension, figsize=(15, 3))
@@ -153,8 +153,8 @@ def plot_marginals_binary_histograms(marginal_histograms:Tuple[torch.Tensor], pl
         plt.savefig(plots_path)
 
 def kHistogramPlot(config,histogram,t,save_path=None,show=True):
-    K = config.number_of_states
-    dimension = config.number_of_spins
+    K = config.vocab_size
+    dimension = config.dimensions
 
     # Create a single figure with subplots for each dimension
     fig, axes = plt.subplots(1, dimension, figsize=(15, 3))

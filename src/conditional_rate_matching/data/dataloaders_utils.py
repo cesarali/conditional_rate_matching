@@ -16,8 +16,8 @@ def get_dataloaders(config):
         dataloader_0,_ = sample_categorical_from_dirichlet(probs=None,
                                                            alpha=config.dirichlet_alpha_0,
                                                            sample_size=config.sample_size,
-                                                           dimension=config.number_of_spins,
-                                                           number_of_states=config.number_of_states,
+                                                           dimension=config.dimensions,
+                                                           number_of_states=config.vocab_size,
                                                            test_split=config.test_split,
                                                            batch_size=config.batch_size)
 
@@ -29,8 +29,8 @@ def get_dataloaders(config):
         dataloader_1,_ = sample_categorical_from_dirichlet(probs=None,
                                                            alpha=config.dirichlet_alpha_1,
                                                            sample_size=config.sample_size,
-                                                           dimension=config.number_of_spins,
-                                                           number_of_states=config.number_of_states,
+                                                           dimension=config.dimensions,
+                                                           number_of_states=config.vocab_size,
                                                            test_split=config.test_split,
                                                            batch_size=config.batch_size)
 

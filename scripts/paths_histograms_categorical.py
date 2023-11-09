@@ -52,7 +52,7 @@ from conditional_rate_matching.models.metrics.crm_path_metrics import (
 )
 
 if __name__=="__main__":
-    config = ConditionalRateMatchingConfig(number_of_steps=10,number_of_states=4)
+    config = ConditionalRateMatchingConfig(number_of_steps=10, vocab_size=4)
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
     #conditional model
@@ -68,8 +68,8 @@ if __name__=="__main__":
 
     # HISTOGRAMS
     sample_size = 100
-    histogram0 = categorical_histogram_dataloader(dataloader_0,config.number_of_spins,config.number_of_states,maximum_test_sample_size=config.maximum_test_sample_size)
-    histogram1 = categorical_histogram_dataloader(dataloader_1,config.number_of_spins,config.number_of_states,maximum_test_sample_size=config.maximum_test_sample_size)
+    histogram0 = categorical_histogram_dataloader(dataloader_0, config.dimensions, config.vocab_size, maximum_test_sample_size=config.maximum_test_sample_size)
+    histogram1 = categorical_histogram_dataloader(dataloader_1, config.dimensions, config.vocab_size, maximum_test_sample_size=config.maximum_test_sample_size)
     plot_categorical_histogram_per_dimension(histogram0,histogram1,torch.zeros_like(histogram0),remove_ticks=False)
 
     path_ = telegram_bridge_probability_path(config,ts,x_1,x_0)

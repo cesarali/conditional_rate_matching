@@ -33,8 +33,8 @@ class TestCRM(unittest.TestCase):
         time = torch.rand((x_0.size(0)))
         x_1,x_0 = uniform_pair_x0_x1(batch_1,batch_0)
 
-        where_to_x = torch.arange(0, config.number_of_states)
-        where_to_x = where_to_x[None, None, :].repeat((x_0.size(0), config.number_of_spins, 1)).float()
+        where_to_x = torch.arange(0, config.vocab_size)
+        where_to_x = where_to_x[None, None, :].repeat((x_0.size(0), config.dimensions, 1)).float()
         where_to_x = where_to_x.to(x_0.device)
 
         probs = conditional_probability(config, where_to_x, x_0, time, t0=0.)
@@ -83,19 +83,24 @@ class TestCRM(unittest.TestCase):
 
 class TestCRMLoading(unittest.TestCase):
 
-    @unittest.skip
     def test_load(self):
         from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+        from conditional_rate_matching.utils.plots.images_plots import mnist_grid
 
         experiment_dir = create_experiment_dir(experiment_name="crm",
                                                experiment_type="mnist",
-                                               experiment_indentifier="save_n_loads3")
+                                               experiment_indentifier="save_n_loads8")
 
         crm = CRM(experiment_dir=experiment_dir,device=torch.device("cpu"))
+        generative_sample = crm.pipeline(32)
+        mnist_grid(generative_sample)
+
+        """
         log_metrics(crm,
                     epoch=None,
                     metrics_to_log=["binary_paths_histograms"],
                     where_to_log={"binary_paths_histograms":None})
+        """
 
 
 if __name__=="__main__":
