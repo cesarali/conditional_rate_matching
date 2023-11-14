@@ -82,7 +82,6 @@ if __name__=="__main__":
     #=========================================================
     # Initialize
     #=========================================================
-    device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
     # all model
     crm = CRM(config=config,experiment_files=experiment_files)
@@ -99,7 +98,7 @@ if __name__=="__main__":
     for epoch in tqdm_object:
         for batch_1, batch_0 in zip(crm.dataloader_1.train(), crm.dataloader_0.train()):
 
-            loss = train_step(config, crm.forward_rate, crm.loss_fn, batch_1, batch_0, optimizer, device)
+            loss = train_step(config, crm.forward_rate, crm.loss_fn, batch_1, batch_0, optimizer, crm.device)
             number_of_training_steps += 1
 
             writer.add_scalar('training loss', loss.item(), number_of_training_steps)
