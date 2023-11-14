@@ -30,41 +30,25 @@ class Config:
     data0: StatesDataloaderConfig = StatesDataloaderConfig()
     data1: NISTLoaderConfig = NISTLoaderConfig()
 
-    dimensions :int = 5
-    vocab_size :int = 4
-    test_split:float = .2
-    as_image:bool = False
-
     # process
     process_name:int = "constant" # constant
     gamma:float = .9
 
-    # model
-
     # temporal network
     temporal_network: TemporalMLPConfig = TemporalMLPConfig()
-
-    time_embed_dim :int = 39
-    hidden_dim :int = 200
-
-    # rate
-    loss:str = "classifier" # classifier
-
-    # rate
 
     # training
     number_of_epochs:int = 300
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
-    maximum_test_sample_size:int=2000
     data_dir:str = image_data_path
+    learning_rate:str = 0.01
+    device:str = "cuda:0"
 
     metrics: List[str] = field(default_factory=lambda :["mse_histograms",
                                                         "kdmm",
                                                         "categorical_histograms"])
-    learning_rate = 0.01
-    batch_size :int = 5
-    device = "cuda:0"
+
 
     #pipeline
     number_of_steps:int = 20
@@ -89,14 +73,6 @@ class NistConfig(Config):
     dataset_name_0:str = "categorical_dirichlet"
     dataset_name_1:str = "mnist"
 
-    dimensions:int = 784
-    vocab_size:int = 2
-    sample_size:int = 1000
-    as_image:bool = False
-
-    maximum_test_sample_size:int = 700
-
-    pepper_threshold:float = 0.5
     data_dir:str = image_data_path
     metrics: List[str] = field(default_factory=lambda:["mse_histograms",
                                                        "binary_paths_histograms",

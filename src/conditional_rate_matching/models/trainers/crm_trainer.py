@@ -1,19 +1,19 @@
+import os
+import yaml
 import torch
 from torch import nn
 from torch.optim.adam import Adam
 from torch.utils.tensorboard import SummaryWriter
-
+from dataclasses import asdict
 from tqdm import tqdm
 
+from conditional_rate_matching import config_path
 from conditional_rate_matching.configs.config_crm import Config,NistConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
-from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
 
 from conditional_rate_matching.models.generative_models.crm import (
     CRM,
-    ClassificationBackwardRate,
     sample_x,
     uniform_pair_x0_x1
 )
@@ -23,7 +23,7 @@ def save_results(crm:CRM,
                  epoch: int = 0,
                  checkpoint: bool = False):
     RESULTS = {
-        "model": crm.backward_rate,
+        "model": crm.forward_rate,
     }
     if checkpoint:
         torch.save(RESULTS, experiment_files.best_model_path_checkpoint.format(epoch))
@@ -67,33 +67,39 @@ if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="save_n_loads3",
+                                       experiment_indentifier="save_n_loads4",
                                        delete=True)
     # Configuration
     #config = experiment_1()
     #config = experiment_2()
-    config = small_community()
+    #config = small_community()
+
+    yml_path = os.path.join(config_path, "crm", "small_community.yml")
+    with open(yml_path, 'r') as file:
+        read_data = yaml.load(file, Loader=yaml.FullLoader)
+    config = Config(**read_data)
+
     #=========================================================
     # Initialize
     #=========================================================
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-    model = ClassificationBackwardRate(config, device).to(device)
 
     # all model
     crm = CRM(config=config,experiment_files=experiment_files)
     crm.start_new_experiment()
+
     #=========================================================
     # Training
     #=========================================================
     writer = SummaryWriter(experiment_files.tensorboard_path)
-    optimizer = Adam(crm.backward_rate.parameters(), lr=config.learning_rate)
+    optimizer = Adam(crm.forward_rate.parameters(), lr=config.learning_rate)
     tqdm_object = tqdm(range(config.number_of_epochs))
 
     number_of_training_steps = 0
     for epoch in tqdm_object:
         for batch_1, batch_0 in zip(crm.dataloader_1.train(), crm.dataloader_0.train()):
 
-            loss = train_step(config,crm.backward_rate,crm.loss_fn,batch_1,batch_0,optimizer,device)
+            loss = train_step(config, crm.forward_rate, crm.loss_fn, batch_1, batch_0, optimizer, device)
             number_of_training_steps += 1
 
             writer.add_scalar('training loss', loss.item(), number_of_training_steps)

@@ -10,7 +10,7 @@ from torch import nn
 from conditional_rate_matching.configs.config_crm import Config
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 from conditional_rate_matching.models.generative_models.crm import CRM
-from conditional_rate_matching.models.generative_models.crm import ClassificationBackwardRate
+from conditional_rate_matching.models.generative_models.crm import ClassificationForwardRate
 from conditional_rate_matching.models.generative_models.crm import ConditionalBackwardRate
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
 
@@ -22,7 +22,7 @@ class TestCRMPipeline(unittest.TestCase):
         config = Config()
         dataloader_0, dataloader_1 = get_dataloaders(config)
         config.loss = "classifier"
-        model = ClassificationBackwardRate(config, device).to(device)
+        model = ClassificationForwardRate(config, device).to(device)
 
         pipeline = CRMPipeline(config,model,dataloader_0,dataloader_1)
         x_f = pipeline(sample_size=132)

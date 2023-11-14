@@ -1,0 +1,63 @@
+data0:
+  as_image: false
+  batch_size: 128
+  bernoulli_probability: null
+  data_dir: C:\Users\cesar\Desktop\Projects\DiffusiveGenerativeModelling\Codes\conditional_rate_matching\data\raw
+  data_min_max:
+  - 0.0
+  - 1.0
+  dataset_name: categorical_dirichlet
+  dimensions: 190
+  dirichlet_alpha: 100.0
+  name: StatesDataloader
+  sample_size: 1000
+  temporal_net_expected_shape:
+  - 4
+  test_size: 200
+  test_split: 0.2
+  total_data_size: 1000
+  training_size: 800
+  vocab_size: 2
+data1:
+  as_image: false
+  batch_size: 128
+  data_dir: C:\Users\cesar\Desktop\Projects\DiffusiveGenerativeModelling\Codes\conditional_rate_matching\data\raw\graph
+  data_min_max:
+  - 0.0
+  - 1.0
+  dataset_name: community_small
+  dimensions: 190
+  flatten: true
+  full_adjacency: false
+  init: deg
+  max_feat_num: 10
+  max_node_num: 20
+  max_test_size: 2000
+  max_training_size: null
+  name: GraphDataloader
+  preprocess_datapath: graphs
+  temporal_net_expected_shape:
+  - 190
+  test_size: 20
+  test_split: 0.2
+  total_data_size: 100
+  training_size: 80
+  vocab_size: 2
+data_dir: C:\Users\cesar\Desktop\Projects\DiffusiveGenerativeModelling\Codes\conditional_rate_matching\data\raw
+device: cuda:0
+gamma: 0.9
+learning_rate: 0.0001
+metrics:
+- mse_histograms
+- binary_paths_histograms
+- marginal_binary_histograms
+num_intermediates: 10
+number_of_epochs: 300
+number_of_steps: 20
+process_name: constant
+save_metric_epochs: 150
+save_model_epochs: 150
+temporal_network:
+  hidden_dim: 500
+  name: TemporalMLP
+  time_embed_dim: 250

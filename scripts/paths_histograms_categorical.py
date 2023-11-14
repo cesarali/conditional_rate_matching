@@ -22,7 +22,7 @@ from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 #models
 from conditional_rate_matching.models.generative_models.crm import (
     ConditionalBackwardRate,
-    ClassificationBackwardRate,
+    ClassificationForwardRate,
     conditional_transition_rate,
     telegram_bridge_probability,
     conditional_probability,
@@ -57,7 +57,7 @@ if __name__=="__main__":
 
     #conditional model
     conditional_model = ConditionalBackwardRate(config, device)
-    classification_model = ClassificationBackwardRate(config, device).to(device)
+    classification_model = ClassificationForwardRate(config, device).to(device)
 
     # data
     dataloader_0, dataloader_1 = get_dataloaders(config)

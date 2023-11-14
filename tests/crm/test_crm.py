@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from conditional_rate_matching.models.generative_models.crm import (
     CRM,
     ConditionalBackwardRate,
-    ClassificationBackwardRate
+    ClassificationForwardRate
 )
 
 from conditional_rate_matching.configs.config_files import create_experiment_dir
@@ -49,7 +49,7 @@ class TestCRM(unittest.TestCase):
         device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
         config.loss = "classifier"
 
-        model = ClassificationBackwardRate(config, device).to(device)
+        model = ClassificationForwardRate(config, device).to(device)
 
         batch_1, batch_0 = next(zip(dataloader_1, dataloader_0).__iter__())
         x_0 = batch_0[0].to(device)

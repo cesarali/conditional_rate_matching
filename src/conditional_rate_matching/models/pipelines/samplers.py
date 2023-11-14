@@ -5,12 +5,12 @@ from torch import functional as F
 from typing import Union,Tuple,List
 
 from conditional_rate_matching.configs.config_crm import Config as ConditionalRateMatchingConfig
-from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import ClassificationBackwardRate
+from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import ClassificationForwardRate
 
 
 
 def TauLeaping(config:ConditionalRateMatchingConfig,
-               rate_model:Union[ClassificationBackwardRate],
+               rate_model:Union[ClassificationForwardRate],
                x_0:torch.Tensor,
                forward=True,
                return_path=False):

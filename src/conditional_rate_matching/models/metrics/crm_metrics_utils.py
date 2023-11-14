@@ -35,7 +35,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
     else:
         dataloader = crm.dataloader_1
 
-    test_sample = sample_from_dataloader(dataloader,sample_size=config.maximum_test_sample_size).to(crm.device)
+    test_sample = sample_from_dataloader(dataloader,sample_size=config.data1.max_test_size).to(crm.device)
     generative_sample,generative_path,ts = crm.pipeline(sample_size=test_sample.shape[0],return_intermediaries=True)
     size_ = min(generative_sample.size(0),test_sample.size(0))
 
@@ -78,7 +78,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
             plot_path = where_to_log[metric_string_name]
         else:
             plot_path = crm.experiment_files.plot_path.format("binary_path_histograms_{0}".format(epoch))
-        rate_logits = classification_path(crm.backward_rate, test_sample, ts)
+        rate_logits = classification_path(crm.forward_rate, test_sample, ts)
         rate_probabilities = F.softmax(rate_logits, dim=2)[:,:,1]
         histograms_per_time_step(histograms_generative,rate_probabilities,ts,save_path=plot_path)
 
@@ -93,9 +93,9 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
             plot_path = crm.experiment_files.plot_path.format("marginal_binary_histograms_{0}".format(epoch))
 
         histogram0 = binary_histogram_dataloader(crm.dataloader_0, dimensions=config.dimensions,
-                                                 train=True, maximum_test_sample_size=config.maximum_test_sample_size)
+                                                 train=True, maximum_test_sample_size=config.data1.max_test_size)
         histogram1 = binary_histogram_dataloader(crm.dataloader_1, dimensions=config.dimensions,
-                                                 train=True, maximum_test_sample_size=config.maximum_test_sample_size)
+                                                 train=True, maximum_test_sample_size=config.data1.max_test_size)
         marginal_histograms_tuple = (histogram0, histogram0, histogram1, histograms_generative)
         plot_marginals_binary_histograms(marginal_histograms_tuple,plots_path=plot_path)
 

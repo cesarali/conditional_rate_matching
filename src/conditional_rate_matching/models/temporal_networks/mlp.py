@@ -29,8 +29,8 @@ class TemporalMLP(nn.Module):
     """
     def __init__(self, config:Config,device):
         super().__init__()
-        self.dimensions = config.dimensions
-        self.vocab_size = config.vocab_size
+        self.dimensions = config.data1.dimensions
+        self.vocab_size = config.data1.vocab_size
         self.define_deep_models(config)
         self.init_weights()
         self.to(device)

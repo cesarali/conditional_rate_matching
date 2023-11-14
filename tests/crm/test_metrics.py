@@ -19,7 +19,7 @@ from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 from torch.utils.data import DataLoader, TensorDataset
 from conditional_rate_matching.models.generative_models.crm import (
     ConditionalBackwardRate,
-    ClassificationBackwardRate
+    ClassificationForwardRate
 )
 from conditional_rate_matching.utils.plots.histograms_plots import kHistogramPlot
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader

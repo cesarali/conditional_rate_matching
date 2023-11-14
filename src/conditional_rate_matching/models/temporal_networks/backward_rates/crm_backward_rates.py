@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
 from torch.nn.functional import softplus,softmax
+from conditional_rate_matching.configs.config_crm import Config
 
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
 
@@ -21,16 +22,16 @@ def beta_integral(gamma, t1, t0):
     return integral
 
 
-class ClassificationBackwardRate(nn.Module):
+class ClassificationForwardRate(nn.Module):
 
-    def __init__(self, config, device):
+    def __init__(self, config:Config, device):
         super().__init__()
 
         self.config = config
-        self.vocab_size = config.vocab_size
-        self.dimensions = config.dimensions
+        self.vocab_size = config.data1.vocab_size
+        self.dimensions = config.data1.dimensions
 
-        self.expected_data_shape = [config.dimensions]
+        self.expected_data_shape = [config.data1.dimensions]
         self.define_deep_models(config,device)
         self.to(device)
 

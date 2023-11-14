@@ -13,7 +13,7 @@ from conditional_rate_matching.configs.config_crm import Config,NistConfig
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
 
 from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import (
-    ClassificationBackwardRate,
+    ClassificationForwardRate,
     beta_integral
 )
 
@@ -27,13 +27,13 @@ class CRM:
     experiment_files: ExperimentFiles = None
     dataloader_0: DataLoader = None
     dataloader_1: DataLoader = None
-    backward_rate: Union[ClassificationBackwardRate] = None
+    forward_rate: Union[ClassificationForwardRate] = None
     pipeline:CRMPipeline = None
     device: torch.device = None
 
     def __post_init__(self):
         if self.dataloader_0 is not None:
-            self.pipeline = CRMPipeline(self.config,self.backward_rate,self.dataloader_0,self.dataloader_1)
+            self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
         else:
             if self.experiment_dir is not None:
                 self.load_from_experiment(self.experiment_dir,self.device)
@@ -53,14 +53,14 @@ class CRM:
         else:
             self.device = device
 
-        self.backward_rate = ClassificationBackwardRate(config, self.device).to(self.device)
+        self.forward_rate = ClassificationForwardRate(config, self.device).to(self.device)
         self.loss_fn = nn.CrossEntropyLoss()
-        self.pipeline = CRMPipeline(self.config, self.backward_rate, self.dataloader_0, self.dataloader_1)
+        self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
 
     def load_from_experiment(self,experiment_dir,device=None):
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
         results_ = self.experiment_files.load_results()
-        self.backward_rate = results_["model"]
+        self.forward_rate = results_["model"]
 
         config_path_json = json.load(open(self.experiment_files.config_path, "r"))
         if hasattr(config_path_json,"delete"):
@@ -72,12 +72,12 @@ class CRM:
         else:
             self.device = device
 
-        self.backward_rate.to(self.device)
+        self.forward_rate.to(self.device)
 
         self.dataloader_0, self.dataloader_1 = get_dataloaders_crm(self.config)
 
         self.loss_fn = nn.CrossEntropyLoss()
-        self.pipeline = CRMPipeline(self.config, self.backward_rate, self.dataloader_0, self.dataloader_1)
+        self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
 
     def start_new_experiment(self):
         #create directories
