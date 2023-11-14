@@ -13,10 +13,8 @@ from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metri
 
 from conditional_rate_matching.models.generative_models.crm import (
     CRM,
-    ConditionalBackwardRate,
     ClassificationBackwardRate,
     sample_x,
-    conditional_transition_rate,
     uniform_pair_x0_x1
 )
 
@@ -40,23 +38,18 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
     x_0 = x_0.float().to(device)
     x_1 = x_1.float().to(device)
 
+    # time selection
     batch_size = x_0.size(0)
     time = torch.rand(batch_size).to(device)
 
     # sample x from z
     sampled_x = sample_x(config, x_1, x_0, time)
 
-    # conditional rate
-    if config.loss == "naive":
-        conditional_rate = conditional_transition_rate(config, sampled_x, x_1, time)
-        model_rate = model(sampled_x.float(), time)
-        loss = loss_fn(model_rate, conditional_rate)
-    elif config.loss == "classifier":
-        model_classification = model.classify(x_1, time)
-        model_classification_ = model_classification.view(-1, config.vocab_size)
-        sampled_x = sampled_x.view(-1)
-        loss = loss_fn(model_classification_,
-                       sampled_x)
+    #LOSS
+    model_classification = model.classify(x_1, time)
+    model_classification_ = model_classification.view(-1, config.vocab_size)
+    sampled_x = sampled_x.view(-1)
+    loss = loss_fn(model_classification_,sampled_x)
 
     # optimization
     optimizer.zero_grad()
@@ -74,32 +67,21 @@ if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="save_n_loads1",
+                                       experiment_indentifier="save_n_loads3",
                                        delete=True)
     # Configuration
     #config = experiment_1()
     #config = experiment_2()
     config = small_community()
-
-
     #=========================================================
     # Initialize
     #=========================================================
-
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-    config.loss = "classifier"
-
-    if config.loss == "naive":
-        model = ConditionalBackwardRate(config, device)
-        loss_fn = nn.MSELoss()
-    elif config.loss == "classifier":
-        model = ClassificationBackwardRate(config, device).to(device)
-        loss_fn = nn.CrossEntropyLoss()
+    model = ClassificationBackwardRate(config, device).to(device)
 
     # all model
     crm = CRM(config=config,experiment_files=experiment_files)
     crm.start_new_experiment()
-
     #=========================================================
     # Training
     #=========================================================

@@ -14,7 +14,7 @@ class ReferenceProcess:
 
     """
     def __init__(self, config:Union[SBConfig,CTDDConfig], device):
-        self.S = config.data.S
+        self.S = config.data.vocab_size
         self.D = config.data.D
         self.eps_ratio = config.sampler.eps_ratio
         self.device = device
@@ -158,7 +158,7 @@ class ReferenceProcess:
 class GaussianTargetRate(ReferenceProcess):
     def __init__(self, cfg:Union[SBConfig,CTDDConfig], device,rank=None):
         ReferenceProcess.__init__(self,cfg,device)
-        self.S = S = cfg.data.S
+        self.S = S = cfg.data.vocab_size
         self.rate_sigma = cfg.reference.rate_sigma
         self.Q_sigma = cfg.reference.Q_sigma
         self.time_exponential = cfg.reference.time_exponential

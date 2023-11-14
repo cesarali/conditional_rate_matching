@@ -13,7 +13,6 @@ from conditional_rate_matching.configs.config_crm import Config,NistConfig
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
 
 from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import (
-    ConditionalBackwardRate,
     ClassificationBackwardRate,
     beta_integral
 )
@@ -28,10 +27,9 @@ class CRM:
     experiment_files: ExperimentFiles = None
     dataloader_0: DataLoader = None
     dataloader_1: DataLoader = None
-    backward_rate: Union[ConditionalBackwardRate,ClassificationBackwardRate] = None
+    backward_rate: Union[ClassificationBackwardRate] = None
     pipeline:CRMPipeline = None
     device: torch.device = None
-
 
     def __post_init__(self):
         if self.dataloader_0 is not None:
@@ -55,13 +53,8 @@ class CRM:
         else:
             self.device = device
 
-        if config.loss == "naive":
-            self.backward_rate = ConditionalBackwardRate(config, self.device)
-            self.loss_fn = nn.MSELoss()
-        elif config.loss == "classifier":
-            self.backward_rate = ClassificationBackwardRate(config, self.device).to(self.device)
-            self.loss_fn = nn.CrossEntropyLoss()
-
+        self.backward_rate = ClassificationBackwardRate(config, self.device).to(self.device)
+        self.loss_fn = nn.CrossEntropyLoss()
         self.pipeline = CRMPipeline(self.config, self.backward_rate, self.dataloader_0, self.dataloader_1)
 
     def load_from_experiment(self,experiment_dir,device=None):
@@ -82,11 +75,8 @@ class CRM:
         self.backward_rate.to(self.device)
 
         self.dataloader_0, self.dataloader_1 = get_dataloaders_crm(self.config)
-        if self.config.loss == "naive":
-            self.loss_fn = nn.MSELoss()
-        elif self.config.loss == "classifier":
-            self.loss_fn = nn.CrossEntropyLoss()
 
+        self.loss_fn = nn.CrossEntropyLoss()
         self.pipeline = CRMPipeline(self.config, self.backward_rate, self.dataloader_0, self.dataloader_1)
 
     def start_new_experiment(self):
@@ -103,7 +93,6 @@ class CRM:
 
     def align_configs(self):
         pass
-
 
 def conditional_probability(config, x, x0, t, t0):
     """

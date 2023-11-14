@@ -1,10 +1,7 @@
-import torch
-
 from conditional_rate_matching.models.pipelines.samplers import TauLeaping
 
 from conditional_rate_matching.utils.devices import check_model_devices
 from conditional_rate_matching.models.pipelines.samplers_utils import sample_from_dataloader
-
 
 class CRMPipeline:
     """
@@ -41,13 +38,9 @@ class CRMPipeline:
             return_path = False
 
         x_0 = self.get_x0_sample(sample_size=sample_size,train=train).to(self.device)
-        rate_model = self.model
-        x_f, x_hist, x0_hist,ts = TauLeaping(self.config, rate_model, x_0, forward=True,return_path=return_path)
+        x_f, x_hist, x0_hist,ts = TauLeaping(self.config, self.model, x_0, forward=True,return_path=return_path)
+
         if return_path or return_intermediaries:
             return x_f,x_hist,ts
         else:
             return x_f
-
-
-
-

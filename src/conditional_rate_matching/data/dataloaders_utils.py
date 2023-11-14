@@ -1,4 +1,4 @@
-from conditional_rate_matching.configs.config_crm import ConfigNew
+from conditional_rate_matching.configs.config_crm import Config
 from conditional_rate_matching.data.image_dataloaders import get_data
 from conditional_rate_matching.data.states_dataloaders import sample_categorical_from_dirichlet
 
@@ -48,7 +48,7 @@ def get_dataloaders(config):
 
     return dataloader_0,dataloader_1
 
-def get_dataloaders_crm(config:ConfigNew):
+def get_dataloaders_crm(config:Config):
     """
 
     :param config:

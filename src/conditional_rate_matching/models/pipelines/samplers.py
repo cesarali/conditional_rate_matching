@@ -5,12 +5,12 @@ from torch import functional as F
 from typing import Union,Tuple,List
 
 from conditional_rate_matching.configs.config_crm import Config as ConditionalRateMatchingConfig
-from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import ConditionalBackwardRate
+from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import ClassificationBackwardRate
 
 
 
 def TauLeaping(config:ConditionalRateMatchingConfig,
-               rate_model:Union[ConditionalBackwardRate],
+               rate_model:Union[ClassificationBackwardRate],
                x_0:torch.Tensor,
                forward=True,
                return_path=False):
@@ -47,8 +47,7 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
         counter = 0
         for idx, t in tqdm(enumerate(ts[0:-1])):
-            #if t in save_ts:
-            #    print("Hey")
+
             h = min_t
             times = t * torch.ones(number_of_paths,).to(device)
             reverse_rates = rate_model(x,times) # (N, D, S)

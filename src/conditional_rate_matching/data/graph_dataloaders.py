@@ -3,15 +3,13 @@ import torch
 import pickle
 import numpy as np
 import networkx as nx
+from torchtyping import TensorType
 from typing import List,Dict,Tuple,Union
 from torch.utils.data import TensorDataset, DataLoader
 from conditional_rate_matching.utils.graph_utils import init_features, graphs_to_tensor
-from torchtyping import TensorType
-from conditional_rate_matching.data.graph_dataloaders_config import CommunityConfig, GraphDataloaderConfig
+from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 import torchvision.transforms as transforms
-from torchvision.datasets import MNIST, CIFAR10
-from abc import abstractmethod
-from torch.utils.data import Subset
+
 
 from conditional_rate_matching.data.transforms import (
     FlattenTransform,
@@ -19,9 +17,7 @@ from conditional_rate_matching.data.transforms import (
     SqueezeTransform,
     UnFlattenTransform,
     FromUpperDiagonalTransform,
-    ToUpperDiagonalIndicesTransform,
-    BinaryTensorToSpinsTransform,
-    SpinsToBinaryTensor
+    ToUpperDiagonalIndicesTransform
 )
 
 def from_networkx_to_spins(graph_,upper_diagonal_indices,full_adjacency=False):
@@ -89,10 +85,10 @@ class GraphDataloaders:
         train_graph_list, test_graph_list = self.read_graph_lists()
 
         if graph_data_config.max_training_size is not None:
-            train_graph_list = [train_graph_list[i] for i in range(graph_data_config.max_training_size)]
+            train_graph_list = [train_graph_list[i] for i in range(min(graph_data_config.max_training_size,len(train_graph_list)))]
 
         if graph_data_config.max_test_size is not None:
-            test_graph_list = [test_graph_list[i] for i in range(graph_data_config.max_test_size)]
+            test_graph_list = [test_graph_list[i] for i in range(min(graph_data_config.max_test_size,len(test_graph_list)))]
 
 
         self.training_data_size = len(train_graph_list)

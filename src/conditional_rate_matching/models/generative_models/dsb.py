@@ -28,7 +28,7 @@ class SchrodingerBridgeBackwardRate(EMA,nn.Module):
         # DATA
         self.temporal_network_shape = torch.Size(config.data.temporal_net_expected_shape)
         self.dimension = config.data.D
-        self.num_spin_states = config.data.S
+        self.num_spin_states = config.data.vocab_size
 
         if self.num_spin_states != 2:
             raise Exception("Schrodinger Bridge Implemented for Spins Only")

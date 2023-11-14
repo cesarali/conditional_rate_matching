@@ -1,6 +1,6 @@
 from pprint import pprint
 from dataclasses import asdict
-from conditional_rate_matching.configs.config_crm import ConfigNew
+from conditional_rate_matching.configs.config_crm import Config
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
@@ -12,7 +12,7 @@ def experiment_1():
 
     :return:
     """
-    crm_config = ConfigNew(metrics=["mse_histograms",
+    crm_config = Config(metrics=["mse_histograms",
                                     "binary_paths_histograms",
                                     "marginal_binary_histograms",
                                     "mnist_plot"])
@@ -26,7 +26,7 @@ def experiment_2():
 
     :return:
     """
-    crm_config = ConfigNew(metrics=["mse_histograms",
+    crm_config = Config(metrics=["mse_histograms",
                                     "binary_paths_histograms",
                                     "marginal_binary_histograms",
                                     "mnist_plot"])

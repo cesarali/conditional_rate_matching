@@ -197,7 +197,7 @@ class CTDDConfig:
         from conditional_rate_matching.models.backward_rates.ctdd_backward_rate_config import GaussianTargetRateImageX0PredEMAConfig
 
         from conditional_rate_matching.models.temporal_networks.convnets.autoencoder import ConvNetAutoencoderConfig
-        from conditional_rate_matching.models.temporal_networks.mlp.temporal_mlp import TemporalMLPConfig
+        from conditional_rate_matching.models.temporal_networks.mnist_convnet.temporal_mlp import TemporalMLPConfig
         from conditional_rate_matching.models.temporal_networks.unets.unet_wrapper import UnetTauConfig
 
         if isinstance(self.model,BackRateMLPConfig):

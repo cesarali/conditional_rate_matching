@@ -80,7 +80,7 @@ if __name__=="__main__":
     dataloader_0,dataloader_1 = get_dataloaders(config)
     rate_model = lambda x, t: constant_rate(config, x, t)
 
-    x_path,ts =  next(paths_iterators_train(config,dataloader_0,rate_model,forward=True,train=True).__iter__())
+    x_path,ts = next(paths_iterators_train(config,dataloader_0,rate_model,forward=True,train=True).__iter__())
     print(x_path.shape)
     print(ts.shape)
 
