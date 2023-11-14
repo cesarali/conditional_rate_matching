@@ -12,6 +12,7 @@ class StatesDataloaderConfig:
     batch_size: int= 23
     data_dir:str = image_data_path
 
+    max_test_size: int = 300
     sample_size :int = 1000
     dirichlet_alpha :float = 100.
     bernoulli_probability:float = None

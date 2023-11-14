@@ -67,17 +67,12 @@ if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="save_n_loads4",
+                                       experiment_indentifier="dario",
                                        delete=True)
     # Configuration
     #config = experiment_1()
-    #config = experiment_2()
+    config = experiment_2()
     #config = small_community()
-
-    yml_path = os.path.join(config_path, "crm", "small_community.yml")
-    with open(yml_path, 'r') as file:
-        read_data = yaml.load(file, Loader=yaml.FullLoader)
-    config = Config(**read_data)
 
     #=========================================================
     # Initialize

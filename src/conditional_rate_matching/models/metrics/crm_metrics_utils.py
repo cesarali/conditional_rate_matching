@@ -57,12 +57,12 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
 
     metric_string_name = "categorical_histograms"
     if metric_string_name in metrics_to_log:
-        histogram0 = categorical_histogram_dataloader(crm.dataloader_0, config.dimensions, config.vocab_size,
-                                                      maximum_test_sample_size=config.maximum_test_sample_size)
-        histogram1 = categorical_histogram_dataloader(crm.dataloader_1, config.dimensions, config.vocab_size,
-                                                      maximum_test_sample_size=config.maximum_test_sample_size)
+        histogram0 = categorical_histogram_dataloader(crm.dataloader_0, config.data1.dimensions, config.data1.vocab_size,
+                                                      maximum_test_sample_size=config.data1.max_test_size)
+        histogram1 = categorical_histogram_dataloader(crm.dataloader_1, config.data1.dimensions, config.data1.vocab_size,
+                                                      maximum_test_sample_size=config.data1.max_test_size)
 
-        generative_histogram = F.one_hot(generative_sample.long(), config.vocab_size).sum(axis=0)
+        generative_histogram = F.one_hot(generative_sample.long(), config.data1.vocab_size).sum(axis=0)
         generative_histogram = generative_histogram/generative_sample.size(0)
         if key_in_dict(where_to_log,metric_string_name):
             plot_path = where_to_log[metric_string_name]

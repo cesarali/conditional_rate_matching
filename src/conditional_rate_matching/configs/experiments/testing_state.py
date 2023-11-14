@@ -27,11 +27,11 @@ def experiment_2():
     :return:
     """
     crm_config = Config(metrics=["mse_histograms",
-                                    "binary_paths_histograms",
-                                    "marginal_binary_histograms",
-                                    "mnist_plot"])
-    crm_config.data0 = StatesDataloaderConfig(dimensions=4,dirichlet_alpha=100.)
-    crm_config.data1 = StatesDataloaderConfig(dimensions=4,dirichlet_alpha=0.01)
+                                "categorical_histograms"],
+                        number_of_epochs=100)
+    crm_config.data0 = StatesDataloaderConfig(dimensions=4,vocab_size=5,dirichlet_alpha=100.)
+    crm_config.data1 = StatesDataloaderConfig(dimensions=4,vocab_size=5,dirichlet_alpha=0.01)
+
 
     return crm_config
 
