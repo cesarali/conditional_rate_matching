@@ -29,8 +29,17 @@ def save_results(crm:CRM,
 def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
     # data pair and time sample
     x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
+
     x_0 = x_0.float().to(device)
     x_1 = x_1.float().to(device)
+
+    if len(x_0.shape) > 2:
+        batch_size = x_0.size(0)
+        x_0 = x_0.reshape(batch_size,-1)
+
+    if len(x_1.shape) > 2:
+        batch_size = x_1.size(0)
+        x_1 = x_1.reshape(batch_size,-1)
 
     # time selection
     batch_size = x_0.size(0)
@@ -55,17 +64,18 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
 
 if __name__=="__main__":
     from experiments.testing_Kstate import experiment_kStates
-    from experiments.testing_MNIST import experiment_MNIST
+    from experiments.testing_MNIST import experiment_MNIST,experiment_MNIST_Convnet
     from experiments.testing_graphs import small_community
 
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="mnist",
-                                       experiment_indentifier="dario2",
+                                       experiment_indentifier="convnet2",
                                        delete=True)
     # Configuration
-    config = experiment_MNIST(max_training_size=1000)
-
+    #config = experiment_MNIST(max_training_size=1000)
+    config = experiment_MNIST_Convnet(max_training_size=60000,max_test_size=10000)
+    config.trainer.device = "cpu"
     #config = experiment_kStates()
     #config = small_community()
 

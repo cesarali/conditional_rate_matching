@@ -12,7 +12,7 @@ from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.configs.config_crm import Config,NistConfig
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
 
-from conditional_rate_matching.models.temporal_networks.backward_rates.crm_backward_rates import (
+from conditional_rate_matching.models.temporal_networks.rates.crm_rates import (
     ClassificationForwardRate,
     beta_integral
 )

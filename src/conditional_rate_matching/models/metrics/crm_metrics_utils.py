@@ -92,9 +92,9 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
         else:
             plot_path = crm.experiment_files.plot_path.format("marginal_binary_histograms_{0}".format(epoch))
 
-        histogram0 = binary_histogram_dataloader(crm.dataloader_0, dimensions=config.dimensions,
+        histogram0 = binary_histogram_dataloader(crm.dataloader_0, dimensions=config.data1.dimensions,
                                                  train=True, maximum_test_sample_size=config.data1.max_test_size)
-        histogram1 = binary_histogram_dataloader(crm.dataloader_1, dimensions=config.dimensions,
+        histogram1 = binary_histogram_dataloader(crm.dataloader_1, dimensions=config.data1.dimensions,
                                                  train=True, maximum_test_sample_size=config.data1.max_test_size)
         marginal_histograms_tuple = (histogram0, histogram0, histogram1, histograms_generative)
         plot_marginals_binary_histograms(marginal_histograms_tuple,plots_path=plot_path)

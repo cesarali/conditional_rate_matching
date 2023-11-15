@@ -3,7 +3,7 @@ from conditional_rate_matching.configs.config_crm import Config
 from conditional_rate_matching.configs.config_crm import NistConfig
 from conditional_rate_matching.models.pipelines.samplers import TauLeaping
 
-def sample_from_dataloader(dataloder_iterator,sample_size):
+def sample_from_dataloader(dataloder_iterator,sample_size,flatten=True):
     size_left = sample_size
     x_0 = []
     for databath in dataloder_iterator:
@@ -15,6 +15,8 @@ def sample_from_dataloader(dataloder_iterator,sample_size):
         if size_left == 0:
             break
     x_0 = torch.vstack(x_0)
+    sample_size = x_0.size(0)
+    x_0 = x_0.reshape(sample_size,-1)
     return x_0
 
 def paths_iterators(config,dataloader,rate_model,forward=True,train=True):
