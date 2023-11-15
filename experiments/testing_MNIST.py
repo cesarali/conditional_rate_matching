@@ -43,7 +43,7 @@ def experiment_MNIST_Convnet(max_training_size=60000,max_test_size=5000):
     crm_config = Config()
     crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms","binary_paths_histograms",
                                                      "marginal_binary_histograms","mnist_plot"],
-                                            number_of_epochs=10)
+                                            number_of_epochs=4)
 
     crm_config.data1 = NISTLoaderConfig(batch_size=128,
                                         max_training_size=max_training_size,
@@ -54,7 +54,7 @@ def experiment_MNIST_Convnet(max_training_size=60000,max_test_size=5000):
     crm_config.data0 = StatesDataloaderConfig(dimensions=784,
                                               dirichlet_alpha=100.,
                                               batch_size=128,
-                                              sample_size=max_training_size,
+                                              sample_size=max_training_size*10,
                                               max_test_size=max_test_size)
 
     crm_config.temporal_network = ConvNetAutoencoderConfig()

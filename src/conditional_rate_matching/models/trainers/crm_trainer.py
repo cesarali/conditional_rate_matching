@@ -69,15 +69,14 @@ if __name__=="__main__":
 
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="mnist",
-                                       experiment_indentifier="convnet2",
+                                       experiment_type="graph",
+                                       experiment_indentifier="desi",
                                        delete=True)
     # Configuration
     #config = experiment_MNIST(max_training_size=1000)
-    config = experiment_MNIST_Convnet(max_training_size=60000,max_test_size=10000)
-    config.trainer.device = "cpu"
+    #config = experiment_MNIST_Convnet(max_training_size=5000,max_test_size=2000)
     #config = experiment_kStates()
-    #config = small_community()
+    config = small_community()
 
     #=========================================================
     # Initialize

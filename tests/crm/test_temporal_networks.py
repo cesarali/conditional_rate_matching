@@ -7,7 +7,7 @@ from experiments.testing_MNIST import experiment_MNIST_Convnet, experiment_MNIST
 class TestMNISTConvNet(unittest.TestCase):
 
     def test_Convnet(self):
-        config = experiment_MNIST_Convnet()
+        config = experiment_MNIST_Convnet(max_test_size=20000,max_training_size=60000)
         crm = CRM(config=config)
 
         databatch = next(crm.dataloader_1.train().__iter__())
@@ -23,6 +23,9 @@ class TestMNISTConvNet(unittest.TestCase):
 
         rate = crm.forward_rate(x,t)
         print(rate.shape)
+
+        generative_sample, generative_path, ts = crm.pipeline(sample_size=1000,return_intermediaries=True)
+        print(generative_path.shape)
 
 class TestMNIST(unittest.TestCase):
 
