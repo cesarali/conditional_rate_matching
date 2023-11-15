@@ -83,9 +83,8 @@ def get_dataloaders_crm(config:Config):
 
 if __name__=="__main__":
     from pprint import pprint
-    from dataclasses import asdict
-    from conditional_rate_matching.configs.experiments.testing_state import experiment_1
-    from conditional_rate_matching.configs.experiments.testing_graphs import small_community
+    from experiments.testing_Kstate import experiment_1
+    from experiments.testing_graphs import small_community
 
     config = small_community()
     config = experiment_1()

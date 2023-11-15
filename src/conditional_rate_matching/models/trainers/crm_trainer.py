@@ -1,14 +1,8 @@
-import os
-import yaml
 import torch
-from torch import nn
+from tqdm import tqdm
 from torch.optim.adam import Adam
 from torch.utils.tensorboard import SummaryWriter
-from dataclasses import asdict
-from tqdm import tqdm
 
-from conditional_rate_matching import config_path
-from conditional_rate_matching.configs.config_crm import Config,NistConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
 
@@ -60,18 +54,19 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
     return loss
 
 if __name__=="__main__":
-    from conditional_rate_matching.configs.experiments.testing_state import experiment_1
-    from conditional_rate_matching.configs.experiments.testing_state import experiment_2
-    from conditional_rate_matching.configs.experiments.testing_graphs import small_community
+    from experiments.testing_Kstate import experiment_kStates
+    from experiments.testing_MNIST import experiment_MNIST
+    from experiments.testing_graphs import small_community
 
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="graph",
-                                       experiment_indentifier="dario",
+                                       experiment_type="mnist",
+                                       experiment_indentifier="dario2",
                                        delete=True)
     # Configuration
-    #config = experiment_1()
-    config = experiment_2()
+    config = experiment_MNIST(max_training_size=1000)
+
+    #config = experiment_kStates()
     #config = small_community()
 
     #=========================================================
@@ -86,8 +81,8 @@ if __name__=="__main__":
     # Training
     #=========================================================
     writer = SummaryWriter(experiment_files.tensorboard_path)
-    optimizer = Adam(crm.forward_rate.parameters(), lr=config.learning_rate)
-    tqdm_object = tqdm(range(config.number_of_epochs))
+    optimizer = Adam(crm.forward_rate.parameters(), lr=config.trainer.learning_rate)
+    tqdm_object = tqdm(range(config.trainer.number_of_epochs))
 
     number_of_training_steps = 0
     for epoch in tqdm_object:
@@ -101,10 +96,10 @@ if __name__=="__main__":
             tqdm_object.set_description(f"Epoch {epoch + 1}, Loss: {loss.item():.4f}")
             tqdm_object.refresh()  # to show immediately the update
 
-        if (epoch + 1) % config.save_model_epochs == 0:
+        if (epoch + 1) % config.trainer.save_model_epochs == 0:
             results = save_results(crm, experiment_files, epoch + 1, checkpoint=True)
 
-        if (epoch + 1) % config.save_metric_epochs == 0:
+        if (epoch + 1) % config.trainer.save_metric_epochs == 0:
             all_metrics = log_metrics(crm=crm, epoch=epoch + 1, writer=writer)
 
     writer.close()

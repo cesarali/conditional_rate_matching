@@ -24,8 +24,8 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
     number_of_paths = x_0.size(0)
     D = x_0.size(1)
-    S = config.vocab_size
-    num_steps = config.number_of_steps
+    S = config.data1.vocab_size
+    num_steps = config.pipeline.number_of_steps
     min_t = 1./num_steps
     device = x_0.device
 
@@ -36,7 +36,7 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
         if return_path:
             save_ts = np.concatenate((np.linspace(1.0, min_t, num_steps), np.array([0])))
         else:
-            save_ts = ts[np.linspace(0, len(ts)-2, config.num_intermediates, dtype=int)]
+            save_ts = ts[np.linspace(0, len(ts)-2, config.pipeline.num_intermediates, dtype=int)]
 
         if forward:
             ts = ts[::-1]
@@ -50,8 +50,8 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
             h = min_t
             times = t * torch.ones(number_of_paths,).to(device)
-            reverse_rates = rate_model(x,times) # (N, D, S)
-            x_0max = torch.max(reverse_rates, dim=2)[1]
+            rates = rate_model(x,times) # (N, D, S)
+            x_0max = torch.max(rates, dim=2)[1]
 
             if t in save_ts:
                 x_hist.append(x.clone().detach().unsqueeze(1))
@@ -59,7 +59,7 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
             #TAU LEAPING
             diffs = torch.arange(S, device=device).view(1,1,S) - x.view(number_of_paths,D,1)
-            poisson_dist = torch.distributions.poisson.Poisson(reverse_rates * h)
+            poisson_dist = torch.distributions.poisson.Poisson(rates * h)
             jump_nums = poisson_dist.sample().to(device)
             adj_diffs = jump_nums * diffs
             overall_jump = torch.sum(adj_diffs, dim=2)

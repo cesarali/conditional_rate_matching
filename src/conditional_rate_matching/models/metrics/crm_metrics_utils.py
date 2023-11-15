@@ -27,7 +27,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
 
     config = crm.config
     if metrics_to_log is None:
-        metrics_to_log = config.metrics
+        metrics_to_log = config.trainer.metrics
 
     #OBTAIN SAMPLES
     if hasattr(crm.dataloader_0,"test"):
@@ -72,7 +72,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
 
     metric_string_name = "binary_paths_histograms"
     if metric_string_name in metrics_to_log:
-        assert crm.config.vocab_size == 2
+        assert crm.config.data1.vocab_size == 2
         histograms_generative = generative_path.mean(axis=0)
         if key_in_dict(where_to_log,metric_string_name):
             plot_path = where_to_log[metric_string_name]
@@ -84,7 +84,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
 
     metric_string_name = "marginal_binary_histograms"
     if metric_string_name in metrics_to_log:
-        assert crm.config.vocab_size == 2
+        assert crm.config.data1.vocab_size == 2
         histograms_generative = generative_sample.mean(dim=0)
 
         if key_in_dict(where_to_log,metric_string_name):
@@ -101,7 +101,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
 
     metric_string_name = "mnist_plot"
     if metric_string_name in metrics_to_log:
-        assert crm.config.vocab_size == 2
+        assert crm.config.data1.vocab_size == 2
         if key_in_dict(where_to_log,metric_string_name):
             plot_path = where_to_log[metric_string_name]
         else:

@@ -49,7 +49,7 @@ class CRM:
         # Initialize
         # =========================================================
         if device is None:
-            self.device = torch.device(self.config.device) if torch.cuda.is_available() else torch.device("cpu")
+            self.device = torch.device(self.config.trainer.device) if torch.cuda.is_available() else torch.device("cpu")
         else:
             self.device = device
 
@@ -68,7 +68,7 @@ class CRM:
         self.config = Config(**config_path_json)
 
         if device is None:
-            self.device = torch.device(self.config.device) if torch.cuda.is_available() else torch.device("cpu")
+            self.device = torch.device(self.config.trainer.device) if torch.cuda.is_available() else torch.device("cpu")
         else:
             self.device = device
 
@@ -113,7 +113,7 @@ def conditional_probability(config, x, x0, t, t0):
     t0 = right_time_size(t0).to(x0.device)
 
     S = config.vocab_size
-    integral_t0 = beta_integral(config.gamma, t, t0)
+    integral_t0 = beta_integral(config.process.gamma, t, t0)
 
     w_t0 = torch.exp(-S * integral_t0)
 
@@ -144,7 +144,7 @@ def constant_rate(config, x, t):
     dimension = x.size(1)
 
     rate_ = torch.full((batch_size, dimension, config.vocab_size),
-                       config.gamma)
+                       config.process.gamma)
     return rate_
 
 def where_to_go_x(config,x):
