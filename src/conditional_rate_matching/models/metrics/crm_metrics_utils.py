@@ -8,11 +8,21 @@ from conditional_rate_matching.utils.plots.histograms_plots import plot_categori
 from conditional_rate_matching.models.pipelines.samplers_utils import sample_from_dataloader
 from conditional_rate_matching.utils.plots.paths_plots import histograms_per_time_step
 
-from conditional_rate_matching.models.metrics.crm_path_metrics import classification_path
 import torch.nn.functional as F
+
+from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
+from conditional_rate_matching.models.metrics.crm_path_metrics import classification_path
+
+#binary
 from conditional_rate_matching.models.metrics.histograms import binary_histogram_dataloader
 from conditional_rate_matching.utils.plots.histograms_plots import plot_marginals_binary_histograms
+
+#mnist
 from conditional_rate_matching.utils.plots.images_plots import mnist_grid
+
+#graph
+from conditional_rate_matching.models.metrics.graphs_metrics import eval_graph_list
+from conditional_rate_matching.utils.plots.graph_plots import plot_graphs_list2
 
 key_in_dict = lambda dictionary, key: dictionary is not None and key in dictionary
 
@@ -30,10 +40,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
         metrics_to_log = config.trainer.metrics
 
     #OBTAIN SAMPLES
-    if hasattr(crm.dataloader_0,"test"):
-        dataloader = crm.dataloader_1.test()
-    else:
-        dataloader = crm.dataloader_1
+    dataloader = crm.dataloader_1.test()
 
     test_sample = sample_from_dataloader(dataloader,sample_size=config.data1.max_test_size).to(crm.device)
     generative_sample,generative_path,ts = crm.pipeline(sample_size=test_sample.shape[0],return_intermediaries=True,train=False)
@@ -42,7 +49,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
     generative_sample = generative_sample[:size_]
     test_sample = test_sample[:size_]
 
-    # HISTOGRAMS
+    # HISTOGRAMS METRICS
     metric_string_name = "mse_histograms"
     if metric_string_name in metrics_to_log:
         mse_marginal_histograms = marginal_histograms(generative_sample,test_sample)
@@ -55,6 +62,29 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
         mse_metrics = {"mse_histograms_0": mse_0.item()}
         all_metrics = store_metrics(crm.experiment_files, all_metrics, new_metrics=mse_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
 
+    # GRAPHS
+    if "graphs_metrics" in metrics_to_log or "graphs_plot" in metrics_to_log:
+        if isinstance(crm.dataloader_1,GraphDataloaders):
+            test_graphs = crm.dataloader_1.sample_to_graph(test_sample)
+            generated_graphs = crm.dataloader_1.sample_to_graph(generative_sample)
+
+            metric_string_name = "graphs_metrics"
+            if metric_string_name in metrics_to_log:
+                try:
+                    graph_metrics_ = eval_graph_list(test_graphs,generated_graphs)
+                    all_metrics = store_metrics(crm.experiment_files, all_metrics, new_metrics=graph_metrics_, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
+                except:
+                    pass
+
+            metric_string_name = "graphs_plot"
+            if metric_string_name in metrics_to_log:
+                plot_path_generative = crm.experiment_files.plot_path.format("graphs_generative_{0}".format(epoch))
+                plot_path = crm.experiment_files.plot_path.format("graphs_test")
+                plot_graphs_list2(generated_graphs, title="Generative",save_dir=plot_path_generative)
+                plot_graphs_list2(test_graphs, title="Test",save_dir=plot_path)
+
+
+    # HISTOGRAMS PLOTS
     metric_string_name = "categorical_histograms"
     if metric_string_name in metrics_to_log:
         histogram0 = categorical_histogram_dataloader(crm.dataloader_0, config.data1.dimensions, config.data1.vocab_size,
@@ -99,6 +129,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
         marginal_histograms_tuple = (histogram0, histogram0, histogram1, histograms_generative)
         plot_marginals_binary_histograms(marginal_histograms_tuple,plots_path=plot_path)
 
+    #PLOTS
     metric_string_name = "mnist_plot"
     if metric_string_name in metrics_to_log:
         assert crm.config.data1.vocab_size == 2

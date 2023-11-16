@@ -73,7 +73,7 @@ class CTDDTrainerConfig:
     save_model_global_iter :int = None
     log_loss: int = 500
 
-    metrics:List[str] = field(default_factory=lambda: ["graphs", "graphs_plots", "histograms","mse_histograms"])
+    metrics:List[str] = field(default_factory=lambda: ["orca_berlin", "graphs_plots", "histograms","mse_histograms"])
 
     def __post_init__(self):
         self.save_metric_epochs = max(int(.25*self.num_epochs),1)

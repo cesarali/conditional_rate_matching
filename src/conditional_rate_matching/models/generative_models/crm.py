@@ -8,6 +8,7 @@ from typing import Union
 from dataclasses import asdict
 from torch.distributions import Categorical
 
+from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.configs.config_crm import Config,NistConfig
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
@@ -25,8 +26,8 @@ class CRM:
     experiment_dir:str = None
 
     experiment_files: ExperimentFiles = None
-    dataloader_0: DataLoader = None
-    dataloader_1: DataLoader = None
+    dataloader_0: Union[GraphDataloaders,DataLoader] = None
+    dataloader_1: Union[GraphDataloaders,DataLoader] = None
     forward_rate: Union[ClassificationForwardRate] = None
     pipeline:CRMPipeline = None
     device: torch.device = None

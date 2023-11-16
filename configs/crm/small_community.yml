@@ -35,7 +35,7 @@ data1:
   max_test_size: 2000
   max_training_size: null
   name: GraphDataloader
-  preprocess_datapath: graphs
+  preprocess_datapath: orca_berlin
   temporal_net_expected_shape:
   - 190
   test_size: 20

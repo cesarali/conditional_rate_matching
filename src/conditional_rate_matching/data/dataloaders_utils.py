@@ -84,7 +84,7 @@ def get_dataloaders_crm(config:Config):
 if __name__=="__main__":
     from pprint import pprint
     from experiments.testing_Kstate import experiment_1
-    from experiments.testing_graphs import small_community
+    from experiments import small_community
 
     config = small_community()
     config = experiment_1()

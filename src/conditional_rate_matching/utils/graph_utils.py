@@ -86,7 +86,7 @@ def gen_noise(x, flags, sym=True):
     return z
 
 
-# -------- Quantize generated graphs --------
+# -------- Quantize generated orca_berlin --------
 def quantize(adjs, thr=0.5):
     adjs_ = torch.where(adjs < thr, torch.zeros_like(adjs), torch.ones_like(adjs))
     return adjs_

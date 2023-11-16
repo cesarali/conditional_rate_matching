@@ -25,7 +25,7 @@ class ContrastiveDivergenceTrainerConfig:
     save_metric_epochs:int=1000
     constrastive_diverge_sample_size = 10
 
-    metrics:List[str] = field(default_factory=lambda:["kdmm","mse_histograms","graphs","graphs_plots"])
+    metrics:List[str] = field(default_factory=lambda:["kdmm","mse_histograms","orca_berlin","graphs_plots"])
 
     def __post_init__(self):
         self.save_model_epochs = int(.25*self.number_of_epochs)

@@ -63,20 +63,19 @@ def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
     return loss
 
 if __name__=="__main__":
-    from experiments.testing_Kstate import experiment_kStates
-    from experiments.testing_MNIST import experiment_MNIST,experiment_MNIST_Convnet
+    from experiments.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
     from experiments.testing_graphs import small_community
 
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="desi",
+                                       experiment_indentifier="graph_metrics",
                                        delete=True)
     # Configuration
     #config = experiment_MNIST(max_training_size=1000)
     #config = experiment_MNIST_Convnet(max_training_size=5000,max_test_size=2000)
     #config = experiment_kStates()
-    config = small_community()
+    config = small_community(number_of_epochs=50)
 
     #=========================================================
     # Initialize

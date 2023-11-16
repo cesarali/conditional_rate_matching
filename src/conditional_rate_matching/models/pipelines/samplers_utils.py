@@ -16,7 +16,8 @@ def sample_from_dataloader(dataloder_iterator,sample_size,flatten=True):
             break
     x_0 = torch.vstack(x_0)
     sample_size = x_0.size(0)
-    x_0 = x_0.reshape(sample_size,-1)
+    if flatten:
+        x_0 = x_0.reshape(sample_size,-1)
     return x_0
 
 def paths_iterators(config,dataloader,rate_model,forward=True,train=True):

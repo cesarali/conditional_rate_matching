@@ -133,7 +133,7 @@ class ExperimentFiles:
 
     def load_all_metrics(self,all_metrics_identifiers,checkpoint):
         """
-        ["graphs", "mse_histograms"]
+        ["orca_berlin", "mse_histograms"]
         :param checkpoint:
         :return:
         """

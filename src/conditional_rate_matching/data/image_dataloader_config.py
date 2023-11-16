@@ -20,7 +20,7 @@ class DiscreteCIFAR10Config:
 
     shape: list = None
     random_flips = True
-    preprocess_datapath:str = "graphs"
+    preprocess_datapath:str = "orca_berlin"
     doucet:bool = True
     as_spins:bool = False
 

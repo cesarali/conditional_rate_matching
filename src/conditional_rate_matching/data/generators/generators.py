@@ -8,7 +8,7 @@ import scipy.sparse as sp
 import argparse
 from pathlib import Path
 
-# -------- Generate community graphs --------
+# -------- Generate community orca_berlin --------
 def n_community(num_communities, max_nodes, p_inter=0.05):
     # -------- From Niu et al. (2020) --------
     assert num_communities > 1
@@ -82,7 +82,7 @@ class GraphGenerator:
         return graph
 
 
-# -------- Generate synthetic graphs --------
+# -------- Generate synthetic orca_berlin --------
 def gen_graph_list(graph_type='grid', possible_params_dict=None, corrupt_func=None, length=1024, save_dir=None,
                    file_name=None, max_node=None, min_node=None):
     params = locals()
@@ -130,8 +130,8 @@ def load_dataset(data_dir='data', file_name=None, need_set=False):
 # -------- load ENZYMES, PROTEIN and DD dataset --------
 def graph_load_batch(min_num_nodes=20, max_num_nodes=1000, name='ENZYMES', node_attributes=True, graph_labels=True):
     """
-    load many graphs, e.g. enzymes
-    :return: a list of graphs
+    load many orca_berlin, e.g. enzymes
+    :return: a list of orca_berlin
     """
     print('Loading graph dataset: ' + str(name))
     G = nx.Graph()
@@ -161,7 +161,7 @@ def graph_load_batch(min_num_nodes=20, max_num_nodes=1000, name='ENZYMES', node_
     print(G.number_of_nodes())
     print(G.number_of_edges())
 
-    # -------- split into graphs --------
+    # -------- split into orca_berlin --------
     graph_num = data_graph_indicator.max()
     node_list = np.arange(data_graph_indicator.shape[0]) + 1
     graphs = []

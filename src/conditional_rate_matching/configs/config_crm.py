@@ -11,7 +11,6 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     ConvNetAutoencoderConfig,
 )
 
-
 # data config
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig

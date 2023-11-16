@@ -159,6 +159,32 @@ class GraphDataloaders:
                               shuffle=True)
         return train_dl
 
+    def sample_to_graph(self, x_sample):
+        """
+        undo the transformations
+
+        :param x_sample:
+        :return:
+        """
+        sample_size = x_sample.size(0)
+        temporal_net_expected_shape = self.graph_data_config.temporal_net_expected_shape
+        expected_shape = [sample_size] + temporal_net_expected_shape
+        expected_shape = torch.Size(expected_shape)
+        if x_sample.shape != expected_shape:
+            x_sample = x_sample.reshape(expected_shape)
+        adj_matrices = self.transform_to_graph(x_sample)
+
+        # GET GRAPH FROM GENERATIVE MODEL
+        graph_list = []
+        number_of_graphs = adj_matrices.shape[0]
+        adj_matrices = adj_matrices.detach().cpu().numpy()
+        for graph_index in range(number_of_graphs):
+            graph_ = nx.from_numpy_array(adj_matrices[graph_index])
+            graph_list.append(graph_)
+
+        return graph_list
+
+
     def graph_to_tensor_and_features(self,
                                      graph_list:List[nx.Graph],
                                      init:str="zeros",

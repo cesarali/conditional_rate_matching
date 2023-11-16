@@ -32,7 +32,7 @@ class GraphDataloaderConfig:
     max_test_size:int=None
 
     temporal_net_expected_shape : List[int] = None
-    preprocess_datapath:str = "graphs"
+    preprocess_datapath:str = "orca_berlin"
     data_min_max: List[float] = field(default_factory=lambda:[0.,1.])
 
     def __post_init__(self):
