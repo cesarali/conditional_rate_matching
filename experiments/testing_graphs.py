@@ -6,7 +6,7 @@ from conditional_rate_matching.data.image_dataloaders import NISTLoader
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.graph_dataloaders_config import CommunityConfig, CommunitySmallConfig
 
-def small_community(number_of_epochs=300):
+def small_community(number_of_epochs=300,berlin=True):
     """
 
     :return:
@@ -30,10 +30,11 @@ def small_community(number_of_epochs=300):
     crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms",
                                                      "binary_paths_histograms",
                                                      "marginal_binary_histograms",
-                                                     "graphs_plot"],
-                                                     #"graphs_metrics"],
+                                                     "graphs_plot",
+                                                     "graphs_metrics"],
                                             number_of_epochs=number_of_epochs,
-                                            learning_rate = 1e-4)
+                                            learning_rate = 1e-4,
+                                            berlin=berlin)
 
     crm_config.pipeline.number_of_steps = 100
 

@@ -71,7 +71,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
             metric_string_name = "graphs_metrics"
             if metric_string_name in metrics_to_log:
                 try:
-                    graph_metrics_ = eval_graph_list(test_graphs,generated_graphs)
+                    graph_metrics_ = eval_graph_list(test_graphs,generated_graphs,windows=config.trainer.berlin)
                     all_metrics = store_metrics(crm.experiment_files, all_metrics, new_metrics=graph_metrics_, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
                 except:
                     pass
@@ -82,7 +82,6 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
                 plot_path = crm.experiment_files.plot_path.format("graphs_test")
                 plot_graphs_list2(generated_graphs, title="Generative",save_dir=plot_path_generative)
                 plot_graphs_list2(test_graphs, title="Test",save_dir=plot_path)
-
 
     # HISTOGRAMS PLOTS
     metric_string_name = "categorical_histograms"

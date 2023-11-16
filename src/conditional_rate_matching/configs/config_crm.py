@@ -34,6 +34,7 @@ class BasicTrainerConfig:
     save_metric_epochs:int = 1e6
     learning_rate:str = 0.01
     device:str = "cuda:0"
+    berlin: bool = True
 
     metrics: List[str] = field(default_factory=lambda :["mse_histograms",
                                                         "kdmm",

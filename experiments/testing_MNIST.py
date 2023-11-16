@@ -11,7 +11,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     TemporalMLPConfig
 )
 
-def experiment_MNIST(max_training_size=60000,max_test_size=5000):
+def experiment_MNIST(max_training_size=60000,max_test_size=5000,berlin=True):
     """
     MNIST EXPERIMENT
     :return:
@@ -19,7 +19,8 @@ def experiment_MNIST(max_training_size=60000,max_test_size=5000):
     crm_config = Config()
     crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms","binary_paths_histograms",
                                                      "marginal_binary_histograms","mnist_plot"],
-                                            number_of_epochs=10)
+                                            number_of_epochs=10,berlin=berlin)
+    
     crm_config.data1 = NISTLoaderConfig(batch_size=128,
                                         max_training_size=max_training_size,
                                         max_test_size=max_test_size)
@@ -35,7 +36,7 @@ def experiment_MNIST(max_training_size=60000,max_test_size=5000):
     return crm_config
 
 
-def experiment_MNIST_Convnet(max_training_size=60000,max_test_size=5000):
+def experiment_MNIST_Convnet(max_training_size=60000,max_test_size=5000,berlin=True):
     """
     MNIST EXPERIMENT
     :return:
@@ -43,7 +44,8 @@ def experiment_MNIST_Convnet(max_training_size=60000,max_test_size=5000):
     crm_config = Config()
     crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms","binary_paths_histograms",
                                                      "marginal_binary_histograms","mnist_plot"],
-                                            number_of_epochs=4)
+                                            number_of_epochs=4,
+                                            berlin=berlin)
 
     crm_config.data1 = NISTLoaderConfig(batch_size=128,
                                         max_training_size=max_training_size,

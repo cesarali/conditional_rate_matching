@@ -18,10 +18,10 @@ PRINT_TIME = True
 """
 g++ -O2 -std=c++11 -o orca_berlin orca_berlin.cpp -static-libstdc++ -static-libgcc
 """
-#C:\Users\cesar\Desktop\Projects\DiffusiveGenerativeModelling\Codes\discrete-diffusion\src\discrete_diffusion\models\graphs\evaluation\orca_berlin
 from conditional_rate_matching import project_path
 project_path = Path(project_path)
-ORCA_DIR = project_path / "src" / "conditional_rate_matching" / "models" / "metrics" / "orca_berlin"
+ORCA_DIR_BERLIN = project_path / "src" / "conditional_rate_matching" / "models" / "metrics" / "orca_berlin"
+ORCA_DIR_NJ = project_path / "src" / "conditional_rate_matching" / "models" / "metrics" / "orca_new_jersey"
 
 def read_orbit_counts(file_path):
     """
@@ -56,7 +56,7 @@ def add_tensor(x, y):
     return x + y
 
 
-def degree_stats(graph_ref_list, graph_pred_list, is_parallel=True):
+def degree_stats(graph_ref_list, graph_pred_list, windows=True,is_parallel=True):
     ''' Compute the distance between the degree distributions of two unordered sets of graphs.
     Args:
       graph_ref_list, graph_target_list: two lists of networkx graphs to be evaluated
@@ -163,7 +163,7 @@ def clustering_worker(param):
     return hist
 
 
-def clustering_stats(graph_ref_list, graph_pred_list, bins=100, is_parallel=True):
+def clustering_stats(graph_ref_list, graph_pred_list, bins=100, windows=True,is_parallel=True):
     sample_ref = []
     sample_pred = []
     graph_pred_list_remove_empty = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
@@ -209,8 +209,6 @@ motif_to_indices = {
     '3path': [1, 2],
     '4cycle': [8],
 }
-COUNT_START_STR = 'orbit counts: \n'
-COUNT_START_STR_DD = 'orbit counts: \r\n'
 
 def edge_list_reindexed(G):
     idx = 0
@@ -224,8 +222,12 @@ def edge_list_reindexed(G):
         edges.append((id2idx[str(u)], id2idx[str(v)]))
     return edges
 
-
 def orca(graph,windows=True):
+    if windows:
+        ORCA_DIR = ORCA_DIR_BERLIN
+    else:
+        ORCA_DIR = ORCA_DIR_NJ
+
     tmp_input_path = ORCA_DIR / 'tmp.txt'
     f = open(tmp_input_path, 'w')
     f.write(str(graph.number_of_nodes()) + ' ' + str(graph.number_of_edges()) + '\n')
@@ -238,6 +240,7 @@ def orca(graph,windows=True):
         result = sp.run(command, shell=True, cwd=ORCA_DIR, stdout=sp.PIPE, stderr=sp.PIPE)
     else:
         result = sp.check_output([os.path.join(ORCA_DIR, 'orca'), 'node', '4', tmp_input_path, 'tmp.out'])
+
     tmp_output_file = ORCA_DIR / "tmp.out"
     node_orbit_counts = read_orbit_counts(tmp_output_file)
 
@@ -250,7 +253,7 @@ def orca(graph,windows=True):
     return node_orbit_counts
 
 
-def orbit_stats_all(graph_ref_list, graph_pred_list):
+def orbit_stats_all(graph_ref_list, graph_pred_list,windows=True):
     total_counts_ref = []
     total_counts_pred = []
 
@@ -258,7 +261,7 @@ def orbit_stats_all(graph_ref_list, graph_pred_list):
 
     for G in graph_ref_list:
         try:
-            orbit_counts = orca(G)
+            orbit_counts = orca(G,windows)
         except Exception as e:
             print(e)
             continue
@@ -357,13 +360,13 @@ def eval_torch_batch(ref_batch, pred_batch, methods=None):
     return results
 
 
-def eval_graph_list(graph_ref_list, grad_pred_list, methods=None):
+def eval_graph_list(graph_ref_list, grad_pred_list, methods=None,windows=True):
     if methods is None:
         methods = ['degree', 'cluster', 'orbit']
     results = {}
     for method in methods:
         try:
-            results[method] = METHOD_NAME_TO_FUNC[method](graph_ref_list, grad_pred_list)
+            results[method] = METHOD_NAME_TO_FUNC[method](graph_ref_list, grad_pred_list,windows)
         except Exception as e:
             print(e)
             continue
@@ -380,6 +383,6 @@ if __name__=="__main__":
     graph_list_2 = [nx.barabasi_albert_graph(100,3) for i in range(20)]
 
     node_orbit_counts = orca(graph_list_1[0])
-    results_ = eval_graph_list(graph_list_1, graph_list_2)
+    results_ = eval_graph_list(graph_list_1, graph_list_2,methods=["orbit"],windows=True)
     print(results_)
 
