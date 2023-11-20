@@ -195,7 +195,7 @@ class CTDDScheduler(SchedulerMixin, ConfigMixin):
             [`~schedulers.scheduling_utils.DDPMSchedulerOutput`] if `return_dict` is True, otherwise a `tuple`. When
             returning a tuple, the first element is the sample tensor.
         """
-        S = self.cfg.data.S
+        S = self.cfg.data0.vocab_size
         minibatch = original_samples
         if len(minibatch.shape) == 4:
             B, C, H, W = original_samples.shape

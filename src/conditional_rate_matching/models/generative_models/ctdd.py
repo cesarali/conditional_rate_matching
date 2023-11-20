@@ -75,7 +75,7 @@ class CTDD:
         self.process = GaussianTargetRate(config, self.device)
 
         self.scheduler = CTDDScheduler(config,self.device)
-        self.loss_fn = GenericAux(config,device)
+        self.loss = GenericAux(config,device)
         self.pipeline = CTDDPipeline(self.config,self.process,self.dataloader_0,self.dataloader_1,self.scheduler)
 
     def load_from_experiment(self,experiment_dir,device=None):
@@ -97,7 +97,7 @@ class CTDD:
         self.scheduler = CTDDScheduler(self.config,self.device)
 
         self.dataloader_0, self.dataloader_1 = get_dataloaders_ctdd(self.config)
-        self.loss_fn = GenericAux(self.config,device)
+        self.loss = GenericAux(self.config,device)
         self.pipeline = CTDDPipeline(self.config,self.process,self.dataloader_0,self.dataloader_1,self.scheduler)
 
     def start_new_experiment(self):

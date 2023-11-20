@@ -1,8 +1,9 @@
 import torch
 from torch import nn
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 
 class GenericAux():
-    def __init__(self, cfg,device,rank=None):
+    def __init__(self, cfg:CTDDConfig,device:torch.device,rank=None):
         self.cfg = cfg
         self.ratio_eps = cfg.loss.eps_ratio
         self.nll_weight = cfg.loss.nll_weight
@@ -89,7 +90,7 @@ class GenericAux():
         return x_t, x_tilde,qt0,rate
 
     def first_term_of_elbo(self, minibatch,reg_x,p0t_reg,qt0,rate,device):
-        S = self.cfg.data.S
+        S = self.cfg.data0.vocab_size
         if len(minibatch.shape) == 4:
             B, C, H, W = minibatch.shape
             minibatch = minibatch.view(B, C * H * W)
@@ -128,7 +129,7 @@ class GenericAux():
         return reg_term
 
     def second_term_of_elbo(self,minibatch,p0t_sig,x_tilde,qt0,rate,device):
-        S = self.cfg.data.S
+        S = self.cfg.data0.vocab_size
         if len(minibatch.shape) == 4:
             B, C, H, W = minibatch.shape
             minibatch = minibatch.view(B, C * H * W)
@@ -190,7 +191,7 @@ class GenericAux():
 
         :return:
         """
-        S = self.cfg.data.S
+        S = self.cfg.data0.vocab_size
         if len(minibatch.shape) == 4:
             B, C, H, W = minibatch.shape
             minibatch = minibatch.view(B, C * H * W)

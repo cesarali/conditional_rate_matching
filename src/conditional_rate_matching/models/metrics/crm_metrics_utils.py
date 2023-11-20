@@ -1,5 +1,7 @@
 import torch
+from typing import Union
 from conditional_rate_matching.models.generative_models.crm import CRM
+from conditional_rate_matching.models.generative_models.ctdd import CTDD
 from conditional_rate_matching.models.metrics.metrics_utils import store_metrics
 from conditional_rate_matching.models.metrics.distances import kmmd,marginal_histograms
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
@@ -27,7 +29,7 @@ from conditional_rate_matching.utils.plots.graph_plots import plot_graphs_list2
 key_in_dict = lambda dictionary, key: dictionary is not None and key in dictionary
 
 
-def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=None):
+def log_metrics(crm: Union[CRM,CTDD],epoch, metrics_to_log=None, where_to_log=None, writer=None):
     """
     After the training procedure is done, the model is updated
 
@@ -43,7 +45,10 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
     dataloader = crm.dataloader_1.test()
 
     test_sample = sample_from_dataloader(dataloader,sample_size=config.data1.max_test_size).to(crm.device)
-    generative_sample,generative_path,ts = crm.pipeline(sample_size=test_sample.shape[0],return_intermediaries=True,train=False)
+    if isinstance(crm,CRM):
+        generative_sample,generative_path,ts = crm.pipeline(sample_size=test_sample.shape[0],return_intermediaries=True,train=False)
+    elif isinstance(crm,CTDD):
+        generative_sample = crm.pipeline(crm.backward_rate, sample_size=test_sample.shape[0], device=crm.device)
     size_ = min(generative_sample.size(0),test_sample.size(0))
 
     generative_sample = generative_sample[:size_]
@@ -101,15 +106,16 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
 
     metric_string_name = "binary_paths_histograms"
     if metric_string_name in metrics_to_log:
-        assert crm.config.data1.vocab_size == 2
-        histograms_generative = generative_path.mean(axis=0)
-        if key_in_dict(where_to_log,metric_string_name):
-            plot_path = where_to_log[metric_string_name]
-        else:
-            plot_path = crm.experiment_files.plot_path.format("binary_path_histograms_{0}".format(epoch))
-        rate_logits = classification_path(crm.forward_rate, test_sample, ts,)
-        rate_probabilities = F.softmax(rate_logits, dim=2)[:,:,1]
-        histograms_per_time_step(histograms_generative,rate_probabilities,ts,save_path=plot_path)
+        if isinstance(crm, CRM):
+            assert crm.config.data1.vocab_size == 2
+            histograms_generative = generative_path.mean(axis=0)
+            if key_in_dict(where_to_log,metric_string_name):
+                plot_path = where_to_log[metric_string_name]
+            else:
+                plot_path = crm.experiment_files.plot_path.format("binary_path_histograms_{0}".format(epoch))
+            rate_logits = classification_path(crm.forward_rate, test_sample, ts,)
+            rate_probabilities = F.softmax(rate_logits, dim=2)[:,:,1]
+            histograms_per_time_step(histograms_generative,rate_probabilities,ts,save_path=plot_path)
 
     metric_string_name = "marginal_binary_histograms"
     if metric_string_name in metrics_to_log:
@@ -138,6 +144,6 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
             plot_path = crm.experiment_files.plot_path.format("mnist_plot_{0}".format(epoch))
             plot_path2 = crm.experiment_files.plot_path.format("mnist_plot_2_{0}".format(epoch))
         mnist_grid(generative_sample,plot_path)
-        mnist_grid(generative_path[:,-1,:],plot_path2)
+        #mnist_grid(generative_path[:,-1,:],plot_path2)
 
     return all_metrics

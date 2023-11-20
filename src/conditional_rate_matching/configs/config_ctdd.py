@@ -41,9 +41,10 @@ class CTDDLossConfig:
 @dataclass
 class BasicTrainerConfig:
     number_of_epochs:int = 300
+    log_loss:int = 100
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
-    learning_rate:str = 0.001
+    learning_rate:float = 0.001
     device:str = "cuda:0"
     berlin: bool = True
     distributed: bool = False
@@ -75,7 +76,7 @@ class BasicPipelineConfig:
 class CTDDConfig:
 
     # data
-    data0: StatesDataloaderConfig = NISTLoaderConfig()
+    data0: NISTLoaderConfig = NISTLoaderConfig()
     # process
     process = GaussianTargetRateConfig = GaussianTargetRateConfig()
     # temporal network

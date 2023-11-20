@@ -1,21 +1,15 @@
-import json
 import torch
 import numpy as np
-from pathlib import Path
-from torch.optim import Adam
-
-from pprint import pprint
-from graph_bridges.models.generative_models.ctdd import CTDD
-from graph_bridges.configs.graphs.graph_config_ctdd import CTDDConfig
-from graph_bridges.models.metrics.ctdd_metrics import graph_metrics_for_ctdd
-from graph_bridges.models.metrics.ctdd_metrics import marginal_histograms_for_ctdd
-from graph_bridges.models.metrics.histograms_metrics import marginals_histograms_mse
-
-from graph_bridges.utils.plots.histograms_plots import plot_histograms
-from graph_bridges.utils.plots.graph_plots import plot_graphs_list2
-from datetime import datetime
 from tqdm import tqdm
-from graph_bridges.models.metrics.ctdd_metrics_utils import log_metrics
+from torch.optim import Adam
+from datetime import datetime
+
+from torch.utils.tensorboard import SummaryWriter
+from conditional_rate_matching.configs.config_files import ExperimentFiles
+
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.models.generative_models.ctdd import CTDD
+from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
 
 class CTDDTrainer:
     """
@@ -29,6 +23,7 @@ class CTDDTrainer:
 
     def __init__(self,
                  config:CTDDConfig,
+                 experiment_files:ExperimentFiles,
                  **kwargs):
         """
         :param paths_dataloader: contains a data distribution and a target distribution (also possibly data)
@@ -40,22 +35,21 @@ class CTDDTrainer:
              the paths_dataloader is a part of the
         """
         self.config = config
-        self.number_of_epochs = self.config.trainer.num_epochs
+        self.number_of_epochs = self.config.trainer.number_of_epochs
         device_str = self.config.trainer.device
         self.device = torch.device(device_str if torch.cuda.is_available() else "cpu")
-        self.ctdd = CTDD()
-        self.ctdd.create_new_from_config(self.config,self.device)
+        self.ctdd = CTDD(self.config,experiment_files=experiment_files,device=self.device)
 
-    def parameters_info(self, sinkhorn_iteration=0):
+    def parameters_info(self):
         print("# ==================================================")
-        print("# START OF BACKWARD RATIO TRAINING CTDD".format(sinkhorn_iteration))
+        print("# START OF BACKWARD RATIO TRAINING CTDD")
         print("# ==================================================")
 
         print("# Current Model ************************************")
 
-        print(self.config.experiment_type)
-        print(self.config.experiment_name)
-        print(self.config.experiment_indentifier)
+        print(self.ctdd.experiment_files.experiment_type)
+        print(self.ctdd.experiment_files.experiment_name)
+        print(self.ctdd.experiment_files.experiment_indentifier)
 
         print("# ==================================================")
         print("# Number of Epochs {0}".format(self.number_of_epochs))
@@ -65,29 +59,22 @@ class CTDDTrainer:
         """
         Obtains initial loss to know when to save, restart the optimizer
 
-        :param current_model:
-        :param past_to_train_model:
-        :param sinkhorn_iteration:
         :return:
         """
         self.parameters_info()
-
-        from torch.utils.tensorboard import SummaryWriter
-        self.writer = SummaryWriter(self.config.experiment_files.tensorboard_path)
+        self.ctdd.start_new_experiment()
+        self.writer = SummaryWriter(self.ctdd.experiment_files.tensorboard_path)
 
         #DEFINE OPTIMIZERS
-        self.optimizer = Adam(self.ctdd.model.parameters(), lr=self.config.trainer.learning_rate)
+        self.optimizer = Adam(self.ctdd.backward_rate.parameters(), lr=self.config.trainer.learning_rate)
 
         # CHECK DATA
-        databatch = next(self.ctdd.data_dataloader.train().__iter__())
+        databatch = next(self.ctdd.dataloader_0.train().__iter__())
         databatch = self.preprocess_data(databatch)
         #CHECK LOSS
-        initial_loss = self.train_step(self.ctdd.model, databatch, 0)
+        initial_loss = self.train_step(self.ctdd.backward_rate, databatch, 0)
         assert torch.isnan(initial_loss).any() == False
         assert torch.isinf(initial_loss).any() == False
-
-        # METRICS
-        log_metrics(self.ctdd,0,self.device)
 
         #SAVE INITIAL STUFF
         return initial_loss
@@ -105,7 +92,7 @@ class CTDDTrainer:
             # Sample a random timestep for each image
             ts = torch.rand((B,), device=self.device) * (1.0 - self.config.loss.min_time) + self.config.loss.min_time
 
-            x_t, x_tilde, qt0, rate = self.ctdd.scheduler.add_noise(x_adj, self.ctdd.reference_process, ts, self.device, return_dict=False)
+            x_t, x_tilde, qt0, rate = self.ctdd.scheduler.add_noise(x_adj, self.ctdd.process, ts, self.device, return_dict=False)
             x_logits, p0t_reg, p0t_sig, reg_x = current_model(x_adj, ts, x_tilde)
 
             self.optimizer.zero_grad()
@@ -129,7 +116,7 @@ class CTDDTrainer:
 
             # Sample a random timestep for each image
             ts = torch.rand((B,), device=self.device) * (1.0 - self.config.loss.min_time) + self.config.loss.min_time
-            x_t, x_tilde, qt0, rate = self.ctdd.scheduler.add_noise(x_adj, self.ctdd.reference_process, ts, self.device,return_dict=False)
+            x_t, x_tilde, qt0, rate = self.ctdd.scheduler.add_noise(x_adj, self.ctdd.process, ts, self.device,return_dict=False)
             x_logits, p0t_reg, p0t_sig, reg_x = current_model(x_adj, ts, x_tilde)
             loss_ = self.ctdd.loss(x_adj, x_tilde, qt0, rate, x_logits, reg_x, p0t_sig, p0t_reg, self.device)
             self.writer.add_scalar('test loss', loss_, number_of_test_step)
@@ -148,12 +135,10 @@ class CTDDTrainer:
         """
         FORWARD  means sampling from p_0 (data) -> p_1 (target)
 
-        :param training_model:
-        :param past_model:
         :return:
         """
 
-        training_model = self.ctdd.model
+        training_model = self.ctdd.backward_rate
         # INITIATE LOSS
         initial_loss = self.initialize()
         best_loss = initial_loss
@@ -167,7 +152,7 @@ class CTDDTrainer:
         for epoch in tqdm(range(self.number_of_epochs)):
             #TRAINING
             training_loss = []
-            for step, databatch in enumerate(self.ctdd.data_dataloader.train()):
+            for step, databatch in enumerate(self.ctdd.dataloader_0.train()):
                 databatch = self.preprocess_data(databatch)
                 # DATA
                 loss = self.train_step(training_model,
@@ -186,7 +171,7 @@ class CTDDTrainer:
 
             #VALIDATION
             validation_loss = []
-            for step, databatch in enumerate(self.ctdd.data_dataloader.test()):
+            for step, databatch in enumerate(self.ctdd.dataloader_0.test()):
                 databatch = self.preprocess_data(databatch)
                 # DATA
                 loss = self.test_step(training_model,
@@ -249,10 +234,22 @@ class CTDDTrainer:
                    "training_loss_average": training_loss_average}
 
         if checkpoint:
-            best_model_path_checkpoint = self.config.experiment_files.best_model_path_checkpoint.format(number_of_training_step)
+            best_model_path_checkpoint = self.ctdd.experiment_files.best_model_path_checkpoint.format(number_of_training_step)
             torch.save(RESULTS,best_model_path_checkpoint)
         else:
-            torch.save(RESULTS, self.config.experiment_files.best_model_path)
+            torch.save(RESULTS, self.ctdd.experiment_files.best_model_path)
 
         return RESULTS
 
+
+if __name__=="__main__":
+    from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+
+    # Files to save the experiments
+    experiment_files = ExperimentFiles(experiment_name="ctdd",
+                                       experiment_type="graph",
+                                       experiment_indentifier="metrics7",
+                                       delete=True)
+    config = CTDDConfig()
+    ctdd_trainer = CTDDTrainer(config,experiment_files)
+    ctdd_trainer.train_ctdd()
