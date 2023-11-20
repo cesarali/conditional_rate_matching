@@ -10,7 +10,7 @@ class RBM(nn.Module):
     def __init__(self, config:OopsConfig = None,n_visible=10, n_hidden=10, data_mean=None):
         super().__init__()
         if config is not None:
-            n_visible = config.data.D
+            n_visible = config.data.dimensions
             n_hidden = config.model.n_hidden
 
         linear = nn.Linear(n_visible, n_hidden)

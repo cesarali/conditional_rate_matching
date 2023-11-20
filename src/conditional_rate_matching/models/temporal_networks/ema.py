@@ -1,9 +1,10 @@
 import torch
 from torch import nn
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 
 class EMA():
-    def __init__(self, cfg):
-        self.decay = cfg.model.ema_decay
+    def __init__(self, cfg:CTDDConfig):
+        self.decay = cfg.temporal_network.ema_decay
         if self.decay < 0.0 or self.decay > 1.0:
             raise ValueError('Decay must be between 0 and 1')
         self.shadow_params = []

@@ -37,7 +37,7 @@ class OopsPipeline:
         super().__init__()
         self.oops_config= config
 
-        self.D = self.oops_config.data.D
+        self.D = self.oops_config.data.dimensions
         self.rbf = model
         self.data = data
 

@@ -13,7 +13,7 @@ from torch import nn
 import torch.nn.functional  as F
 
 # configs
-from conditional_rate_matching.configs.config_crm import Config as ConditionalRateMatchingConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
 from conditional_rate_matching.configs.config_crm import NistConfig
 
 #data

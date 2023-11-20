@@ -1,5 +1,5 @@
 import torch
-from conditional_rate_matching.configs.config_crm import Config
+from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_crm import NistConfig
 from conditional_rate_matching.models.pipelines.samplers import TauLeaping
 

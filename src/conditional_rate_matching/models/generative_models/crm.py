@@ -8,12 +8,12 @@ from typing import Union
 from dataclasses import asdict
 from torch.distributions import Categorical
 
+from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.configs.config_crm import Config,NistConfig
-from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
+from conditional_rate_matching.configs.config_crm import CRMConfig
 
-from conditional_rate_matching.models.temporal_networks.rates.crm_rates import (
+from conditional_rate_matching.models.temporal_networks.rates.crm_rates import(
     ClassificationForwardRate,
     beta_integral
 )
@@ -22,7 +22,7 @@ from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 
 @dataclass
 class CRM:
-    config: Config = None
+    config: CRMConfig = None
     experiment_dir:str = None
 
     experiment_files: ExperimentFiles = None
@@ -66,7 +66,7 @@ class CRM:
         config_path_json = json.load(open(self.experiment_files.config_path, "r"))
         if hasattr(config_path_json,"delete"):
             config_path_json["delete"] = False
-        self.config = Config(**config_path_json)
+        self.config = CRMConfig(**config_path_json)
 
         if device is None:
             self.device = torch.device(self.config.trainer.device) if torch.cuda.is_available() else torch.device("cpu")

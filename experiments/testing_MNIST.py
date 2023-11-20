@@ -1,6 +1,6 @@
 from pprint import pprint
 from dataclasses import asdict
-from conditional_rate_matching.configs.config_crm import Config,BasicTrainerConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig,BasicTrainerConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
@@ -16,11 +16,11 @@ def experiment_MNIST(max_training_size=60000,max_test_size=5000,berlin=True):
     MNIST EXPERIMENT
     :return:
     """
-    crm_config = Config()
+    crm_config = CRMConfig()
     crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms","binary_paths_histograms",
                                                      "marginal_binary_histograms","mnist_plot"],
                                             number_of_epochs=10,berlin=berlin)
-    
+
     crm_config.data1 = NISTLoaderConfig(batch_size=128,
                                         max_training_size=max_training_size,
                                         max_test_size=max_test_size)
@@ -41,10 +41,11 @@ def experiment_MNIST_Convnet(max_training_size=60000,max_test_size=5000,berlin=T
     MNIST EXPERIMENT
     :return:
     """
-    crm_config = Config()
+    crm_config = CRMConfig()
     crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms","binary_paths_histograms",
                                                      "marginal_binary_histograms","mnist_plot"],
                                             number_of_epochs=4,
+                                            learning_rate=1e-4,
                                             berlin=berlin)
 
     crm_config.data1 = NISTLoaderConfig(batch_size=128,

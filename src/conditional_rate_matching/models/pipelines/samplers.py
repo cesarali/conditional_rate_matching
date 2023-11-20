@@ -4,7 +4,7 @@ from tqdm import tqdm
 from torch import functional as F
 from typing import Union,Tuple,List
 
-from conditional_rate_matching.configs.config_crm import Config as ConditionalRateMatchingConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
 from conditional_rate_matching.models.temporal_networks.rates.crm_rates import ClassificationForwardRate
 
 

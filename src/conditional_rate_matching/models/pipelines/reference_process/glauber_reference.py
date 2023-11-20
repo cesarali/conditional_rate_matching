@@ -22,7 +22,7 @@ class GlauberDynamics:
     def __init__(self, cfg:SBConfig, device,rank=None):
         ReferenceProcess.__init__(self,cfg,device)
 
-        self.D = cfg.data.D
+        self.D = cfg.data.dimensions
         self.S = cfg.data.vocab_size
         self.as_spins = False
         self.gamma = cfg.reference.gamma

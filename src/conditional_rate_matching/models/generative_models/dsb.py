@@ -27,7 +27,7 @@ class SchrodingerBridgeBackwardRate(EMA,nn.Module):
 
         # DATA
         self.temporal_network_shape = torch.Size(config.data.temporal_net_expected_shape)
-        self.dimension = config.data.D
+        self.dimension = config.data.dimensions
         self.num_spin_states = config.data.vocab_size
 
         if self.num_spin_states != 2:
@@ -120,7 +120,7 @@ class SteinSpinEstimator:
         self.stein_epsilon = config.flip_estimator.stein_epsilon
         self.stein_sample_size = config.flip_estimator.stein_sample_size
 
-        self.epsilon_distribution = Bernoulli(torch.full((config.data.D,),
+        self.epsilon_distribution = Bernoulli(torch.full((config.data.dimensions,),
                                                          self.stein_epsilon))
         self.device = device
 

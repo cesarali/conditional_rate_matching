@@ -2,7 +2,7 @@ import os
 import unittest
 
 import torch
-from conditional_rate_matching.configs.config_crm import Config
+from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_crm import NistConfig
 
 from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
@@ -47,7 +47,7 @@ class TestProcesses(unittest.TestCase):
     def test_k_processes(self):
         from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 
-        config = Config()
+        config = CRMConfig()
         config.batch_size = 64
 
         # =====================================================

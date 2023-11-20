@@ -10,7 +10,7 @@ import torch
 from torch import nn
 
 import torch.nn.functional  as F
-from conditional_rate_matching.configs.config_crm import Config as ConditionalRateMatchingConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
 
 from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
 from conditional_rate_matching.models.generative_models.crm import conditional_probability

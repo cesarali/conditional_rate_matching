@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
-from conditional_rate_matching.configs.config_crm import Config
-from conditional_rate_matching.configs.config_crm import Config as CRMConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig as CRMConfig
 
 class Swish(nn.Module):
     def __init__(self):
@@ -28,10 +28,10 @@ class TemporalMLP(nn.Module):
     """
 
     """
-    def __init__(self, config:Config,device):
+    def __init__(self, config:CRMConfig, device):
         super().__init__()
-        self.dimensions = config.data1.dimensions
-        self.vocab_size = config.data1.vocab_size
+        self.dimensions = config.data0.dimensions
+        self.vocab_size = config.data0.vocab_size
         self.define_deep_models(config)
         self.init_weights()
         self.to(device)

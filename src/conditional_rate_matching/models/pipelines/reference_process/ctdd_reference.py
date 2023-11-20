@@ -1,22 +1,20 @@
 import math
 import torch
-from graph_bridges.configs.graphs.graph_config_sb import SBConfig
 
 import numpy as np
 from typing import Tuple,Union
 from torchtyping import TensorType
 from torch.distributions import Exponential, Bernoulli
-from graph_bridges.configs.config_sb import SBConfig
-from graph_bridges.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 
 class ReferenceProcess:
     """
 
     """
-    def __init__(self, config:Union[SBConfig,CTDDConfig], device):
-        self.S = config.data.vocab_size
-        self.D = config.data.D
-        self.eps_ratio = config.sampler.eps_ratio
+    def __init__(self, config:Union[CTDDConfig], device):
+        self.S = config.data0.vocab_size
+        self.D = config.data0.dimensions
+        self.eps_ratio = config.pipeline.eps_ratio
         self.device = device
 
     def forward_rates(self, x, t, device=None):
@@ -156,13 +154,13 @@ class ReferenceProcess:
         return flipped_spin,timesteps
 
 class GaussianTargetRate(ReferenceProcess):
-    def __init__(self, cfg:Union[SBConfig,CTDDConfig], device,rank=None):
+    def __init__(self, cfg:Union[CTDDConfig], device,rank=None):
         ReferenceProcess.__init__(self,cfg,device)
-        self.S = S = cfg.data.vocab_size
-        self.rate_sigma = cfg.reference.rate_sigma
-        self.Q_sigma = cfg.reference.Q_sigma
-        self.time_exponential = cfg.reference.time_exponential
-        self.time_base = cfg.reference.time_base
+        self.S = S = cfg.data0.vocab_size
+        self.rate_sigma = cfg.process.rate_sigma
+        self.Q_sigma = cfg.process.Q_sigma
+        self.time_exponential = cfg.process.time_exponential
+        self.time_base = cfg.process.time_base
         self.device = device
 
         rate = np.zeros((S, S))

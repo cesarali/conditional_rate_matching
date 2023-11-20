@@ -32,9 +32,10 @@ class BasicTrainerConfig:
     number_of_epochs:int = 300
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
-    learning_rate:str = 0.01
+    learning_rate:str = 0.001
     device:str = "cuda:0"
     berlin: bool = True
+    distributed: bool = False
 
     metrics: List[str] = field(default_factory=lambda :["mse_histograms",
                                                         "kdmm",
@@ -56,7 +57,7 @@ class BasicPipelineConfig:
     num_intermediates:int = 10
 
 @dataclass
-class Config:
+class CRMConfig:
 
     # data
     data0: StatesDataloaderConfig = StatesDataloaderConfig()
@@ -90,7 +91,7 @@ class Config:
             self.pipeline = BasicPipelineConfig(**self.pipeline)
 
 @dataclass
-class NistConfig(Config):
+class NistConfig(CRMConfig):
 
     dataset_name_0:str = "categorical_dirichlet"
     dataset_name_1:str = "mnist"

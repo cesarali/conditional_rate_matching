@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn.functional import softplus,softmax
-from conditional_rate_matching.configs.config_crm import Config
+from conditional_rate_matching.configs.config_crm import CRMConfig
 
 from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
@@ -26,7 +26,7 @@ class ClassificationForwardRate(nn.Module):
     """
 
     """
-    def __init__(self, config:Config, device):
+    def __init__(self, config:CRMConfig, device):
         super().__init__()
 
         self.config = config

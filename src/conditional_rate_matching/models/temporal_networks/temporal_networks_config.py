@@ -5,10 +5,13 @@ class TemporalMLPConfig:
     name:str = "TemporalMLP"
     time_embed_dim :int = 39
     hidden_dim :int = 200
+    ema_decay :float = 0.9999  # 0.9999
 
 @dataclass
 class ConvNetAutoencoderConfig:
+
     temp_name: str = "ConvNetAutoencoder"
+    ema_decay :float = 0.9999  # 0.9999
 
     encoder_channels: int = 16
     latent_dim: int = 32

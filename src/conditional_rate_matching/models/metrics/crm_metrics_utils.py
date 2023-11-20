@@ -128,7 +128,7 @@ def log_metrics(crm: CRM,epoch, metrics_to_log=None, where_to_log=None, writer=N
         marginal_histograms_tuple = (histogram0, histogram0, histogram1, histograms_generative)
         plot_marginals_binary_histograms(marginal_histograms_tuple,plots_path=plot_path)
 
-    #PLOTS
+    #IMAGES PLOTS
     metric_string_name = "mnist_plot"
     if metric_string_name in metrics_to_log:
         assert crm.config.data1.vocab_size == 2

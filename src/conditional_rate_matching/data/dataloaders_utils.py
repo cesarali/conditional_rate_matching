@@ -1,4 +1,5 @@
-from conditional_rate_matching.configs.config_crm import Config
+from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 from conditional_rate_matching.data.image_dataloaders import get_data
 from conditional_rate_matching.data.states_dataloaders import sample_categorical_from_dirichlet
 
@@ -9,6 +10,7 @@ from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloa
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.data.states_dataloaders import StatesDataloader
+from conditional_rate_matching.data.ctdd_target import CTDDTargetData
 
 def get_dataloaders(config):
     """
@@ -48,7 +50,7 @@ def get_dataloaders(config):
 
     return dataloader_0,dataloader_1
 
-def get_dataloaders_crm(config:Config):
+def get_dataloaders_crm(config:CRMConfig):
     """
 
     :param config:
@@ -79,16 +81,25 @@ def get_dataloaders_crm(config:Config):
 
     return dataloader_0,dataloader_1
 
+def get_dataloaders_ctdd(config:CTDDConfig):
+    """
 
+    :param config:
 
-if __name__=="__main__":
-    from pprint import pprint
-    from experiments.testing_Kstate import experiment_1
-    from experiments import small_community
+    :return: dataloader_0,dataloader_1
+    """
+    #=====================================================
+    # DATA STUFF
+    #=====================================================
+    if isinstance(config.data0,NISTLoaderConfig):
+        dataloader_0 = NISTLoader(config.data0)
+    elif isinstance(config.data0,StatesDataloaderConfig):
+        dataloader_0 = StatesDataloader(config.data0)
+    elif isinstance(config.data0,GraphDataloaderConfig):
+        dataloader_0 = GraphDataloaders(config.data0)
+    else:
+        raise Exception("DataLoader not Defined")
 
-    config = small_community()
-    config = experiment_1()
+    dataloader_1 = CTDDTargetData(config)
 
-    dataloader_0,dataloader_1 = get_dataloaders_crm(config)
-
-    pprint(config)
+    return dataloader_0,dataloader_1

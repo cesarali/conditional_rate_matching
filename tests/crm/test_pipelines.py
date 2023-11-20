@@ -7,7 +7,7 @@ from conditional_rate_matching.models.generative_models.crm import CRM
 import torch
 from torch import nn
 
-from conditional_rate_matching.configs.config_crm import Config
+from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 from conditional_rate_matching.models.generative_models.crm import CRM
 from conditional_rate_matching.models.generative_models.crm import ClassificationForwardRate
@@ -19,7 +19,7 @@ class TestCRMPipeline(unittest.TestCase):
     def test_pipeline_classifier(self):
         device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
-        config = Config()
+        config = CRMConfig()
         dataloader_0, dataloader_1 = get_dataloaders(config)
         config.loss = "classifier"
         model = ClassificationForwardRate(config, device).to(device)
@@ -31,7 +31,7 @@ class TestCRMPipeline(unittest.TestCase):
     def test_pipeline_naive(self):
         device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
-        config = Config()
+        config = CRMConfig()
         config.num_intermediates = 5
 
         dataloader_0, dataloader_1 = get_dataloaders(config)

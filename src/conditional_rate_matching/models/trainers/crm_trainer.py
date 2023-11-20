@@ -42,6 +42,7 @@ class CRMTrainerState:
     def update_training_batch(self,loss):
         self.train_loss.append(loss)
         self.number_of_training_steps += 1
+
     def update_test_batch(self,loss):
         self.number_of_test_step += 1
         self.test_loss.append(loss)
@@ -138,7 +139,7 @@ if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="metrics2",
+                                       experiment_indentifier="metrics7",
                                        delete=True)
     # Configuration
     #config = experiment_MNIST(max_training_size=1000)
@@ -162,7 +163,6 @@ if __name__=="__main__":
     tqdm_object = tqdm(range(config.trainer.number_of_epochs))
 
     state = CRMTrainerState(crm)
-
     for epoch in tqdm_object:
         #TRAIN LOOP
         for batch_1, batch_0 in zip(crm.dataloader_1.train(), crm.dataloader_0.train()):
