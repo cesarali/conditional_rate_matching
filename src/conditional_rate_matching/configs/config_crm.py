@@ -15,6 +15,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
 
 temporal_network_configs = {
     "TemporalMLP":TemporalMLPConfig,
@@ -26,23 +27,6 @@ data_configs = {"NISTLoader":NISTLoaderConfig,
                 "StatesDataloader":StatesDataloaderConfig}
 
 image_data_path = os.path.join(data_path,"raw")
-
-@dataclass
-class BasicTrainerConfig:
-    number_of_epochs:int = 300
-    save_model_epochs:int = 1e6
-    save_metric_epochs:int = 1e6
-    learning_rate:str = 0.001
-    device:str = "cuda:0"
-    berlin: bool = True
-    distributed: bool = False
-
-    metrics: List[str] = field(default_factory=lambda :["mse_histograms",
-                                                        "kdmm",
-                                                        "categorical_histograms"])
-    def __post_init__(self):
-        self.save_model_epochs = int(.5*self.number_of_epochs)
-        self.save_metric_epochs = int(.5*self.number_of_epochs)
 
 @dataclass
 class ConstantProcessConfig:

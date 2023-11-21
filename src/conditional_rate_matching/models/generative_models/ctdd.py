@@ -73,7 +73,6 @@ class CTDD:
 
         self.backward_rate = BackRateMLP(config, self.device).to(self.device)
         self.process = GaussianTargetRate(config, self.device)
-
         self.scheduler = CTDDScheduler(config,self.device)
         self.loss = GenericAux(config,device)
         self.pipeline = CTDDPipeline(self.config,self.process,self.dataloader_0,self.dataloader_1,self.scheduler)
@@ -82,7 +81,6 @@ class CTDD:
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
         results_ = self.experiment_files.load_results()
         self.backward_rate = results_["model"]
-
         config_path_json = json.load(open(self.experiment_files.config_path, "r"))
         if hasattr(config_path_json,"delete"):
             config_path_json["delete"] = False
@@ -94,10 +92,10 @@ class CTDD:
             self.device = device
 
         self.backward_rate.to(self.device)
+        self.process = GaussianTargetRate(self.config, self.device)
         self.scheduler = CTDDScheduler(self.config,self.device)
-
-        self.dataloader_0, self.dataloader_1 = get_dataloaders_ctdd(self.config)
         self.loss = GenericAux(self.config,device)
+        self.dataloader_0, self.dataloader_1 = get_dataloaders_ctdd(self.config)
         self.pipeline = CTDDPipeline(self.config,self.process,self.dataloader_0,self.dataloader_1,self.scheduler)
 
     def start_new_experiment(self):

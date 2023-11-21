@@ -9,51 +9,22 @@ from dataclasses import dataclass,field
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
 
+
 from conditional_rate_matching.models.generative_models.crm import (
     CRM,
     sample_x,
     uniform_pair_x0_x1
 )
 
-@dataclass
-class CRMTrainerState:
-    crm: CRM
-    best_loss : float = np.inf
-
-    average_train_loss : float = 0.
-    average_test_loss : float = 0.
-
-    test_loss: List[float] = field(default_factory=lambda:[])
-    train_loss: List[float] = field(default_factory=lambda:[])
-
-    number_of_test_step:int = 0
-    number_of_training_steps:int = 0
-
-    def set_average_test_loss(self):
-        self.average_test_loss = np.asarray(self.test_loss).mean()
-
-    def set_average_train_loss(self):
-        self.average_test_loss = np.asarray(self.test_loss).mean()
-
-    def finish_epoch(self):
-        self.test_loss = []
-        self.train_loss = []
-
-    def update_training_batch(self,loss):
-        self.train_loss.append(loss)
-        self.number_of_training_steps += 1
-
-    def update_test_batch(self,loss):
-        self.number_of_test_step += 1
-        self.test_loss.append(loss)
+from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
 
 
-def save_results(crm_state:CRMTrainerState,
+def save_results(crm_state:TrainerState,
                  experiment_files:ExperimentFiles,
                  epoch: int = 0,
                  checkpoint: bool = False):
     RESULTS = {
-        "model": crm_state.crm.forward_rate,
+        "model": crm_state.model.forward_rate,
         "best_loss": crm_state.best_loss,
         "training_loss":crm_state.average_train_loss,
         "test_loss":crm_state.average_test_loss,
@@ -134,27 +105,25 @@ def test_step(config,model,loss_fn,batch_1,batch_0,device):
 
 if __name__=="__main__":
     from experiments.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
-    from experiments.testing_graphs import small_community
+    from experiments.testing_graphs import small_community, community
 
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="metrics7",
+                                       experiment_indentifier="community3",
                                        delete=True)
     # Configuration
     #config = experiment_MNIST(max_training_size=1000)
     #config = experiment_MNIST_Convnet(max_training_size=5000,max_test_size=2000)
     #config = experiment_kStates()
-    config = small_community(number_of_epochs=50,berlin=True)
-
+    #config = small_community(number_of_epochs=400,berlin=True)
+    config = community(number_of_epochs=50,berlin=True)
     #=========================================================
     # Initialize
     #=========================================================
-
     # all model
     crm = CRM(config=config,experiment_files=experiment_files)
     crm.start_new_experiment()
-
     #=========================================================
     # Training
     #=========================================================
@@ -162,7 +131,7 @@ if __name__=="__main__":
     optimizer = Adam(crm.forward_rate.parameters(), lr=config.trainer.learning_rate)
     tqdm_object = tqdm(range(config.trainer.number_of_epochs))
 
-    state = CRMTrainerState(crm)
+    state = TrainerState(crm)
     for epoch in tqdm_object:
         #TRAIN LOOP
         for batch_1, batch_0 in zip(crm.dataloader_1.train(), crm.dataloader_0.train()):
@@ -187,7 +156,7 @@ if __name__=="__main__":
             state.best_loss = state.average_test_loss
 
         if (epoch + 1) % config.trainer.save_model_epochs == 0:
-            results = save_results(state, experiment_files, epoch + 1, checkpoint=True)
+            results = save_results(state, crm.experiment_files, epoch + 1, checkpoint=True)
 
         if (epoch + 1) % config.trainer.save_metric_epochs == 0:
             all_metrics = log_metrics(crm=crm, epoch=epoch + 1, writer=writer)

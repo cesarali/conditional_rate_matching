@@ -18,7 +18,7 @@ from conditional_rate_matching.models.generative_models.crm import (
     ClassificationForwardRate
 )
 
-from conditional_rate_matching.configs.config_files import create_experiment_dir
+from conditional_rate_matching.configs.config_files import get_experiment_dir
 
 class TestCRM(unittest.TestCase):
     """
@@ -87,9 +87,9 @@ class TestCRMLoading(unittest.TestCase):
         from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
         from conditional_rate_matching.utils.plots.images_plots import mnist_grid
 
-        experiment_dir = create_experiment_dir(experiment_name="crm",
-                                               experiment_type="mnist",
-                                               experiment_indentifier="save_n_loads8")
+        experiment_dir = get_experiment_dir(experiment_name="crm",
+                                            experiment_type="mnist",
+                                            experiment_indentifier="save_n_loads8")
 
         crm = CRM(experiment_dir=experiment_dir,device=torch.device("cpu"))
         generative_sample = crm.pipeline(32)

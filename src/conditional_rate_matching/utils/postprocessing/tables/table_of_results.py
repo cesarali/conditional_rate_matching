@@ -15,8 +15,9 @@ import os
 from conditional_rate_matching import results_path
 
 from abc import ABC, abstractmethod
-from conditional_rate_matching.configs.config_sb import SBConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+
 def get_git_revisions_hash():
     hashes = []
     hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD']))
@@ -291,7 +292,6 @@ class TableOfResults(ABC):
     #=================================================================
     # READ AND CHANGE ENTRIES
     #=================================================================
-
     def fill_table(self,base_folder,overwrite=False,info=False):
         if isinstance(base_folder,str):
             base_folder = [base_folder]
@@ -302,7 +302,6 @@ class TableOfResults(ABC):
                 if subfolder.is_dir():
                     print(subfolder)
                     self.experiment_dir_to_table(subfolder,overwrite,info)
-
 
     def experiment_dir_to_table(self,experiment_dir: Union[str, Path],overwrite=False,info=False):
         """
@@ -366,7 +365,7 @@ class TableOfResults(ABC):
                     total_mb = round(total / 1024 ** 2,2)
                     print(f'Free: {free_mb} MB, Total: {total_mb} MB')
 
-                    base_method_config : Union[SBConfig,CTDDConfig]
+                    base_method_config : Union[CRMConfig,CTDDConfig]
                     base_method_config = base_methods_configs[method_name]
                     base_method_config.experiment_indentifier = None
                     base_method_config.__post_init__()

@@ -16,7 +16,7 @@ def get_git_revisions_hash():
 #    hashes.append(subprocess.check_output(['git', 'rev-parse', 'HEAD^']))
     return hashes
 
-def create_experiment_dir(experiment_name,experiment_type,experiment_indentifier,experiment_dir=None):
+def get_experiment_dir(experiment_name, experiment_type, experiment_indentifier, experiment_dir=None):
     """
     if experiment_dir is None:
         experiment_dir := projects_results_dir/experiment_name/experiment_type/experiment_indentifier/
@@ -59,10 +59,10 @@ class ExperimentFiles:
     delete:bool = False
 
     def __post_init__(self):
-        self.experiment_dir = create_experiment_dir(self.experiment_name,
-                                                    self.experiment_type,
-                                                    self.experiment_indentifier,
-                                                    self.experiment_dir)
+        self.experiment_dir = get_experiment_dir(self.experiment_name,
+                                                 self.experiment_type,
+                                                 self.experiment_indentifier,
+                                                 self.experiment_dir)
 
         self.current_git_commit = str(get_git_revisions_hash()[0])
         self.config_path = os.path.join(self.experiment_dir,"config.json")

@@ -200,10 +200,10 @@ def sample_x(config,x_1, x_0, time):
     return sampled_x
 
 if __name__=="__main__":
-    from conditional_rate_matching.configs.config_files import create_experiment_dir
+    from conditional_rate_matching.configs.config_files import get_experiment_dir
 
-    experiment_dir = create_experiment_dir(experiment_name="crm",
-                                           experiment_type="dirichlet_K",
-                                           experiment_indentifier="save_n_load_3")
+    experiment_dir = get_experiment_dir(experiment_name="crm",
+                                        experiment_type="dirichlet_K",
+                                        experiment_indentifier="save_n_load_3")
 
     crm = CRM(experiment_dir=experiment_dir)

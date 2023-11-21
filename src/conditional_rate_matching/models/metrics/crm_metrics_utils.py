@@ -42,13 +42,22 @@ def log_metrics(crm: Union[CRM,CTDD],epoch, metrics_to_log=None, where_to_log=No
         metrics_to_log = config.trainer.metrics
 
     #OBTAIN SAMPLES
-    dataloader = crm.dataloader_1.test()
 
-    test_sample = sample_from_dataloader(dataloader,sample_size=config.data1.max_test_size).to(crm.device)
     if isinstance(crm,CRM):
+        source_dataloader = crm.dataloader_0
+        data_dataloader = crm.dataloader_1
+        vocab_size,dimensions,max_test_size = config.data1.vocab_size,config.data1.dimensions,config.data1.max_test_size
+        dataloader = crm.dataloader_1.test()
+        test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(crm.device)
         generative_sample,generative_path,ts = crm.pipeline(sample_size=test_sample.shape[0],return_intermediaries=True,train=False)
     elif isinstance(crm,CTDD):
+        source_dataloader = crm.dataloader_1
+        data_dataloader = crm.dataloader_0
+        vocab_size,dimensions,max_test_size = config.data0.vocab_size,config.data0.dimensions,config.data0.max_test_size
+        dataloader = crm.dataloader_0.test()
+        test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(crm.device)
         generative_sample = crm.pipeline(crm.backward_rate, sample_size=test_sample.shape[0], device=crm.device)
+
     size_ = min(generative_sample.size(0),test_sample.size(0))
 
     generative_sample = generative_sample[:size_]
@@ -69,9 +78,9 @@ def log_metrics(crm: Union[CRM,CTDD],epoch, metrics_to_log=None, where_to_log=No
 
     # GRAPHS
     if "graphs_metrics" in metrics_to_log or "graphs_plot" in metrics_to_log:
-        if isinstance(crm.dataloader_1,GraphDataloaders):
-            test_graphs = crm.dataloader_1.sample_to_graph(test_sample)
-            generated_graphs = crm.dataloader_1.sample_to_graph(generative_sample)
+        if isinstance(data_dataloader,GraphDataloaders):
+            test_graphs = data_dataloader.sample_to_graph(test_sample)
+            generated_graphs = data_dataloader.sample_to_graph(generative_sample)
 
             metric_string_name = "graphs_metrics"
             if metric_string_name in metrics_to_log:
@@ -91,12 +100,12 @@ def log_metrics(crm: Union[CRM,CTDD],epoch, metrics_to_log=None, where_to_log=No
     # HISTOGRAMS PLOTS
     metric_string_name = "categorical_histograms"
     if metric_string_name in metrics_to_log:
-        histogram0 = categorical_histogram_dataloader(crm.dataloader_0, config.data1.dimensions, config.data1.vocab_size,
-                                                      maximum_test_sample_size=config.data1.max_test_size)
-        histogram1 = categorical_histogram_dataloader(crm.dataloader_1, config.data1.dimensions, config.data1.vocab_size,
-                                                      maximum_test_sample_size=config.data1.max_test_size)
+        histogram0 = categorical_histogram_dataloader(source_dataloader, dimensions, vocab_size,
+                                                      maximum_test_sample_size=max_test_size)
+        histogram1 = categorical_histogram_dataloader(data_dataloader, dimensions, vocab_size,
+                                                      maximum_test_sample_size=max_test_size)
 
-        generative_histogram = F.one_hot(generative_sample.long(), config.data1.vocab_size).sum(axis=0)
+        generative_histogram = F.one_hot(generative_sample.long(), vocab_size).sum(axis=0)
         generative_histogram = generative_histogram/generative_sample.size(0)
         if key_in_dict(where_to_log,metric_string_name):
             plot_path = where_to_log[metric_string_name]
@@ -107,7 +116,7 @@ def log_metrics(crm: Union[CRM,CTDD],epoch, metrics_to_log=None, where_to_log=No
     metric_string_name = "binary_paths_histograms"
     if metric_string_name in metrics_to_log:
         if isinstance(crm, CRM):
-            assert crm.config.data1.vocab_size == 2
+            assert vocab_size == 2
             histograms_generative = generative_path.mean(axis=0)
             if key_in_dict(where_to_log,metric_string_name):
                 plot_path = where_to_log[metric_string_name]
@@ -119,7 +128,7 @@ def log_metrics(crm: Union[CRM,CTDD],epoch, metrics_to_log=None, where_to_log=No
 
     metric_string_name = "marginal_binary_histograms"
     if metric_string_name in metrics_to_log:
-        assert crm.config.data1.vocab_size == 2
+        assert vocab_size == 2
         histograms_generative = generative_sample.mean(dim=0)
 
         if key_in_dict(where_to_log,metric_string_name):
@@ -127,17 +136,17 @@ def log_metrics(crm: Union[CRM,CTDD],epoch, metrics_to_log=None, where_to_log=No
         else:
             plot_path = crm.experiment_files.plot_path.format("marginal_binary_histograms_{0}".format(epoch))
 
-        histogram0 = binary_histogram_dataloader(crm.dataloader_0, dimensions=config.data1.dimensions,
-                                                 train=True, maximum_test_sample_size=config.data1.max_test_size)
-        histogram1 = binary_histogram_dataloader(crm.dataloader_1, dimensions=config.data1.dimensions,
-                                                 train=True, maximum_test_sample_size=config.data1.max_test_size)
+        histogram0 = binary_histogram_dataloader(source_dataloader, dimensions=dimensions,
+                                                 train=True, maximum_test_sample_size=max_test_size)
+        histogram1 = binary_histogram_dataloader(data_dataloader, dimensions=dimensions,
+                                                 train=True, maximum_test_sample_size=max_test_size)
         marginal_histograms_tuple = (histogram0, histogram0, histogram1, histograms_generative)
         plot_marginals_binary_histograms(marginal_histograms_tuple,plots_path=plot_path)
 
     #IMAGES PLOTS
     metric_string_name = "mnist_plot"
     if metric_string_name in metrics_to_log:
-        assert crm.config.data1.vocab_size == 2
+        assert vocab_size == 2
         if key_in_dict(where_to_log,metric_string_name):
             plot_path = where_to_log[metric_string_name]
         else:
