@@ -54,13 +54,25 @@ class Trainer(ABC):
     a ratio estimator with a stein estimator
     """
 
-    @abstractmethod
+    dataloader = None
+    generative_model = None
+    config = None
+
     def parameters_info(self):
-        """
-        Prints information about the parameters.
-        To be implemented by subclasses.
-        """
-        pass
+        print("# ==================================================")
+        print("# START OF TRAINING ")
+        print("# ==================================================")
+
+        print("# Current Model ************************************")
+
+        print(self.generative_model.experiment_files.experiment_type)
+        print(self.generative_model.experiment_files.experiment_name)
+        print(self.generative_model.experiment_files.experiment_indentifier)
+
+        print("# ==================================================")
+        print("# Number of Epochs {0}".format(self.number_of_epochs))
+        print("# ==================================================")
+
 
     @abstractmethod
     def initialize(self):
@@ -69,6 +81,11 @@ class Trainer(ABC):
         To be implemented by subclasses.
         """
         pass
+
+    def initialize_(self):
+        self.initialize()
+        self.writer = SummaryWriter(self.generative_model.experiment_files.tensorboard_path)
+        self.tqdm_object = tqdm(range(self.config.trainer.number_of_epochs))
 
     @abstractmethod
     def train_step(self, current_model, databatch, number_of_training_step):
@@ -94,6 +111,10 @@ class Trainer(ABC):
         """
         pass
 
+    @abstractmethod
+    def get_model(self):
+        pass
+
     def train(self):
         """
         FORWARD  means sampling from p_0 (data) -> p_1 (target)
@@ -102,7 +123,7 @@ class Trainer(ABC):
         """
 
         # INITIATE LOSS
-        self.initialize()
+        self.initialize_()
         all_metrics = {}
         results_ = {}
         self.saved = False
@@ -110,17 +131,19 @@ class Trainer(ABC):
         training_state = TrainerState(self.generative_model)
         training_state.best_loss = np.inf
 
-        for epoch in tqdm(range(self.number_of_epochs)):
+        for epoch in self.tqdm_object:
             #TRAINING
-            for step, databatch in enumerate(self.generative_model.dataloader_0.train()):
+            for step, databatch in enumerate(self.dataloader.train()):
                 databatch = self.preprocess_data(databatch)
                 # DATA
                 loss = self.train_step(databatch,training_state.number_of_training_steps)
                 training_state.update_training_batch(loss.item())
+                self.tqdm_object.set_description(f"Epoch {epoch + 1}, Loss: {loss.item():.4f}")
+                self.tqdm_object.refresh()  # to show immediately the update
             training_state.set_average_train_loss()
 
             #VALIDATION
-            for step, databatch in enumerate(self.generative_model.dataloader_0.test()):
+            for step, databatch in enumerate(self.dataloader.test()):
                 databatch = self.preprocess_data(databatch)
                 # DATA
                 loss = self.test_step(databatch,training_state.number_of_test_step)
@@ -154,7 +177,7 @@ class Trainer(ABC):
                      epoch:int,
                      checkpoint:bool=True):
         RESULTS = {
-            "model": training_state.model.backward_rate,
+            "model": self.get_model(),
             "best_loss": training_state.best_loss,
             "training_loss":training_state.average_train_loss,
             "test_loss":training_state.average_test_loss,

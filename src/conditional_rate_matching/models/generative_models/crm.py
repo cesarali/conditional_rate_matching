@@ -20,6 +20,10 @@ from conditional_rate_matching.models.temporal_networks.rates.crm_rates import(
 
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 
+
+
+
+
 @dataclass
 class CRM:
     config: CRMConfig = None
@@ -33,6 +37,7 @@ class CRM:
     device: torch.device = None
 
     def __post_init__(self):
+        self.loss = nn.CrossEntropyLoss()
         if self.dataloader_0 is not None:
             self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
         else:
@@ -55,7 +60,6 @@ class CRM:
             self.device = device
 
         self.forward_rate = ClassificationForwardRate(config, self.device).to(self.device)
-        self.loss_fn = nn.CrossEntropyLoss()
         self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
 
     def load_from_experiment(self,experiment_dir,device=None):
@@ -74,10 +78,8 @@ class CRM:
             self.device = device
 
         self.forward_rate.to(self.device)
-
         self.dataloader_0, self.dataloader_1 = get_dataloaders_crm(self.config)
 
-        self.loss_fn = nn.CrossEntropyLoss()
         self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
 
     def start_new_experiment(self):

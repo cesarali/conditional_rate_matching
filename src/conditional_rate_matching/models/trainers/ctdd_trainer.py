@@ -42,21 +42,8 @@ class CTDDTrainer(Trainer):
         device_str = self.config.trainer.device
         self.device = torch.device(device_str if torch.cuda.is_available() else "cpu")
         self.generative_model = CTDD(self.config, experiment_files=experiment_files, device=self.device)
+        self.dataloader = self.generative_model.dataloader_0
 
-    def parameters_info(self):
-        print("# ==================================================")
-        print("# START OF BACKWARD RATIO TRAINING CTDD")
-        print("# ==================================================")
-
-        print("# Current Model ************************************")
-
-        print(self.generative_model.experiment_files.experiment_type)
-        print(self.generative_model.experiment_files.experiment_name)
-        print(self.generative_model.experiment_files.experiment_indentifier)
-
-        print("# ==================================================")
-        print("# Number of Epochs {0}".format(self.number_of_epochs))
-        print("# ==================================================")
 
     def initialize(self):
         """
@@ -67,7 +54,6 @@ class CTDDTrainer(Trainer):
         self.parameters_info()
         self.generative_model.start_new_experiment()
         self.writer = SummaryWriter(self.generative_model.experiment_files.tensorboard_path)
-
         #DEFINE OPTIMIZERS
         self.optimizer = Adam(self.generative_model.backward_rate.parameters(), lr=self.config.trainer.learning_rate)
 
@@ -136,6 +122,8 @@ class CTDDTrainer(Trainer):
             x = databatch[0]
             return [x.float().to(self.device)]
 
+    def get_model(self):
+        return self.generative_model.backward_rate
 
 if __name__=="__main__":
     from conditional_rate_matching.configs.config_ctdd import CTDDConfig

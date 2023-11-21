@@ -30,8 +30,8 @@ def small_community(number_of_epochs=300,berlin=True):
     crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms",
                                                      "binary_paths_histograms",
                                                      "marginal_binary_histograms",
-                                                     "graphs_plot",
-                                                     "graphs_metrics"],
+                                                     "graphs_plot"],
+                                                     #"graphs_metrics"],
                                             number_of_epochs=number_of_epochs,
                                             learning_rate = 1e-4,
                                             berlin=berlin)
