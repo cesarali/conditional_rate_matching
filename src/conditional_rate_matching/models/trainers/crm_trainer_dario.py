@@ -1,3 +1,4 @@
+
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -8,12 +9,8 @@ from typing import List
 from dataclasses import dataclass,field
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+from conditional_rate_matching.models.generative_models.crm import CRM, sample_x, uniform_pair_x0_x1
 
-from conditional_rate_matching.models.generative_models.crm import (
-    CRM,
-    sample_x,
-    uniform_pair_x0_x1
-)
 
 @dataclass
 class CRMTrainerState:
@@ -48,8 +45,8 @@ class CRMTrainerState:
         self.test_loss.append(loss)
 
 
-def save_results(crm_state:CRMTrainerState,
-                 experiment_files:ExperimentFiles,
+def save_results(crm_state: CRMTrainerState,
+                 experiment_files: ExperimentFiles,
                  epoch: int = 0,
                  checkpoint: bool = False):
     RESULTS = {
@@ -132,67 +129,51 @@ def test_step(config,model,loss_fn,batch_1,batch_0,device):
 
     return loss
 
-if __name__=="__main__":
-    from experiments.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
-    from experiments.testing_graphs import small_community
 
-    # Files to save the experiments
-    experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="graph",
-                                       experiment_indentifier="metrics7",
-                                       delete=True)
-    # Configuration
-    config = experiment_MNIST(max_training_size=1000)
-    # config = experiment_MNIST_Convnet(max_training_size=5000,max_test_size=2000)
-    # config = experiment_kStates()
-    # config = small_community(number_of_epochs=50,berlin=True)
+class CRMTrainer:
 
-    #=========================================================
-    # Initialize
-    #=========================================================
+    def __init__(self,config, experiment_files):
+        self.config = config
+        self.experiment_files = experiment_files
+        self.crm = CRM(config=self.config, experiment_files=self.experiment_files)
+        self.crm.start_new_experiment()
+        self.writer = SummaryWriter(self.experiment_files.tensorboard_path)
+        self.optimizer = Adam(self.crm.forward_rate.parameters(), lr=self.config.trainer.learning_rate)
+        self.tqdm_object = tqdm(range(self.config.trainer.number_of_epochs))
+        self.state = CRMTrainerState(self.crm)
 
-    # all model
-    crm = CRM(config=config,experiment_files=experiment_files)
-    crm.start_new_experiment()
+    def train(self):
 
-    #=========================================================
-    # Training
-    #=========================================================
-    writer = SummaryWriter(experiment_files.tensorboard_path)
-    optimizer = Adam(crm.forward_rate.parameters(), lr=config.trainer.learning_rate)
-    tqdm_object = tqdm(range(config.trainer.number_of_epochs))
+        for epoch in self.tqdm_object:
+            #TRAIN LOOP
+            for batch_1, batch_0 in zip(self.crm.dataloader_1.train(), self.crm.dataloader_0.train()):
+                loss = train_step(self.config, self.crm.forward_rate, self.crm.loss_fn, batch_1, batch_0, self.optimizer, self.crm.device)
+                self.writer.add_scalar('training loss', loss.item(), self.state.number_of_training_steps)
+                self.tqdm_object.set_description(f"Epoch {epoch + 1}, Loss: {loss.item():.4f}")
+                self.tqdm_object.refresh()  # to show immediately the update
+                self.state.update_training_batch(loss.item())
+            self.state.set_average_train_loss()
 
-    state = CRMTrainerState(crm)
-    for epoch in tqdm_object:
-        #TRAIN LOOP
-        for batch_1, batch_0 in zip(crm.dataloader_1.train(), crm.dataloader_0.train()):
-            loss = train_step(config, crm.forward_rate, crm.loss_fn, batch_1, batch_0, optimizer, crm.device)
+            # TEST LOOP
+            for batch_1, batch_0 in zip(self.crm.dataloader_1.test(), self.crm.dataloader_0.test()):
+                loss = test_step(self.config, self.crm.forward_rate, self.crm.loss_fn, batch_1, batch_0, self.crm.device)
+                self.state.update_test_batch(loss.item())
+            self.state.set_average_test_loss()
 
-            writer.add_scalar('training loss', loss.item(), state.number_of_training_steps)
-            tqdm_object.set_description(f"Epoch {epoch + 1}, Loss: {loss.item():.4f}")
-            tqdm_object.refresh()  # to show immediately the update
+            # STORE MODELS AND EPOCHS
+            if self.state.average_test_loss < self.state.best_loss:
+                results = save_results(self.state, self.experiment_files, epoch, checkpoint=False)
+                self.state.best_loss = self.state.average_test_loss
 
-            state.update_training_batch(loss.item())
-        state.set_average_train_loss()
+            if (epoch + 1) % self.config.trainer.save_model_epochs == 0:
+                results = save_results(self.state, self.experiment_files, epoch + 1, checkpoint=True)
 
-        # TEST LOOP
-        for batch_1, batch_0 in zip(crm.dataloader_1.test(), crm.dataloader_0.test()):
-            loss = test_step(config, crm.forward_rate, crm.loss_fn, batch_1, batch_0, crm.device)
-            state.update_test_batch(loss.item())
-        state.set_average_test_loss()
+            if (epoch + 1) % self.config.trainer.save_metric_epochs == 0:
+                all_metrics = log_metrics(crm=self.crm, epoch=epoch + 1, writer=self.writer)
 
-        # STORE MODELS AND EPOCHS
-        if state.average_test_loss < state.best_loss:
-            results = save_results(state,experiment_files,epoch,checkpoint=False)
-            state.best_loss = state.average_test_loss
+            self.state.finish_epoch()
+        self.writer.close()
 
-        if (epoch + 1) % config.trainer.save_model_epochs == 0:
-            results = save_results(state, experiment_files, epoch + 1, checkpoint=True)
+        return results, all_metrics
 
-        if (epoch + 1) % config.trainer.save_metric_epochs == 0:
-            all_metrics = log_metrics(crm=crm, epoch=epoch + 1, writer=writer)
-
-        state.finish_epoch()
-    writer.close()
-
-
+    
