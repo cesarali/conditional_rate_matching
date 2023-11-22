@@ -42,13 +42,14 @@ class CRMTrainer(Trainer):
         self.config = config
         self.number_of_epochs = self.config.trainer.number_of_epochs
         device_str = self.config.trainer.device
+
         self.device = torch.device(device_str if torch.cuda.is_available() else "cpu")
         self.generative_model = CRM(self.config, experiment_files=experiment_files, device=self.device)
-        self.dataloader = CRMDataloder(self.generative_model.dataloader_0,
-                                       self.generative_model.dataloader_1)
+        self.dataloader = CRMDataloder(self.generative_model.dataloader_0,self.generative_model.dataloader_1)
 
     def preprocess_data(self, databatch):
         return databatch
+
     def get_model(self):
         return self.generative_model.forward_rate
 
@@ -138,6 +139,7 @@ class CRMTrainer(Trainer):
 
         return loss
 
+
 if __name__=="__main__":
     from experiments.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
     from experiments.testing_graphs import small_community, community
@@ -145,7 +147,7 @@ if __name__=="__main__":
     # Files to save the experiments
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="community6",
+                                       experiment_indentifier="dario",
                                        delete=True)
     # Configuration
     #config = experiment_MNIST(max_training_size=1000)
@@ -155,6 +157,7 @@ if __name__=="__main__":
     config = small_community(number_of_epochs=500,berlin=True)
     crm_trainer = CRMTrainer(config,experiment_files)
     results_,all_metrics = crm_trainer.train()
+    print(all_metrics)
 
 
 
