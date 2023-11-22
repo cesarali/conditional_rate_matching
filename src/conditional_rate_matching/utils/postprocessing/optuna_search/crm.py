@@ -10,7 +10,7 @@ def objective(trial):
     time_embed_dim = trial.suggest_int('time_embed_dim', 50, 100)
     hidden_dim = trial.suggest_int('hidden_dim', 50, 100)
 
-    # Files to save the experiments
+    # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="optuna_search2",
                                        experiment_indentifier=None)
@@ -18,8 +18,8 @@ def objective(trial):
     # Update the config
     config = small_community(number_of_epochs=5)
 
-    config.temporal_network.time_embed_dim = time_embed_dim
-    config.temporal_network.hidden_dim = hidden_dim
+    config.model_mlp.time_embed_dim = time_embed_dim
+    config.model_mlp.hidden_dim = hidden_dim
 
     #config.process.gamma = 0.1
 

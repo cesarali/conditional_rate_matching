@@ -1,4 +1,3 @@
-import torch
 from typing import Union
 from conditional_rate_matching.models.generative_models.crm import CRM
 from conditional_rate_matching.models.generative_models.ctdd import CTDD
@@ -7,7 +6,7 @@ from conditional_rate_matching.models.metrics.distances import kmmd,marginal_his
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
 from conditional_rate_matching.utils.plots.histograms_plots import plot_categorical_histogram_per_dimension
 
-from conditional_rate_matching.models.pipelines.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
 from conditional_rate_matching.utils.plots.paths_plots import histograms_per_time_step
 
 import torch.nn.functional as F

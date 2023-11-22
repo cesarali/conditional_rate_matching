@@ -21,7 +21,7 @@ from conditional_rate_matching.models.schedulers.scheduler import CTDDScheduler
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.data.ctdd_target import CTDDTargetData
 
-from conditional_rate_matching.models.pipelines.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import ReferenceProcess
 from conditional_rate_matching.models.temporal_networks.rates.ctdd_rates import BackwardRate
 from typing import Optional, Tuple, Union

@@ -107,7 +107,7 @@ if __name__=="__main__":
     from experiments.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
     from experiments.testing_graphs import small_community, community
 
-    # Files to save the experiments
+    # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
                                        experiment_indentifier="community3",

@@ -1,7 +1,7 @@
 import torch
 from conditional_rate_matching.utils.devices import check_model_devices
-from conditional_rate_matching.models.pipelines.samplers import TauLeaping
-from conditional_rate_matching.models.pipelines.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers import TauLeaping
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
 
 class CRMPipeline:
     """

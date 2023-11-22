@@ -63,7 +63,7 @@ class TableOfResults(ABC):
 
         The idea is to read results and configs and fill the tables one uses the abstract methods
 
-    2. We can also generate config files that can be used to run experiments
+    2. We can also generate config files that can be used to run experiments_configs
 
         For especifics places of the table, in case we need to fill a
         particular entry
@@ -348,7 +348,7 @@ class TableOfResults(ABC):
 
     def run_table(self, base_methods_configs, base_dataset_args,fill_table=True):
         """
-        Using base configuration files run experiments necesary to fill the table
+        Using base configuration files run experiments_configs necesary to fill the table
 
         :param base_methods_configs:
         :param base_dataset_args:

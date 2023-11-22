@@ -282,7 +282,7 @@ if __name__ == "__main__":
 
     config = small_community()
 
-    config.model = TemporalMLPConfig(hidden_layer=50, time_embed_dim=50)
+    config.model_mlp = TemporalMLPConfig(hidden_layer=50, time_embed_dim=50)
 
     config.trainer.metrics = ["histograms"]
     config.trainer.num_epochs = 20

@@ -11,7 +11,6 @@ from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 from conditional_rate_matching.models.generative_models.crm import CRM
 from conditional_rate_matching.models.generative_models.crm import ClassificationForwardRate
-from conditional_rate_matching.models.generative_models.crm import ConditionalBackwardRate
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
 
 class TestCRMPipeline(unittest.TestCase):

@@ -4,7 +4,7 @@ from typing import Union
 from dataclasses import dataclass
 from tqdm import tqdm
 import torch.distributions as dists
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.config_cd import OopsConfig
 
 class RBM(nn.Module):
     def __init__(self, config:OopsConfig = None,n_visible=10, n_hidden=10, data_mean=None):

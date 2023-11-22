@@ -136,15 +136,14 @@ class CRMTrainer(Trainer):
             loss = self.generative_model.loss(model_classification_,sampled_x)
             self.writer.add_scalar('test loss', loss.item(), number_of_test_step)
 
-
         return loss
 
 
 if __name__=="__main__":
-    from experiments.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
-    from experiments.testing_graphs import small_community, community
+    from conditional_rate_matching.configs.experiments_configs.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
+    from conditional_rate_matching.configs.experiments_configs.testing_graphs import small_community, community
 
-    # Files to save the experiments
+    # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
                                        experiment_indentifier="dario",

@@ -32,7 +32,7 @@ from conditional_rate_matching.models.generative_models.crm import (
 )
 
 #pipelines
-from conditional_rate_matching.models.pipelines.samplers import TauLeaping
+from conditional_rate_matching.models.pipelines.mc_samplers import TauLeaping
 
 #metrics
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader

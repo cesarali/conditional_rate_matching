@@ -127,14 +127,14 @@ class CTDDTrainer(Trainer):
 
 if __name__=="__main__":
     from conditional_rate_matching.configs.config_ctdd import CTDDConfig
-    from experiments.ctdd.testing_graphs import small_community, community
+    from conditional_rate_matching.configs.experiments_configs.ctdd.testing_graphs import small_community, community
 
-    # Files to save the experiments
+    # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="ctdd",
                                        experiment_type="graph",
                                        experiment_indentifier="community8",
                                        delete=True)
-    config = small_community(number_of_epochs=10)
+    config = small_community(number_of_epochs=500)
     #config = community(number_of_epochs=200)
 
     ctdd_trainer = CTDDTrainer(config,experiment_files)

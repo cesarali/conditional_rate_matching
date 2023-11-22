@@ -247,7 +247,7 @@ if __name__=="__main__":
     from conditional_rate_matching.configs.config_dsb import Config as SBConfig
     from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 
-    # Files to save the experiments
+    # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="dirichlet",
                                        experiment_indentifier="test2",

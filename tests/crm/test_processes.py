@@ -8,7 +8,7 @@ from conditional_rate_matching.configs.config_crm import NistConfig
 from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
 from conditional_rate_matching.models.generative_models.crm import conditional_probability
 from conditional_rate_matching.models.generative_models.crm import telegram_bridge_probability
-from conditional_rate_matching.models.pipelines.samplers import TauLeaping
+from conditional_rate_matching.models.pipelines.mc_samplers import TauLeaping
 
 from torch.utils.data import DataLoader, TensorDataset
 from conditional_rate_matching.data.image_dataloaders import get_data

@@ -99,7 +99,27 @@ def get_dataloaders_ctdd(config:CTDDConfig):
         dataloader_0 = GraphDataloaders(config.data0)
     else:
         raise Exception("DataLoader not Defined")
-
     dataloader_1 = CTDDTargetData(config)
 
     return dataloader_0,dataloader_1
+
+def get_dataloader_oops(config):
+    """
+
+    :param config:
+
+    :return: dataloader_0,dataloader_1
+    """
+    # =====================================================
+    # DATA STUFF
+    # =====================================================
+    if isinstance(config.data0, NISTLoaderConfig):
+        dataloader_0 = NISTLoader(config.data0)
+    elif isinstance(config.data0, StatesDataloaderConfig):
+        dataloader_0 = StatesDataloader(config.data0)
+    elif isinstance(config.data0, GraphDataloaderConfig):
+        dataloader_0 = GraphDataloaders(config.data0)
+    else:
+        raise Exception("DataLoader not Defined")
+
+    return dataloader_0
