@@ -10,5 +10,7 @@ ipython
 matplotlib
 pyyaml
 torchtyping
-
+diffusers
+nbformat
+scikit-learn
 

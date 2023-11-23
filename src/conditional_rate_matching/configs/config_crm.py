@@ -7,7 +7,7 @@ from conditional_rate_matching import data_path
 
 # model config
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
-    TemporalMLPConfig,
+    TemporalMLPConfig, TemporalDeepMLPConfig,
     ConvNetAutoencoderConfig,
 )
 
@@ -39,8 +39,8 @@ class BasicTrainerConfig:
                                                         "kdmm",
                                                         "categorical_histograms"])
     def __post_init__(self):
-        self.save_model_epochs = int(.5*self.number_of_epochs)
-        self.save_metric_epochs = int(.5*self.number_of_epochs)
+        self.save_model_epochs = int(1.*self.number_of_epochs)
+        self.save_metric_epochs = int(1.*self.number_of_epochs)
 
 @dataclass
 class ConstantProcessConfig:
@@ -63,7 +63,7 @@ class CRMConfig:
     # process
     process = ConstantProcessConfig = ConstantProcessConfig()
     # temporal network
-    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig] = TemporalMLPConfig()
+    temporal_network: Union[TemporalMLPConfig,TemporalDeepMLPConfig,ConvNetAutoencoderConfig] = TemporalMLPConfig()
     # training
     trainer: BasicTrainerConfig = BasicTrainerConfig()
     #pipeline

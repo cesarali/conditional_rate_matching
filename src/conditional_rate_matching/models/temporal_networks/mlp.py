@@ -23,10 +23,9 @@ def mlp_ebm(nin, nint=256, nout=1):
         nn.Linear(nint, nout),
     )
 
-
 class TemporalMLP(nn.Module):
     """
-
+    Simple 2-layer MLP with no activations
     """
     def __init__(self, config:CRMConfig, device):
         super().__init__()
@@ -58,6 +57,76 @@ class TemporalMLP(nn.Module):
     def init_weights(self):
         nn.init.xavier_uniform_(self.f1.weight)
         nn.init.xavier_uniform_(self.f2.weight)
+
+def get_activation_function(name: str='ReLU'):
+    if name is not None:
+        activation_functions = {"ReLU": nn.ReLU(),
+                                "LeakyReLU": nn.LeakyReLU(),
+                                "ELU": nn.ELU(),
+                                "SELU": nn.SELU(),
+                                "GLU": nn.GLU(),
+                                "GELU": nn.GELU(),
+                                "CELU": nn.CELU(),
+                                "PReLU": nn.PReLU(),
+                                "Sigmoid": nn.Sigmoid(),
+                                "Tanh": nn.Tanh(),
+                                "Hardswish": nn.Hardswish(),
+                                "Hardtanh": nn.Hardtanh(),
+                                "LogSigmoid": nn.LogSigmoid(),
+                                "Softplus": nn.Softplus(),
+                                "Softsign": nn.Softsign(),
+                                "Softshrink": nn.Softshrink(),
+                                "Softmin": nn.Softmin(),
+                                "Softmax": nn.Softmax()}
+        return activation_functions[name]
+    else: return None
+
+class TemporalDeepMLP(nn.Module):
+
+    def __init__(self, 
+                 config, 
+                 device):
+        
+        super().__init__()
+        self.dimensions = config.data0.dimensions
+        self.vocab_size = config.data0.vocab_size
+        self.define_deep_models(config)
+        self.init_weights()
+        self.to(device)
+        self.expected_output_shape = [self.dimensions, self.vocab_size]
+
+    def define_deep_models(self, config):
+        self.time_embed_dim = config.temporal_network.time_embed_dim
+        self.hidden_layer = config.temporal_network.hidden_dim
+        self.num_layers = config.temporal_network.num_layers
+        self.activation_fn = get_activation_function(config.temporal_network.activation)
+
+        layers = [nn.Linear(self.dimensions + self.time_embed_dim, self.hidden_layer)]
+        if self.activation_fn: layers.append(self.activation_fn)
+        
+        for _ in range(self.num_layers - 2):
+            layers.extend([nn.Linear(self.hidden_layer, self.hidden_layer)])
+            if self.activation_fn: layers.extend([self.activation_fn])
+
+        layers.append(nn.Linear(self.hidden_layer, self.dimensions * self.vocab_size))
+        
+        self.model = nn.Sequential(*layers)
+
+    def forward(self, x, times):
+        batch_size = x.shape[0]
+        time_embeddings = transformer_timestep_embedding(times, embedding_dim=self.time_embed_dim)
+        x = torch.concat([x, time_embeddings], dim=1)
+        rate_logits = self.model(x)
+        rate_logits = rate_logits.reshape(batch_size, self.dimensions, self.vocab_size)
+
+        return rate_logits
+
+    def init_weights(self):
+        for layer in self.model:
+            if isinstance(layer, nn.Linear):
+                nn.init.xavier_uniform_(layer.weight)
+
+
 
 # Define a ResNet block
 class ResNetBlock(nn.Module):
