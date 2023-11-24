@@ -12,7 +12,7 @@ class DiffSamplerConfig:
 
 @dataclass
 class PerDimGibbsSamplerConfig:
-    name:str = "PerDimGibbs"
+    name:str = "PerDimGibbsSampler"
     rand:bool = False
 
 

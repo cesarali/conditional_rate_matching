@@ -20,10 +20,6 @@ from conditional_rate_matching.models.temporal_networks.rates.crm_rates import(
 
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 
-
-
-
-
 @dataclass
 class CRM:
     config: CRMConfig = None

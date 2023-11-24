@@ -49,13 +49,12 @@ class Oops:
     device: torch.device = None
 
     def __post_init__(self):
-        if self.dataloader_0 is not None:
-            self.pipeline = OopsPipeline(self.config, self.model, self.dataloader_0, self.dataloader_1)
+        if self.experiment_dir is not None:
+            self.load_from_experiment(self.experiment_dir,self.device)
+        elif self.config is not None:
+            self.initialize_from_config(config=self.config,device=self.device)
         else:
-            if self.experiment_dir is not None:
-                self.load_from_experiment(self.experiment_dir,self.device)
-            elif self.config is not None:
-                self.initialize_from_config(config=self.config,device=self.device)
+            raise Exception("Not Initialized")
 
     def initialize_from_config(self,config,device):
         # =====================================================
@@ -73,7 +72,8 @@ class Oops:
         self.model = EBM(self.config,device=device)
         self.sampler = get_oops_samplers(self.config)
         self.loss = OopsEBMLoss(self.config, device)
-        self.pipeline = OopsPipeline(self.config,self.sampler,self.dataloader_0,device)
+        self.pipeline = OopsPipeline(self.config,self.sampler,self.dataloader_0,self.experiment_files)
+        self.pipeline.initialize(device)
 
     def load_from_experiment(self,experiment_dir,device=None):
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
@@ -90,11 +90,12 @@ class Oops:
             self.device = device
 
         self.model.to(self.device)
-        self.loss = OopsEBMLoss(self.config, device)
+        self.loss = OopsEBMLoss(self.config, self.device)
         self.sampler = get_oops_samplers(self.config)
 
         self.dataloader_0 = get_dataloader_oops(self.config)
-        self.pipeline = OopsPipeline(self.config,self.sampler,self.dataloader_0,device)
+        self.pipeline = OopsPipeline(self.config,self.sampler,self.dataloader_0,self.experiment_files)
+        self.pipeline.initialize(self.device)
 
     def start_new_experiment(self):
         #create directories

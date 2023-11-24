@@ -17,7 +17,6 @@ class OopsEBMLoss:
             grad_reg = 0.0
 
         logp_fake = model(x_fake).squeeze()
-
         obj = logp_real.mean() - logp_fake.mean()
         loss = -obj + grad_reg + self.l2 * ((logp_real ** 2.).mean() + (logp_fake ** 2.).mean())
         return loss

@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 from typing import List
 from dataclasses import dataclass,field
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
 
 
 from conditional_rate_matching.models.generative_models.crm import (
@@ -17,8 +17,9 @@ from conditional_rate_matching.models.generative_models.crm import (
 )
 
 from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
+from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
+
 
 class CRMDataloder:
 
@@ -67,7 +68,7 @@ class CRMTrainer(Trainer):
         #SAVE INITIAL STUFF
         return np.inf
 
-    def train_step(self,databatch, number_of_training_step):
+    def train_step(self,databatch, number_of_training_step,epoch):
         batch_0, batch_1 = databatch
         # data pair and time sample
         x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
@@ -105,7 +106,7 @@ class CRMTrainer(Trainer):
 
         return loss
 
-    def test_step(self,databatch,number_of_test_step):
+    def test_step(self,databatch,number_of_test_step,epoch):
         batch_0, batch_1 = databatch
         with torch.no_grad():
             # data pair and time sample
@@ -146,7 +147,7 @@ if __name__=="__main__":
     # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="dario",
+                                       experiment_indentifier="potsdam",
                                        delete=True)
     # Configuration
     #config = experiment_MNIST(max_training_size=1000)

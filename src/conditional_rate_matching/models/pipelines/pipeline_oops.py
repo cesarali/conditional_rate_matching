@@ -53,12 +53,12 @@ class OopsPipeline:
     """
     config : OopsConfig
     model: EBM
-    data: NISTLoader
+    dataloader: NISTLoader
 
     def __init__(self,
                  config:OopsConfig,
                  sampler:Union[PerDimGibbsSampler,DiffSampler],
-                 dataloader:NISTLoaderConfig,
+                 dataloader:NISTLoader,
                  experiment_files:ExperimentFiles=None):
 
         super().__init__()
@@ -70,11 +70,10 @@ class OopsPipeline:
         self.experiment_files = experiment_files
 
         #parameters
-        self.n_iters = self.oops_config.pipeline.n_iters
-        self.n_samples = self.oops_config.pipeline.n_samples
+        self.number_of_betas = self.oops_config.pipeline.number_of_betas
         self.buffer_init = self.oops_config.pipeline.buffer_init
         self.buffer_size = self.oops_config.pipeline.buffer_size
-        self.steps_per_iter = self.oops_config.pipeline.steps_per_iter
+        self.steps_per_iter = self.oops_config.pipeline.sampler_steps_per_ais_iter
         self.viz_every = self.oops_config.pipeline.viz_every
         self.input_type = self.oops_config.pipeline.input_type
 
@@ -82,7 +81,10 @@ class OopsPipeline:
     def __call__(
         self,
         model: Optional[EBM] = None,
-        sample_size = None,
+        sample_size=None,
+        return_path=False,
+        get_ll=False,
+        train=True,
     ) -> Union[torch.Tensor, Tuple]:
         """
 
@@ -93,50 +95,66 @@ class OopsPipeline:
         """
         device = check_model_devices(model)
         sample_size = sample_size or self.oops_config.pipeline.num_samples
-        x = self.evaluate(model,device)
-        return x
 
-    def evaluate(self,model,device):
+        if get_ll:
+            x,ll = self.evaluate(model, sample_size,device, get_ll, train)
+            if not return_path:
+                x = x[:, -1, :]
+            return x, ll
+        else:
+            x = self.evaluate(model,sample_size,device, get_ll, train)
+            if not return_path:
+                x = x[:, -1, :]
+            return x
+
+    def evaluate(self,model,sample_size, device,get_ll=False,train=True):
         ais_model = AISModel(model, self.init_dist)
 
         # move to cuda
         ais_model.to(device)
 
         # annealing weights
-        betas = np.linspace(0., 1., self.n_iters)
+        betas = np.linspace(0., 1., self.number_of_betas)
 
-        samples = self.init_dist.sample((self.n_samples,)).to(device)
-        log_w = torch.zeros((self.n_samples,)).to(device)
+        samples = self.init_dist.sample((sample_size,)).to(device)
+        log_w = torch.zeros((sample_size,)).to(device)
 
         gen_samples = []
         for itr, beta_k in tqdm(enumerate(betas)):
             if itr == 0:
                 continue  # skip 0
-
             beta_km1 = betas[itr - 1]
 
             # udpate importance weights
             with torch.no_grad():
                 log_w = log_w + ais_model(samples, beta_k) - ais_model(samples, beta_km1)
+
             # update samples
             model_k = lambda x: ais_model(x, beta=beta_k)
             for d in range(self.steps_per_iter):
                 samples = self.sampler.step(samples.detach(), model_k).detach()
 
             if (itr + 1) % self.viz_every == 0:
-                gen_samples.append(samples.cpu().detach())
+                gen_samples.append(samples.cpu().detach().unsqueeze(1))
 
-        #ll = self.ll(ais_model.model,log_w,device)
-
+        gen_samples = torch.cat(gen_samples,dim=1)
+        if get_ll:
+            ll = self.ll(ais_model.model,sample_size,log_w,device,train)
+            return gen_samples,ll
         return gen_samples
 
-    def ll(self,model,log_w,device):
-        logZ_final = log_w.logsumexp(0) - np.log(self.n_samples)
+    def ll(self,model,sample_size,log_w,device,train=False):
+        if train:
+            dataloader = self.dataloader.train()
+        else:
+            dataloader = self.dataloader.test()
+
+        logZ_final = log_w.logsumexp(0) - np.log(sample_size)
         print("Final log(Z) = {:.4f}".format(logZ_final))
 
         logps = []
-        for x, _ in self.dataloader.train():
-            x = preprocess(x.to(device))
+        for x, _ in dataloader:
+            x = x.to(device)
             logp_x = model(x).squeeze().detach()
             logps.append(logp_x)
 
@@ -144,9 +162,19 @@ class OopsPipeline:
         ll = logps.mean() - logZ_final
         return ll
 
-    def get_buffer(self,device):
-        data_path = Path(self.oops_config.data0.data_dir) / self.oops_config.data0.dataset_name
-        buffer_path = data_path / f"buffer_{self.buffer_init}.pkl"
+    def sample_fake_from_buffer(self,batch_size,device):
+        # choose random inds from buffer
+        buffer_inds = sorted(np.random.choice(self.all_inds, batch_size, replace=False))
+        x_buffer = self.buffer[buffer_inds].to(device)
+        reinit = self.reinit_dist.sample((batch_size,)).to(device)
+        x_reinit = self.init_dist.sample((batch_size,)).to(device)
+        x_fake = x_reinit * reinit[:, None] + x_buffer * (1. - reinit[:, None])
+        return x_fake,buffer_inds
+
+
+    def initialize(self, device):
+        data_path = Path(self.oops_config.data0.data_dir)
+        buffer_path = data_path / f"{self.oops_config.data0.dataset_name}_buffer_{self.buffer_init}.pkl"
 
         if buffer_path.exists():
             # Load the buffer if it exists
@@ -177,12 +205,13 @@ class OopsPipeline:
             # Save the newly created buffer
             torch.save(self.buffer, buffer_path)
 
+        self.all_inds = list(range(self.buffer_size))
         self.init_dist = torch.distributions.Bernoulli(probs=init_mean.to(device))
         self.reinit_dist = torch.distributions.Bernoulli(probs=torch.tensor(self.oops_config.pipeline.reinit_freq))
 
     def get_init_mean(self,return_init_batch=False):
         data_path = Path(self.oops_config.data0.data_dir)
-        init_mean_path = data_path / "init_mean.pkl"
+        init_mean_path = data_path / f"{self.oops_config.data0.dataset_name}_init_mean.pkl"
         if not init_mean_path.exists():
             init_batch = []
             for databatch in self.dataloader.train():

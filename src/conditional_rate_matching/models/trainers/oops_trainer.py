@@ -2,29 +2,31 @@ import os
 import torch
 import numpy as np
 from conditional_rate_matching.configs.config_oops import OopsConfig
-from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
 from conditional_rate_matching.models.generative_models.oops import Oops
+from conditional_rate_matching.configs.config_files import ExperimentFiles
+from conditional_rate_matching.models.trainers.abstract_trainer import Trainer,TrainerState
+from torch.optim.adam import Adam
 
 class OopsTrainer(Trainer):
     """
-
     """
+
+    generative_model_class = Oops
 
     def __init__(self,config:OopsConfig,experiment_files:ExperimentFiles):
         self.config = config
 
-        self.sampling_steps = config.trainer.sampling_steps
         self.batch_size = config.data0.batch_size
-        self.buffer_size = config.trainer.buffer_size
-        self.buffer_init = config.trainer.buffer_init
         self.number_of_epochs = self.config.trainer.number_of_epochs
-
+        self.trainer_sampling_steps = self.config.trainer.sampler_steps_per_training_iter
+        self.eval_every = int(self.config.trainer.eval_every_epochs)
+        self.test_batch_size = self.config.trainer.test_batch_size
         device_str = self.config.trainer.device
 
         self.device = torch.device(device_str if torch.cuda.is_available() else "cpu")
         self.generative_model = Oops(self.config, experiment_files=experiment_files, device=self.device)
         self.dataloader = self.generative_model.dataloader_0
+        self.pipeline = self.generative_model.pipeline
 
 
     def preprocess_data(self, databatch):
@@ -33,55 +35,101 @@ class OopsTrainer(Trainer):
         return x
 
     def get_model(self):
-        pass
+        return self.generative_model.model
+
 
     def initialize(self):
-
-
-        itr = 0
-        best_val_ll = -np.inf
+        self.parameters_info()
+        self.generative_model.start_new_experiment()
+        #DEFINE OPTIMIZERS
+        self.optimizer = Adam(self.generative_model.model.parameters(),
+                              lr=self.config.trainer.learning_rate,
+                              weight_decay=self.config.trainer.weight_decay)
+        self.best_val_ll = -np.inf
         self.hop_dists = []
-        self.all_inds = list(range(self.buffer_size))
+        return np.inf
 
-        self.reinit_dist = torch.distributions.Bernoulli(probs=torch.tensor(self.reinit_freq))
+    def test_step(self, databatch,epoch,number_of_test_step):
+        return np.inf
 
+    def train_step(self,databatch,epoch,number_of_training_step):
+        current_model = self.generative_model.model
+        x = databatch
+        batch_size = x.size(0)
+        x_fake,buffer_inds = self.pipeline.sample_fake_from_buffer(batch_size,self.device)
 
-    def choose_random_int(self,buffer):
-        # choose random inds from buffer
-        buffer_inds = sorted(np.random.choice(self.all_inds, self.batch_size, replace=False))
-        x_buffer = buffer[buffer_inds].to(self.device)
-        reinit = self.reinit_dist.sample((self.batch_size,)).to(self.device)
-        x_reinit = self.init_dist.sample((self.batch_size,)).to(self.device)
-        x_fake = x_reinit * reinit[:, None] + x_buffer * (1. - reinit[:, None])
-        return x_fake
-
-    def test_step(self, current_model, databatch, number_of_test_step):
-        pass
-
-    def train_step(self, current_model, databatch, number_of_training_step):
-
-        x = self.preprocess_data(databatch)
-        x_fake = self.choose_random_int(buffer)
-
-        hops = []  # keep track of how much the sampelr moves particles around
-        for k in range(args.sampling_steps):
-            x_fake_new = sampler.step(x_fake.detach(), self.model).detach()
+        # sample
+        hops = []  # keep track of how much the sampler moves particles around
+        for k in range(self.trainer_sampling_steps):
+            x_fake_new = self.generative_model.sampler.step(x_fake.detach(), current_model).detach()
             h = (x_fake_new != x_fake).float().view(x_fake_new.size(0), -1).sum(-1).mean().item()
             hops.append(h)
             x_fake = x_fake_new
-        hop_dists.append(np.mean(hops))
+        self.hop_dists.append(np.mean(hops))
 
         # update buffer
-        buffer[buffer_inds] = x_fake.detach().cpu()
+        self.pipeline.buffer[buffer_inds] = x_fake.detach().cpu()
+
+        #loss
+        loss = self.generative_model.loss(current_model,x,x_fake)
+
+        # optimization
+        self.optimizer.zero_grad()
+        loss = loss.mean()
+        loss.backward()
+        self.optimizer.step()
+        self.writer.add_scalar('training loss', loss.item(), number_of_training_step)
+
+        return loss
+
+    def global_test(self,training_state:TrainerState,all_metrics,epoch):
+        for databatch in self.dataloader.train():
+            x,ll = self.pipeline(self.generative_model.model,self.test_batch_size,return_path=False,get_ll=True)
+            all_metrics.update({"ll":ll})
+            results_ = {}
+            # SAVE RESULTS IF LOSS DECREASES IN VALIDATION
+            if ll.item() > self.best_val_ll:
+                results_ = self.save_results(training_state,epoch + 1,checkpoint=False)
+                self.best_val_ll = ll.item()
+            break
+        return results_,all_metrics
+
+
+if __name__=="__main__":
+    from conditional_rate_matching.configs.config_oops import OopsConfig
+    from conditional_rate_matching.data.image_dataloaders import NISTLoaderConfig
+    from conditional_rate_matching.data.graph_dataloaders_config import CommunityConfig,CommunitySmallConfig
+
+    # Files to save the experiments_configs
+    experiment_files = ExperimentFiles(experiment_name="oops",
+                                       experiment_type="mnist",
+                                       experiment_indentifier="trainer_test",
+                                       delete=True)
+    config = OopsConfig()
+
+    config.model_mlp.n_blocks = 1
+    config.model_mlp.n_channels = 1
+
+    config.trainer.number_of_epochs = 4
+    config.trainer.sampler_steps_per_training_iter = 2
+    config.trainer.test_batch_size = 10
+    config.trainer.warm_up_best_model_epoch = 0
+    config.trainer.debug = True
+    config.trainer.save_model_epochs = 2
+
+    config.pipeline.number_of_betas = 2
+    config.pipeline.viz_every = 1
+    config.data0 = NISTLoaderConfig(batch_size=2)
+
+    oops_trainer = OopsTrainer(config,experiment_files)
+    results_,all_metrics = oops_trainer.train()
+    print(results_)
+    print(all_metrics)
 
 
 
 
-
-
-
-
-
+"""
 while itr < args.n_iters:
     for x in train_loader:
 
@@ -128,3 +176,4 @@ while itr < args.n_iters:
             model.to(device)
 
         itr += 1
+"""
