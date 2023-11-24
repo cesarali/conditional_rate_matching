@@ -8,6 +8,7 @@ from conditional_rate_matching import data_path
 # model config
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
+    TemporalDeepMLPConfig,
     ConvNetAutoencoderConfig,
 )
 
@@ -19,6 +20,7 @@ from conditional_rate_matching.models.trainers.trainers_config import BasicTrain
 
 temporal_network_configs = {
     "TemporalMLP":TemporalMLPConfig,
+    "TemporalDeepMLP":TemporalDeepMLPConfig,
     "ConvNetAutoencoderConfig":ConvNetAutoencoderConfig,
 }
 
@@ -49,7 +51,7 @@ class CRMConfig:
     # process
     process = ConstantProcessConfig = ConstantProcessConfig()
     # temporal network
-    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig] = TemporalMLPConfig()
+    temporal_network: Union[TemporalMLPConfig,TemporalDeepMLPConfig,ConvNetAutoencoderConfig] = TemporalMLPConfig()
     # training
     trainer: BasicTrainerConfig = BasicTrainerConfig()
     #pipeline
