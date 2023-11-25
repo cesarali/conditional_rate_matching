@@ -155,7 +155,7 @@ if __name__=="__main__":
     #config = small_community(number_of_epochs=400,berlin=True)
     config = small_community(number_of_epochs=500,berlin=True)
     crm_trainer = CRMTrainer(config,experiment_files)
-    results_,all_metrics = crm_trainer.train()
+    results_, all_metrics = crm_trainer.train()
     print(all_metrics)
 
 

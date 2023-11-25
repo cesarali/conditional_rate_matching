@@ -147,7 +147,8 @@ class CRM_Scan_Optuna:
         # Train the model
         crm = CRMTrainer(crm_config, self.experiment_files)
         _ , metrics = crm.train()
-        self.graph_metric = metrics["degree"]
+        print('all metric: ', metrics)
+        self.graph_metric = (metrics["degree"] + metrics["orbit"]) / 2.0
         if self.graph_metric < self.metric: self.metric = self.graph_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         
@@ -159,11 +160,11 @@ if __name__ == "__main__":
     scan = CRM_Scan_Optuna(dynamics="crm",
                            experiment_type="graph",
                            experiment_indentifier="optuna_scan_trial",
-                           model="mlp",
-                           full_adjacency=False,
-                           flatten=True,
-                           n_trials=2,
-                           epochs=100,
+                           model="gcn",
+                           full_adjacency=True,
+                           flatten=False,
+                           n_trials=20,
+                           epochs=500,
                            batch_size=(8,100),
                            learning_rate=(1e-7, 1e-2), 
                            hidden_dim=(16, 256), 
