@@ -1,4 +1,5 @@
 from dataclasses import dataclass,asdict
+from multiprocessing import pool
 
 @dataclass
 class TemporalMLPConfig:
@@ -14,6 +15,24 @@ class TemporalDeepMLPConfig:
     hidden_dim : int = 200
     activation : str = None
     num_layers : int = 2
+    ema_decay : float = 0.9999  # 0.9999
+
+@dataclass
+class TemporalDeepSetsConfig:
+    name : str = "TemporalDeepSets"
+    time_embed_dim : int = 39
+    hidden_dim : int = 200
+    pool : str = "sum"
+    activation : str = None
+    num_layers : int = 2
+    ema_decay : float = 0.9999  # 0.9999
+
+@dataclass
+class TemporalGNNConfig:
+    name : str = "TemporalGNN"
+    time_embed_dim : int = 39
+    hidden_dim : int = 200
+    activation : str = None
     ema_decay : float = 0.9999  # 0.9999
 
 @dataclass

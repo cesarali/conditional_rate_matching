@@ -1,8 +1,12 @@
+from platform import node
+import time
 import torch
 import torch.nn as nn
+import numpy as np
+import torch.nn.functional as F
+
 from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.configs.config_crm import CRMConfig as CRMConfig
 
 class Swish(nn.Module):
     def __init__(self):
@@ -351,14 +355,14 @@ class TemporalDeepMLP(nn.Module):
         self.time_embed_dim = config.temporal_network.time_embed_dim
         self.hidden_layer = config.temporal_network.hidden_dim
         self.num_layers = config.temporal_network.num_layers
-        self.activation_fn = get_activation_function(config.temporal_network.activation)
+        self.act_fn = get_activation_function(config.temporal_network.activation)
 
         layers = [nn.Linear(self.dimensions + self.time_embed_dim, self.hidden_layer)]
-        if self.activation_fn: layers.append(self.activation_fn)
+        if self.act_fn: layers.append(self.act_fn)
         
         for _ in range(self.num_layers - 2):
             layers.extend([nn.Linear(self.hidden_layer, self.hidden_layer)])
-            if self.activation_fn: layers.extend([self.activation_fn])
+            if self.act_fn: layers.extend([self.act_fn])
 
         layers.append(nn.Linear(self.hidden_layer, self.dimensions * self.vocab_size))
         
@@ -379,13 +383,7 @@ class TemporalDeepMLP(nn.Module):
                 nn.init.xavier_uniform_(layer.weight)
 
 
-
-
-
-
-import numpy as np
-
-class TemporalDeepMLP(torch.nn.Module):
+class TemporalDeepSets(torch.nn.Module):
     def __init__(self, 
                  config, 
                  device,
@@ -394,7 +392,6 @@ class TemporalDeepMLP(torch.nn.Module):
         super().__init__()
         self.dimensions = int(np.sqrt(config.data0.dimensions))  # dxd -> d
         self.vocab_size = config.data0.vocab_size
-        self.pool = pool
         self.define_deep_models(config)
         self.to(device)
         self.expected_output_shape = [self.dimensions, self.vocab_size]
@@ -404,16 +401,18 @@ class TemporalDeepMLP(torch.nn.Module):
         self.dim_hidden_t = config.temporal_network.time_embed_dim
         self.dim_hidden_x = config.temporal_network.hidden_dim
         self.num_layers = config.temporal_network.num_layers
-        self.activation_fn = get_activation_function(config.temporal_network.activation)
+        self.act_fn = get_activation_function(config.temporal_network.activation)
+        self.pool = config.temporal_network.pool
+
         s = 2 if self.pool == 'meansum' else 1  
 
-        phi_layers = [torch.nn.Linear(self.dimensions + self.dim_hidden_t, self.dim_hidden_x), self.activation_fn]
-        for _ in range(self.num_layers-1): phi_layers.extend([torch.nn.Linear(self.dim_hidden_x, self.dim_hidden_x), self.activation_fn])
+        phi_layers = [torch.nn.Linear(self.dimensions + self.dim_hidden_t, self.dim_hidden_x), self.act_fn]
+        for _ in range(self.num_layers-1): phi_layers.extend([torch.nn.Linear(self.dim_hidden_x, self.dim_hidden_x), self.act_fn])
         phi_layers.append(torch.nn.Linear(self.dim_hidden_x, self.dim_hidden_x))
         self.phi = torch.nn.Sequential(*phi_layers)
 
-        rho_layers = [torch.nn.Linear(s * self.dim_hidden_x, self.dim_hidden_x), self.activation_fn]
-        for _ in range(self.num_layers-1): rho_layers.extend([torch.nn.Linear(self.dim_hidden_x, self.dim_hidden_x), self.activation_fn])
+        rho_layers = [torch.nn.Linear(s * self.dim_hidden_x, self.dim_hidden_x), self.act_fn]
+        for _ in range(self.num_layers-1): rho_layers.extend([torch.nn.Linear(self.dim_hidden_x, self.dim_hidden_x), self.act_fn])
         rho_layers.append(torch.nn.Linear(self.dim_hidden_x, self.dimensions * self.vocab_size))
         self.rho = torch.nn.Sequential(*rho_layers)
 
@@ -423,12 +422,12 @@ class TemporalDeepMLP(torch.nn.Module):
         time_embeddings = time_embeddings.unsqueeze(1).repeat(1, x.shape[1], 1) 
         x = torch.concat([x, time_embeddings], dim=-1)
         
-        # deepsets:
+        #...deepsets:
         h = self.phi(x)
         h_sum = h.sum(1, keepdim=False)   
         h_mean = h.mean(1, keepdim=False)  
         
-        # aggregation:
+        #...aggregation:
         if self.pool == 'sum': h_pool = h_sum  
         elif self.pool == 'mean': h_pool = h_mean 
         elif self.pool == 'meansum': h_pool = torch.cat([h_mean, h_sum], dim=1) 
@@ -436,3 +435,62 @@ class TemporalDeepMLP(torch.nn.Module):
         rate_logits = self.rho(h_pool)    
         rate_logits = rate_logits.reshape(batch_size, self.dimensions, self.vocab_size)
         return rate_logits
+    
+import torch_geometric
+from torch_geometric.utils import dense_to_sparse
+from torch_geometric.nn import GCNConv
+from torch_geometric.data import Data, Batch
+
+class TemporalGNN(torch.nn.Module):
+    def __init__(self, config, device):
+        super(TemporalGNN, self).__init__()
+        self.dimensions = int(np.sqrt(config.data0.dimensions))  # dxd -> d
+        self.vocab_size = config.data0.vocab_size
+        self.define_deep_models(config)
+        self.to(device)
+        self.expected_output_shape = [self.dimensions, self.vocab_size]
+        
+    def define_deep_models(self, config):
+        self.dim_hidden_t = config.temporal_network.time_embed_dim 
+        self.dim_hidden_x = config.temporal_network.hidden_dim
+        self.act_fn = get_activation_function(config.temporal_network.activation)
+
+        #...define GNN layers
+        self.conv1 = GCNConv(self.dim_hidden_t + 1, self.dim_hidden_x)
+        self.conv2 = GCNConv(self.dim_hidden_x, self.dim_hidden_x)
+        self.conv3 = GCNConv(self.dim_hidden_x, self.dim_hidden_x)
+        self.conv4 = GCNConv(self.dim_hidden_x, self.dim_hidden_x)
+        self.linear = nn.Linear(self.dim_hidden_x, self.dimensions * self.vocab_size)
+
+    def forward(self, adj, times):
+        B, N, _ = adj.shape
+        node_degree = adj.sum(dim=1).unsqueeze(-1)
+        time_embeddings = transformer_timestep_embedding(times, embedding_dim=self.dim_hidden_t) 
+        time_embeddings = time_embeddings.unsqueeze(1).repeat(1, N, 1) 
+        node_features = torch.concat([node_degree, time_embeddings], dim=-1)
+        
+        data_list = []
+        for i in range(B):
+            edge_index, _ = dense_to_sparse(adj[i])  
+            data_list.append(Data(x=node_features[i], edge_index=edge_index))
+
+        batched_data = Batch.from_data_list(data_list)  
+        
+        h1 = self.conv1(batched_data.x, batched_data.edge_index)
+        residual = h1
+        h1 = self.act_fn(h1)
+        
+        h2 = self.conv2(h1, batched_data.edge_index)
+        h2 += residual
+        h2 = self.act_fn(h2)
+        
+        h3 = self.conv3(h2, batched_data.edge_index)
+        h3 += residual
+        h3 = self.act_fn(h3)
+        
+        h4 = self.conv3(h3, batched_data.edge_index)
+        h4 += residual 
+        h4 = self.act_fn(h4)
+        
+        h = torch_geometric.nn.global_mean_pool(h4, batched_data.batch) 
+        return self.linear(h)

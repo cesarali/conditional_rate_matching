@@ -1,3 +1,4 @@
+from multiprocessing import pool
 from pprint import pprint
 from dataclasses import asdict
 import datetime
@@ -10,7 +11,7 @@ from conditional_rate_matching.configs.config_crm import CRMConfig, BasicTrainer
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, TemporalDeepSetsConfig, TemporalGNNConfig
 from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig
 
 
@@ -19,6 +20,10 @@ class CRM_Scan_Optuna:
                  dynamics="crm",
                  experiment_type="graph",
                  experiment_indentifier="optuna_scan",
+                 model="mlp",
+                 full_adjacency=False,
+                 flatten=True,
+                 as_image=False,
                  device="cpu",
                  n_trials=100,
                  epochs=500,
@@ -33,9 +38,13 @@ class CRM_Scan_Optuna:
 
         # params
         self.dynamics = dynamics
-        self.experiment_type = experiment_type + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
+        self.experiment_type = experiment_type + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
         self.experiment_indentifier = experiment_indentifier
         self.workdir = "/home/df630/conditional_rate_matching/results/{}/{}".format(dynamics, self.experiment_type)
+        self.model = model
+        self.full_adjacency = full_adjacency
+        self.flatten = flatten
+        self.as_image = as_image
         self.device = device
         self.epochs = epochs
         self.batch_size = batch_size
@@ -93,22 +102,35 @@ class CRM_Scan_Optuna:
             
         crm_config.data1 = CommunitySmallConfig(dataset_name="community_small",
                                                 batch_size=batch_size,
-                                                full_adjacency=True,
-                                                flatten=False,
-                                                as_image=False,
+                                                full_adjacency=self.full_adjacency,
+                                                flatten=self.flatten,
+                                                as_image=self.as_image,
                                                 max_training_size=None,
                                                 max_test_size=2000)
         
         crm_config.data0 = StatesDataloaderConfig(dataset_name="categorical_dirichlet",
                                                   dirichlet_alpha=100.,
                                                   batch_size=batch_size,
-                                                  as_image=False)
+                                                  as_image=self.as_image)
         
         crm_config.process = ConstantProcessConfig(gamma=gamma)
-        crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
-                                                        time_embed_dim = time_embed_dim,
-                                                        num_layers = num_layers,
-                                                        activation = activation)
+
+        if self.model == "mlp":
+            crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
+                                                                time_embed_dim = time_embed_dim,
+                                                                num_layers = num_layers,
+                                                                activation = activation)
+        elif self.model == "deepsets":
+            crm_config.temporal_network = TemporalDeepSetsConfig(hidden_dim = hidden_dim,
+                                                                 time_embed_dim = time_embed_dim,
+                                                                 num_layers = num_layers,
+                                                                 pool = "sum",
+                                                                 activation = activation)
+        elif self.model == "gnn":
+            crm_config.temporal_network = TemporalGNNConfig(hidden_dim = hidden_dim,
+                                                            time_embed_dim = time_embed_dim,
+                                                            num_layers = num_layers,
+                                                            activation = activation)
 
         crm_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
                                                 learning_rate=learning_rate,
@@ -130,28 +152,24 @@ class CRM_Scan_Optuna:
         return self.mse
 
 
-
-
-
-
-
-
-
 if __name__ == "__main__":
                                    
     scan = CRM_Scan_Optuna(dynamics="crm",
                            experiment_type="graph",
-                           experiment_indentifier="optuna_scan_MLP",
+                           experiment_indentifier="optuna_scan_trial",
+                           model="gnn",
+                           full_adjacency=True,
+                           flatten=False,
                            n_trials=100,
-                           epochs=1000,
-                           batch_size=(8, 64),
+                           epochs=10000,
+                           batch_size=(16, 128),
                            learning_rate=(1e-7, 1e-2), 
                            hidden_dim=(16, 128), 
-                           num_layers=(2, 8),
-                           activation=('ReLU', 'LeakyReLU', 'ELU', 'SELU', 'CELU', 'GELU', 'Sigmoid', 'Tanh'),
+                           num_layers=4,
+                           activation=('ReLU', 'Sigmoid', 'Tanh', 'SELU'),
                            time_embed_dim=(16, 128), 
-                           gamma=(0.00001, 1.),
-                           device='cuda:1')
+                           gamma=(0.00001, 10),
+                           device='cpu')
     
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)

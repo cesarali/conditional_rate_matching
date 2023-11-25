@@ -9,6 +9,8 @@ from conditional_rate_matching import data_path
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     TemporalDeepMLPConfig,
+    TemporalDeepSetsConfig,
+    TemporalGNNConfig,
     ConvNetAutoencoderConfig,
 )
 
@@ -21,6 +23,8 @@ from conditional_rate_matching.models.trainers.trainers_config import BasicTrain
 temporal_network_configs = {
     "TemporalMLP":TemporalMLPConfig,
     "TemporalDeepMLP":TemporalDeepMLPConfig,
+    "TemporalDeepSets":TemporalDeepSetsConfig,
+    "TemporalGNN":TemporalGNNConfig,
     "ConvNetAutoencoderConfig":ConvNetAutoencoderConfig,
 }
 

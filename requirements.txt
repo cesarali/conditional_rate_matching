@@ -10,5 +10,5 @@ ipython
 matplotlib
 pyyaml
 torchtyping
-
+torch_geometric
 
