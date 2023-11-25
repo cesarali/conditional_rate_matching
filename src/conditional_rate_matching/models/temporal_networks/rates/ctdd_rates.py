@@ -16,6 +16,7 @@ from diffusers.utils import BaseOutput
 from conditional_rate_matching.models.temporal_networks.ema import EMA
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
 from abc import ABC,abstractmethod
+from functools import reduce
 
 @dataclass
 class BackwardRateOutput(BaseOutput):
@@ -40,8 +41,8 @@ class BackwardRate(nn.Module,ABC):
         self.config = config
 
         # DATA
-        self.dimension = config.data0.dimensions
-        self.num_states = config.data0.vocab_size
+        self.dimensions = config.data0.dimensions
+        self.vocab_size = config.data0.vocab_size
         self.data_min_max = config.data0.data_min_max
 
         # TIME
@@ -185,7 +186,10 @@ class BackRateMLP(EMA,BackwardRate,GaussianTargetRate):
 
     def define_deep_models(self,device):
         self.net = load_temporal_network(config=self.config,device=device)
-
+        self.expected_temporal_output_shape = self.net.expected_output_shape
+        if self.expected_temporal_output_shape != [self.dimensions,self.vocab_size]:
+            temporal_output_total = reduce(lambda x, y: x * y, self.expected_temporal_output_shape)
+            self.temporal_to_rate = nn.Linear(temporal_output_total,self.dimensions*self.vocab_size)
 
     def _forward(self,
                 x: TensorType["batch_size", "dimension"],
@@ -197,8 +201,12 @@ class BackRateMLP(EMA,BackwardRate,GaussianTargetRate):
             x = x.view(B, C*H*W)
 
         x = self._center_data(x)
+        batch_size = x.size(0)
         rate_logits = self.net(x,times)
-
+        if self.net.expected_output_shape != [self.dimensions,self.vocab_size]:
+            rate_logits = rate_logits.reshape(batch_size, -1)
+            rate_logits = self.temporal_to_rate(rate_logits)
+            rate_logits = rate_logits.reshape(batch_size,self.dimensions,self.vocab_size)
         return rate_logits
 
     def init_parameters(self):
@@ -223,7 +231,7 @@ class BackRateConstant(EMA,BackwardRate,GaussianTargetRate):
         x = self._center_data(x)
         batch_size = x.shape[0]
 
-        return torch.full(torch.Size([batch_size,self.dimension,self.num_states]),self.constant)
+        return torch.full(torch.Size([batch_size, self.dimensions, self.vocab_size]), self.constant)
 
 
 

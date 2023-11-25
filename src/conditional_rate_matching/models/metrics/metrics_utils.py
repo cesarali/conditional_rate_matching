@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from typing import Union
-
+from matplotlib import pyplot as plt
 from conditional_rate_matching.models.generative_models.crm import CRM
 from conditional_rate_matching.models.generative_models.ctdd import CTDD
 from conditional_rate_matching.models.generative_models.oops import Oops
@@ -17,6 +17,7 @@ import torch.nn.functional as F
 
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.models.metrics.crm_path_metrics import classification_path
+from conditional_rate_matching.data.gray_codes_dataloaders import GrayCodeDataLoader
 
 #binary
 from conditional_rate_matching.models.metrics.histograms import binary_histogram_dataloader
@@ -29,17 +30,9 @@ from conditional_rate_matching.utils.plots.images_plots import mnist_grid
 from conditional_rate_matching.models.metrics.graphs_metrics import eval_graph_list
 from conditional_rate_matching.utils.plots.graph_plots import plot_graphs_list2
 
-key_in_dict = lambda dictionary, key: dictionary is not None and key in dictionary
+from conditional_rate_matching.utils.plots.gray_code_plots import plot_samples
 
-def store_metrics(experiment_files,all_metrics,new_metrics,metric_string_name,epoch,where_to_log=None):
-    if key_in_dict(where_to_log, metric_string_name):
-        mse_metric_path = where_to_log[metric_string_name]
-    else:
-        mse_metric_path = experiment_files.metrics_file.format(metric_string_name + "_{0}_".format(epoch))
-    all_metrics.update(new_metrics)
-    with open(mse_metric_path, "w") as f:
-        json.dump(new_metrics, f)
-    return all_metrics
+key_in_dict = lambda dictionary, key: dictionary is not None and key in dictionary
 
 @dataclass
 class MetricsAvaliable:
@@ -51,11 +44,23 @@ class MetricsAvaliable:
     binary_paths_histograms: str = "binary_paths_histograms"
     marginal_binary_histograms: str = "marginal_binary_histograms"
     mnist_plot: str = "mnist_plot"
+    grayscale_plot: str = "grayscale_plot"
+
+
+def store_metrics(experiment_files,all_metrics,new_metrics,metric_string_name,epoch,where_to_log=None):
+    if key_in_dict(where_to_log, metric_string_name):
+        mse_metric_path = where_to_log[metric_string_name]
+    else:
+        mse_metric_path = experiment_files.metrics_file.format(metric_string_name + "_{0}_".format(epoch))
+    all_metrics.update(new_metrics)
+    with open(mse_metric_path, "w") as f:
+        json.dump(new_metrics, f)
+    return all_metrics
 
 def sample_crm(crm,config):
     source_dataloader = crm.dataloader_0
     data_dataloader = crm.dataloader_1
-    vocab_size, dimensions, max_test_size = config.data1.vocab_size, config.data1.dimensions, config.data1.max_test_size
+    vocab_size, dimensions, max_test_size = config.data1.vocab_size, config.data1.dimensions, config.trainer.max_test_size
     dataloader = crm.dataloader_1.test()
     test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(crm.device)
     generative_sample, generative_path, ts = crm.pipeline(sample_size=test_sample.shape[0],return_intermediaries=True,train=False)
@@ -65,7 +70,7 @@ def sample_crm(crm,config):
 def sample_ctdd(ctdd,config):
     source_dataloader = ctdd.dataloader_1
     data_dataloader = ctdd.dataloader_0
-    vocab_size, dimensions, max_test_size = config.data0.vocab_size, config.data0.dimensions, config.data0.max_test_size
+    vocab_size, dimensions, max_test_size = config.data0.vocab_size, config.data0.dimensions, config.trainer.max_test_size
     dataloader = ctdd.dataloader_0.test()
     test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(ctdd.device)
     generative_sample = ctdd.pipeline(ctdd.backward_rate, sample_size=test_sample.shape[0],
@@ -76,7 +81,7 @@ def sample_ctdd(ctdd,config):
 def sample_oops(oops,config):
     source_dataloader = None
     data_dataloader = oops.dataloader_0.test
-    vocab_size, dimensions, max_test_size = config.data0.vocab_size, config.data0.dimensions, config.data0.max_test_size
+    vocab_size, dimensions, max_test_size = config.data0.vocab_size, config.data0.dimensions, config.trainer.max_test_size
     dataloader = oops.dataloader_0.test()
     test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(oops.device)
     generative_sample, ll = oops.pipeline(oops.model, max_test_size, return_path=False, get_ll=True)
@@ -101,6 +106,8 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
         sizes, source_dataloader, data_dataloader, generative_sample,test_sample = sample_ctdd(generative_model,config)
     elif isinstance(generative_model,Oops):
         sizes,source_dataloader, data_dataloader, generative_sample,test_sample = sample_oops(generative_model,config)
+    else:
+        return {}
 
     vocab_size, dimensions, max_test_size = sizes
     size_ = min(generative_sample.size(0),test_sample.size(0))
@@ -194,10 +201,21 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
         assert vocab_size == 2
         if key_in_dict(where_to_log,metric_string_name):
             plot_path = where_to_log[metric_string_name]
+            mnist_grid(generative_sample, plot_path)
         else:
-            plot_path = generative_model.experiment_files.plot_path.format("mnist_plot_{0}".format(epoch))
-            plot_path2 = generative_model.experiment_files.plot_path.format("mnist_plot_2_{0}".format(epoch))
-        mnist_grid(generative_sample,plot_path)
-        #mnist_grid(generative_path[:,-1,:],plot_path2)
-
+            plot_path = generative_model.experiment_files.plot_path.format("nist_plot_{0}".format(epoch))
+            plot_path_test = generative_model.experiment_files.plot_path.format("nist_plot_test_{0}".format(epoch))
+            mnist_grid(generative_sample, plot_path)
+            mnist_grid(test_sample, plot_path_test)
+    #GRAYCODE
+    metric_string_name = MetricsAvaliable.grayscale_plot
+    if metric_string_name in metrics_to_log:
+        if isinstance(data_dataloader,GrayCodeDataLoader):
+            plt.close()
+            test_sample_gray_image = data_dataloader.get_images(test_sample)
+            generative_sample_gray_image = data_dataloader.get_images(generative_sample)
+            plot_path_gray = generative_model.experiment_files.plot_path.format("graycode_plot_{0}".format(epoch))
+            plot_path_test_gray = generative_model.experiment_files.plot_path.format("graycode_plot_test_{0}".format(epoch))
+            plot_samples(test_sample_gray_image, plot_path_gray, lim=data_dataloader.db.f_scale)
+            plot_samples(generative_sample_gray_image,plot_path_test_gray,lim=data_dataloader.db.f_scale)
     return all_metrics

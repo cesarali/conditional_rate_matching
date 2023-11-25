@@ -1,6 +1,5 @@
 import torch
 from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.configs.config_crm import NistConfig
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers import TauLeaping
 
 def sample_from_dataloader(dataloder_iterator,sample_size,flatten=True):

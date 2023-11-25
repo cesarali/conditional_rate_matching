@@ -15,13 +15,15 @@ from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloa
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
+from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 
-from conditional_rate_matching.models.temporal_networks.mlp_config import ResNetEBMConfig
+from conditional_rate_matching.models.temporal_networks.mlp_config import ResNetEBMConfig,MLPEBMConfig
 from conditional_rate_matching.models.pipelines.mc_samplers.oops_sampler_config import DiffSamplerConfig,PerDimGibbsSamplerConfig
 
 
 oops_mlp_configs = {
-    "ResNetEBM":ResNetEBMConfig
+    "ResNetEBM":ResNetEBMConfig,
+    "MLPEBM":MLPEBMConfig
 }
 
 oops_samplers_configs = {
@@ -31,7 +33,8 @@ oops_samplers_configs = {
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
-                "StatesDataloader":StatesDataloaderConfig}
+                "StatesDataloader":StatesDataloaderConfig,
+                "GrayCodesDataloader":GrayCodesDataloaderConfig}
 
 image_data_path = os.path.join(data_path,"raw")
 
@@ -57,7 +60,7 @@ class OopsConfig:
     # process
     sampler : Union[PerDimGibbsSamplerConfig,DiffSamplerConfig] = PerDimGibbsSamplerConfig()
     # temporal network
-    model_mlp: Union[ResNetEBMConfig] = ResNetEBMConfig()
+    model_mlp: Union[ResNetEBMConfig,MLPEBMConfig] = ResNetEBMConfig()
     # loss
     loss: OopsLossConfig = OopsLossConfig()
     # training

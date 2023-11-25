@@ -18,15 +18,17 @@ from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloa
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
+from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 
 temporal_network_configs = {
     "TemporalMLP":TemporalMLPConfig,
-    "ConvNetAutoencoderConfig":ConvNetAutoencoderConfig,
+    "ConvNetAutoencoder":ConvNetAutoencoderConfig,
 }
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
-                "StatesDataloader":StatesDataloaderConfig}
+                "StatesDataloader":StatesDataloaderConfig,
+                "GrayCodesDataloader":GrayCodesDataloaderConfig}
 
 image_data_path = os.path.join(data_path,"raw")
 

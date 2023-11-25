@@ -10,6 +10,9 @@ from conditional_rate_matching.configs.config_oops import OopsConfig
 
 import torch.distributions as dists
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
+from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
+from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig
+
 from conditional_rate_matching.utils.devices import check_model_devices
 from conditional_rate_matching.models.temporal_networks.ebm import EBM
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
@@ -174,7 +177,11 @@ class OopsPipeline:
 
     def initialize(self, device):
         data_path = Path(self.oops_config.data0.data_dir)
-        buffer_path = data_path / f"{self.oops_config.data0.dataset_name}_buffer_{self.buffer_init}.pkl"
+        dimensions = self.oops_config.data0.dimensions
+        if isinstance(self.oops_config.data0,GraphDataloaderConfig):
+            buffer_path = data_path / f"{self.oops_config.data0.dataset_name}_buffer_{self.buffer_init}_{dimensions}.pkl"
+        else:
+            buffer_path = data_path / f"{self.oops_config.data0.dataset_name}_buffer_{self.buffer_init}.pkl"
 
         if buffer_path.exists():
             # Load the buffer if it exists
@@ -211,7 +218,11 @@ class OopsPipeline:
 
     def get_init_mean(self,return_init_batch=False):
         data_path = Path(self.oops_config.data0.data_dir)
-        init_mean_path = data_path / f"{self.oops_config.data0.dataset_name}_init_mean.pkl"
+        dimensions = self.oops_config.data0.dimensions
+        if isinstance(self.oops_config.data0,GraphDataloaderConfig):
+            init_mean_path = data_path / f"{self.oops_config.data0.dataset_name}_init_mean_{dimensions}.pkl"
+        else:
+            init_mean_path = data_path / f"{self.oops_config.data0.dataset_name}_init_mean.pkl"
         if not init_mean_path.exists():
             init_batch = []
             for databatch in self.dataloader.train():

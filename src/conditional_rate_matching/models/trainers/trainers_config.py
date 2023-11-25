@@ -8,6 +8,8 @@ class BasicTrainerConfig:
     warm_up_best_model_epoch = 1e6
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
+    max_test_size:int = 2000
+
 
     learning_rate:float = 0.001
     weight_decay:float = .0
