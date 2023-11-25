@@ -441,9 +441,9 @@ from torch_geometric.utils import dense_to_sparse
 from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data, Batch
 
-class TemporalGNN(torch.nn.Module):
+class TemporalGraphConvNet(torch.nn.Module):
     def __init__(self, config, device):
-        super(TemporalGNN, self).__init__()
+        super().__init__()
         self.dimensions = int(np.sqrt(config.data0.dimensions))  # dxd -> d
         self.vocab_size = config.data0.vocab_size
         self.define_deep_models(config)
@@ -458,8 +458,6 @@ class TemporalGNN(torch.nn.Module):
         #...define GNN layers
         self.conv1 = GCNConv(self.dim_hidden_t + 1, self.dim_hidden_x)
         self.conv2 = GCNConv(self.dim_hidden_x, self.dim_hidden_x)
-        self.conv3 = GCNConv(self.dim_hidden_x, self.dim_hidden_x)
-        self.conv4 = GCNConv(self.dim_hidden_x, self.dim_hidden_x)
         self.linear = nn.Linear(self.dim_hidden_x, self.dimensions * self.vocab_size)
 
     def forward(self, adj, times):
@@ -476,21 +474,9 @@ class TemporalGNN(torch.nn.Module):
 
         batched_data = Batch.from_data_list(data_list)  
         
-        h1 = self.conv1(batched_data.x, batched_data.edge_index)
-        residual = h1
-        h1 = self.act_fn(h1)
-        
-        h2 = self.conv2(h1, batched_data.edge_index)
-        h2 += residual
-        h2 = self.act_fn(h2)
-        
-        h3 = self.conv3(h2, batched_data.edge_index)
-        h3 += residual
-        h3 = self.act_fn(h3)
-        
-        h4 = self.conv3(h3, batched_data.edge_index)
-        h4 += residual 
-        h4 = self.act_fn(h4)
-        
-        h = torch_geometric.nn.global_mean_pool(h4, batched_data.batch) 
+        h = self.conv1(batched_data.x, batched_data.edge_index)
+        h = self.act_fn(h)
+        h = self.conv2(h, batched_data.edge_index)
+        h = self.act_fn(h)
+        h = torch_geometric.nn.global_mean_pool(h, batched_data.batch) 
         return self.linear(h)

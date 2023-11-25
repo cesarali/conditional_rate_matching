@@ -13,9 +13,8 @@ class TemporalDeepMLPConfig:
     name : str = "TemporalDeepMLP"
     time_embed_dim : int = 39
     hidden_dim : int = 200
-    activation : str = None
+    activation : str = 'ReLU'
     num_layers : int = 2
-    ema_decay : float = 0.9999  # 0.9999
 
 @dataclass
 class TemporalDeepSetsConfig:
@@ -23,17 +22,15 @@ class TemporalDeepSetsConfig:
     time_embed_dim : int = 39
     hidden_dim : int = 200
     pool : str = "sum"
-    activation : str = None
+    activation : str = 'ReLU'
     num_layers : int = 2
-    ema_decay : float = 0.9999  # 0.9999
 
 @dataclass
-class TemporalGNNConfig:
-    name : str = "TemporalGNN"
+class TemporalGraphConvNetConfig:
+    name : str = "TemporalGraphConvNet"
     time_embed_dim : int = 39
     hidden_dim : int = 200
-    activation : str = None
-    ema_decay : float = 0.9999  # 0.9999
+    activation : str = 'ReLU'
 
 @dataclass
 class ConvNetAutoencoderConfig:

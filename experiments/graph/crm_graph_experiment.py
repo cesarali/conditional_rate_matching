@@ -11,7 +11,9 @@ from conditional_rate_matching.configs.config_crm import CRMConfig, BasicTrainer
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, TemporalDeepSetsConfig, TemporalGNNConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (TemporalDeepMLPConfig, 
+                                                                                         TemporalDeepSetsConfig, 
+                                                                                         TemporalGraphConvNetConfig)
 from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig
 
 
@@ -126,11 +128,10 @@ class CRM_Scan_Optuna:
                                                                  num_layers = num_layers,
                                                                  pool = "sum",
                                                                  activation = activation)
-        elif self.model == "gnn":
-            crm_config.temporal_network = TemporalGNNConfig(hidden_dim = hidden_dim,
-                                                            time_embed_dim = time_embed_dim,
-                                                            num_layers = num_layers,
-                                                            activation = activation)
+        elif self.model == "gcn":
+            crm_config.temporal_network = TemporalGraphConvNetConfig(hidden_dim = hidden_dim,
+                                                                    time_embed_dim = time_embed_dim,
+                                                                    activation = activation)
 
         crm_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
                                                 learning_rate=learning_rate,
@@ -138,6 +139,7 @@ class CRM_Scan_Optuna:
                                                 metrics=["mse_histograms", 
                                                         "binary_paths_histograms", 
                                                         "marginal_binary_histograms", 
+                                                        "graphs_metrics",
                                                         "graphs_plot"])
         
         crm_config.pipeline.number_of_steps = self.num_timesteps
@@ -145,11 +147,11 @@ class CRM_Scan_Optuna:
         # Train the model
         crm = CRMTrainer(crm_config, self.experiment_files)
         _ , metrics = crm.train()
-        self.mse = metrics["mse_marginal_histograms"]
-        if self.mse < self.metric: self.metric = self.mse
+        self.graph_metric = metrics["degree"]
+        if self.graph_metric < self.metric: self.metric = self.graph_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         
-        return self.mse
+        return self.graph_metric
 
 
 if __name__ == "__main__":
@@ -157,17 +159,17 @@ if __name__ == "__main__":
     scan = CRM_Scan_Optuna(dynamics="crm",
                            experiment_type="graph",
                            experiment_indentifier="optuna_scan_trial",
-                           model="gnn",
-                           full_adjacency=True,
-                           flatten=False,
-                           n_trials=100,
-                           epochs=10000,
-                           batch_size=(16, 128),
+                           model="mlp",
+                           full_adjacency=False,
+                           flatten=True,
+                           n_trials=2,
+                           epochs=100,
+                           batch_size=(8,100),
                            learning_rate=(1e-7, 1e-2), 
-                           hidden_dim=(16, 128), 
-                           num_layers=4,
-                           activation=('ReLU', 'Sigmoid', 'Tanh', 'SELU'),
-                           time_embed_dim=(16, 128), 
+                           hidden_dim=(16, 256), 
+                           num_layers=(2, 5),
+                           activation=('ReLU', 'Sigmoid'),
+                           time_embed_dim=(16, 256), 
                            gamma=(0.00001, 10),
                            device='cpu')
     
