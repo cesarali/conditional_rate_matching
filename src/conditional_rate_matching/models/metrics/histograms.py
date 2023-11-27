@@ -20,6 +20,9 @@ def categorical_histogram_dataloader(dataloader_0, dimensions, number_of_classes
         dataloader = dataloader_0
 
     histogram = torch.zeros(dimensions,number_of_classes)
+    if dataloader is None:
+        return histogram
+
     sample_size = 0.
     for databatch in dataloader:
         x_0 = databatch[0]

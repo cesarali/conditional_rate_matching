@@ -9,7 +9,7 @@ from conditional_rate_matching.configs.config_files import ExperimentFiles
 
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 from conditional_rate_matching.models.generative_models.ctdd import CTDD
-from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
 from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
 
@@ -68,7 +68,7 @@ class CTDDTrainer(Trainer):
         #SAVE INITIAL STUFF
         return np.inf
 
-    def train_step(self, databatch, number_of_training_step):
+    def train_step(self, databatch, number_of_training_step,epoch):
         current_model = self.generative_model.backward_rate
         with torch.autograd.set_detect_anomaly(True):
             databatch = self.preprocess_data(databatch)
@@ -94,7 +94,7 @@ class CTDDTrainer(Trainer):
             self.writer.add_scalar('training loss', loss_.item(), number_of_training_step)
             return loss_
 
-    def test_step(self, databatch, number_of_test_step):
+    def test_step(self, databatch, number_of_test_step,epoch):
         current_model = self.generative_model.backward_rate
         with torch.no_grad():
             databatch = self.preprocess_data(databatch)
@@ -132,9 +132,9 @@ if __name__=="__main__":
     # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="ctdd",
                                        experiment_type="graph",
-                                       experiment_indentifier="community8",
+                                       experiment_indentifier="community9",
                                        delete=True)
-    config = small_community(number_of_epochs=500)
+    config = small_community(number_of_epochs=50)
     #config = community(number_of_epochs=200)
 
     ctdd_trainer = CTDDTrainer(config,experiment_files)

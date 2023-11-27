@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 from typing import List
 from dataclasses import dataclass,field
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
 
 
 from conditional_rate_matching.models.generative_models.crm import (
@@ -17,8 +17,9 @@ from conditional_rate_matching.models.generative_models.crm import (
 )
 
 from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
+from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
+
 
 class CRMDataloder:
 
@@ -59,15 +60,12 @@ class CRMTrainer(Trainer):
 
         :return:
         """
-        self.parameters_info()
         self.generative_model.start_new_experiment()
         #DEFINE OPTIMIZERS
         self.optimizer = Adam(self.generative_model.forward_rate.parameters(), lr=self.config.trainer.learning_rate)
-
-        #SAVE INITIAL STUFF
         return np.inf
 
-    def train_step(self,databatch, number_of_training_step):
+    def train_step(self,databatch, number_of_training_step,epoch):
         batch_0, batch_1 = databatch
         # data pair and time sample
         x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
@@ -105,7 +103,7 @@ class CRMTrainer(Trainer):
 
         return loss
 
-    def test_step(self,databatch,number_of_test_step):
+    def test_step(self,databatch,number_of_test_step,epoch):
         batch_0, batch_1 = databatch
         with torch.no_grad():
             # data pair and time sample
@@ -142,18 +140,23 @@ class CRMTrainer(Trainer):
 if __name__=="__main__":
     from conditional_rate_matching.configs.experiments_configs.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
     from conditional_rate_matching.configs.experiments_configs.testing_graphs import small_community, community
+    from dataclasses import asdict
+    from pprint import pprint
 
     # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="dario",
+                                       experiment_indentifier="potsdam2",
                                        delete=True)
+
     # Configuration
     #config = experiment_MNIST(max_training_size=1000)
     #config = experiment_MNIST_Convnet(max_training_size=5000,max_test_size=2000)
     #config = experiment_kStates()
     #config = small_community(number_of_epochs=400,berlin=True)
     config = small_community(number_of_epochs=500,berlin=True)
+    pprint(asdict(config))
+
     crm_trainer = CRMTrainer(config,experiment_files)
     results_, all_metrics = crm_trainer.train()
     print(all_metrics)

@@ -40,9 +40,9 @@ if __name__ == "__main__":
     x_f, x_hist, x0_hist, ts = TauLeaping(config, classification_model, x_0, forward=True)
 
     # histograms
-    histogram0 = binary_histogram_dataloader(dataloader_0, dimensions=config.dimension,
+    histogram0 = binary_histogram_dataloader(dataloader_0, dimensions=config.dimensions,
                                              train=True, maximum_test_sample_size=config.maximum_test_sample_size)
-    histogram1 = binary_histogram_dataloader(dataloader_1, dimensions=config.dimension,
+    histogram1 = binary_histogram_dataloader(dataloader_1, dimensions=config.dimensions,
                                              train=True, maximum_test_sample_size=config.maximum_test_sample_size)
     marginal_histograms = (histogram0, torch.zeros_like(histogram0), histogram1, torch.zeros_like(histogram1))
     plot_marginals_binary_histograms(marginal_histograms)

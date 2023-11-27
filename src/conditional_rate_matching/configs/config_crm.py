@@ -18,6 +18,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
+
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
 
 temporal_network_configs = {
@@ -30,7 +32,8 @@ temporal_network_configs = {
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
-                "StatesDataloader":StatesDataloaderConfig}
+                "StatesDataloader":StatesDataloaderConfig,
+                "GrayCodesDataloader":GrayCodesDataloaderConfig}
 
 image_data_path = os.path.join(data_path,"raw")
 
@@ -79,12 +82,3 @@ class CRMConfig:
 
         if isinstance(self.pipeline,dict):
             self.pipeline = BasicPipelineConfig(**self.pipeline)
-
-@dataclass
-class NistConfig(CRMConfig):
-
-    dataset_name_0:str = "categorical_dirichlet"
-    dataset_name_1:str = "mnist"
-
-    def __post_init__(self):
-        self.trainer.metrics = ["mse_histograms","binary_paths_histograms","marginal_binary_histograms","mnist_plot"]

@@ -2,11 +2,10 @@ from platform import node
 import time
 import torch
 import torch.nn as nn
-import numpy as np
-import torch.nn.functional as F
-
-from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig as CRMConfig
+from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
 
 class Swish(nn.Module):
     def __init__(self):
@@ -14,7 +13,6 @@ class Swish(nn.Module):
 
     def forward(self, x):
         return x * torch.sigmoid(x)
-
 
 def mlp_ebm(nin, nint=256, nout=1):
     return nn.Sequential(
@@ -29,6 +27,8 @@ def mlp_ebm(nin, nint=256, nout=1):
 
 
 class MLPEBM_cat(nn.Module):
+
+
     def __init__(self, nin, n_proj, n_cat=256, nint=256, nout=1):
         super().__init__()
         self.proj = nn.Linear(n_cat, n_proj)
@@ -42,6 +42,17 @@ class MLPEBM_cat(nn.Module):
         x_p = x_p.view(x.size(0), x.size(1) * self.n_proj)
         return self.net(x_p)
 
+
+class MLP_EBM(nn.Module):
+
+    def __init__(self,config:OopsConfig):
+        super().__init__()
+        dimensions = config.data0.dimensions
+        nint = config.model_mlp.hidden_size
+        self.net = mlp_ebm(nin=dimensions, nint=nint, nout=1)
+
+    def forward(self, x):
+        return self.net(x).squeeze()
 
 def conv_transpose_3x3(in_planes, out_planes, stride=1):
     return nn.ConvTranspose2d(in_planes, out_planes,
@@ -88,7 +99,6 @@ class BasicBlock(nn.Module):
             out = self.nonlin2(out)
         return out
 
-from conditional_rate_matching.configs.config_oops import OopsConfig
 
 class ResNetEBM(nn.Module):
     def __init__(self,config:OopsConfig):
@@ -295,6 +305,8 @@ class ConvNetAutoencoder(nn.Module):
         return temb
 
     def forward(self,x,timesteps):
+        if len(x.shape) == 2:
+            x = x.view(-1,1,28,28)
         temp = self._time_embedding(timesteps)
 
         # Encoder

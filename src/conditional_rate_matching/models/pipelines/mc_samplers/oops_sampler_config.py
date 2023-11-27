@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class DiffSamplerConfig:
-    name = "DiffSampler"
+    name:str = "DiffSampler"
     n_steps: int = 10
     approx: bool = False
     multi_hop: bool = False
@@ -12,7 +12,7 @@ class DiffSamplerConfig:
 
 @dataclass
 class PerDimGibbsSamplerConfig:
-    name:str = "PerDimGibbs"
+    name:str = "PerDimGibbsSampler"
     rand:bool = False
 
 

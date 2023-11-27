@@ -6,7 +6,9 @@ from conditional_rate_matching.data.states_dataloaders import sample_categorical
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
+from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 
+from conditional_rate_matching.data.gray_codes_dataloaders import GrayCodeDataLoader
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.data.states_dataloaders import StatesDataloader
@@ -66,6 +68,8 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_1 = StatesDataloader(config.data1)
     elif isinstance(config.data1,GraphDataloaderConfig):
         dataloader_1 = GraphDataloaders(config.data1)
+    elif isinstance(config.data1,GrayCodesDataloaderConfig):
+        dataloader_1 = GrayCodeDataLoader(config.data1)
 
     if isinstance(config.data0,NISTLoaderConfig):
         dataloader_0 = NISTLoader(config.data0)
@@ -74,6 +78,8 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_0 = StatesDataloader(config.data0)
     elif isinstance(config.data0,GraphDataloaderConfig):
         dataloader_0 = GraphDataloaders(config.data0)
+    elif isinstance(config.data0,GrayCodesDataloaderConfig):
+        dataloader_0 = GrayCodeDataLoader(config.data0)
 
     assert config.data0.dimensions == config.data1.dimensions
     config.dimensions = config.data1.dimensions

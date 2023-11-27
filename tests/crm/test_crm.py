@@ -14,7 +14,6 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from conditional_rate_matching.models.generative_models.crm import (
     CRM,
-    ConditionalBackwardRate,
     ClassificationForwardRate
 )
 
@@ -84,7 +83,7 @@ class TestCRM(unittest.TestCase):
 class TestCRMLoading(unittest.TestCase):
 
     def test_load(self):
-        from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+        from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
         from conditional_rate_matching.utils.plots.images_plots import mnist_grid
 
         experiment_dir = get_experiment_dir(experiment_name="crm",

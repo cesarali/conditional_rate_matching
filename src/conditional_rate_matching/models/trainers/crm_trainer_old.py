@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 from typing import List
 from dataclasses import dataclass,field
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
 
 
 from conditional_rate_matching.models.generative_models.crm import (
@@ -159,7 +159,7 @@ if __name__=="__main__":
             results = save_results(state, crm.experiment_files, epoch + 1, checkpoint=True)
 
         if (epoch + 1) % config.trainer.save_metric_epochs == 0:
-            all_metrics = log_metrics(crm=crm, epoch=epoch + 1, writer=writer)
+            all_metrics = log_metrics(generative_model=crm, epoch=epoch + 1, writer=writer)
 
         state.finish_epoch()
     writer.close()

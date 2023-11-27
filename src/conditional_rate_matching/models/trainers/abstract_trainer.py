@@ -1,10 +1,22 @@
+from dataclasses import field,dataclass
+from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
+
+from abc import ABC, abstractmethod
+import torch
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 import numpy as np
 from typing import Union,List
-from dataclasses import field,dataclass
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig
 
-from conditional_rate_matching.models.generative_models.crm import CRM
 from conditional_rate_matching.models.generative_models.ctdd import CTDD
-from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+from conditional_rate_matching.models.generative_models.oops import Oops
+from conditional_rate_matching.models.generative_models.crm import CRM
+
+from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
+from conditional_rate_matching.data.image_dataloaders import NISTLoaderConfig
 
 @dataclass
 class TrainerState:
@@ -38,13 +50,6 @@ class TrainerState:
         self.number_of_test_step += 1
         self.test_loss.append(loss)
 
-from abc import ABC, abstractmethod
-import torch
-from torch.optim import Adam
-from torch.utils.tensorboard import SummaryWriter
-from datetime import datetime
-from tqdm import tqdm
-import numpy as np
 
 # Assuming CTDDConfig, CTDD, and other necessary classes are defined elsewhere
 
@@ -54,9 +59,9 @@ class Trainer(ABC):
     a ratio estimator with a stein estimator
     """
 
-    dataloader = None
-    generative_model = None
-    config = None
+    dataloader:Union[GraphDataloaders,NISTLoaderConfig] = None
+    generative_model:Union[CTDD,Oops,CRM] = None
+    config:Union[CTDDConfig,OopsConfig,CRMConfig] = None
 
     def parameters_info(self):
         print("# ==================================================")
@@ -73,7 +78,6 @@ class Trainer(ABC):
         print("# Number of Epochs {0}".format(self.number_of_epochs))
         print("# ==================================================")
 
-
     @abstractmethod
     def initialize(self):
         """
@@ -84,6 +88,7 @@ class Trainer(ABC):
 
     def initialize_(self):
         self.initialize()
+        self.parameters_info()
         self.writer = SummaryWriter(self.generative_model.experiment_files.tensorboard_path)
         self.tqdm_object = tqdm(range(self.config.trainer.number_of_epochs))
 
@@ -95,6 +100,9 @@ class Trainer(ABC):
         """
         pass
 
+    def global_training(self,training_state,all_metrics,epoch):
+        return {},all_metrics
+
     @abstractmethod
     def test_step(self, current_model, databatch, number_of_test_step):
         """
@@ -102,6 +110,9 @@ class Trainer(ABC):
         To be implemented by subclasses.
         """
         pass
+
+    def global_test(self,training_state,all_metrics,epoch):
+        return {},all_metrics
 
     @abstractmethod
     def preprocess_data(self, databatch):
@@ -121,7 +132,6 @@ class Trainer(ABC):
 
         :return:
         """
-
         # INITIATE LOSS
         self.initialize_()
         all_metrics = {}
@@ -130,45 +140,47 @@ class Trainer(ABC):
 
         training_state = TrainerState(self.generative_model)
         training_state.best_loss = np.inf
-
         for epoch in self.tqdm_object:
             #TRAINING
             for step, databatch in enumerate(self.dataloader.train()):
                 databatch = self.preprocess_data(databatch)
                 # DATA
-                loss = self.train_step(databatch,training_state.number_of_training_steps)
-                training_state.update_training_batch(loss.item())
+                loss = self.train_step(databatch,training_state.number_of_training_steps,epoch)
+                loss_ = loss.item() if isinstance(loss, torch.Tensor) else loss
+                training_state.update_training_batch(loss_)
                 self.tqdm_object.set_description(f"Epoch {epoch + 1}, Loss: {loss.item():.4f}")
                 self.tqdm_object.refresh()  # to show immediately the update
+                if self.config.trainer.debug:
+                    break
             training_state.set_average_train_loss()
-
+            results_,all_metrics = self.global_training(training_state,all_metrics,epoch)
             #VALIDATION
             for step, databatch in enumerate(self.dataloader.test()):
                 databatch = self.preprocess_data(databatch)
                 # DATA
-                loss = self.test_step(databatch,training_state.number_of_test_step)
-                training_state.update_test_batch(loss.item())
+                loss = self.test_step(databatch,training_state.number_of_test_step,epoch)
+                loss_ = loss.item() if isinstance(loss, torch.Tensor) else loss
+                training_state.update_test_batch(loss_)
+                if self.config.trainer.debug:
+                    break
             training_state.set_average_test_loss()
-
+            results_,all_metrics = self.global_test(training_state,all_metrics,epoch)
+            # STORING MODEL CHECKPOINTS
             if (epoch + 1) % self.config.trainer.save_model_epochs == 0:
                 results_ = self.save_results(training_state,epoch+1,checkpoint=True)
-
             # SAVE RESULTS IF LOSS DECREASES IN VALIDATION
             if training_state.average_test_loss < training_state.best_loss:
                 if self.config.trainer.warm_up_best_model_epoch < epoch or epoch == self.number_of_epochs - 1:
                     results_ = self.save_results(training_state,epoch + 1,checkpoint=False)
                 training_state.best_loss = training_state.average_test_loss
-
             training_state.finish_epoch()
-
         #=====================================================
-        # RESULTS FROM BEST MODEL UPDATED WITH METRICS
+        # BEST MODEL IS READ AND METRICS ARE STORED
         #=====================================================
         experiment_dir = self.generative_model.experiment_files.experiment_dir
         if self.saved:
             self.generative_model = self.generative_model_class(experiment_dir=experiment_dir)
-        all_metrics = log_metrics(self.generative_model, epoch="best", writer=self.writer)
-
+        all_metrics = log_metrics(self.generative_model,all_metrics=all_metrics,epoch="best", writer=self.writer)
         self.writer.close()
         return results_,all_metrics
 
