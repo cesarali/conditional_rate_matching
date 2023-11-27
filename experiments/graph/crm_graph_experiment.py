@@ -163,15 +163,15 @@ if __name__ == "__main__":
                            model="gcn",
                            full_adjacency=True,
                            flatten=False,
-                           n_trials=20,
-                           epochs=500,
-                           batch_size=(8,100),
-                           learning_rate=(1e-7, 1e-2), 
-                           hidden_dim=(16, 256), 
+                           n_trials=2,
+                           epochs=1000,
+                           batch_size=(16, 100),
+                           learning_rate=(1e-7, 1e-3), 
+                           hidden_dim=(32, 256), 
                            num_layers=(2, 5),
-                           activation=('ReLU', 'Sigmoid'),
-                           time_embed_dim=(16, 256), 
-                           gamma=(0.00001, 10),
+                           activation=(None, 'ReLU', 'Sigmoid'),
+                           time_embed_dim=(32, 256), 
+                           gamma=(0.00001, 1),
                            device='cpu')
     
     df = scan.study.trials_dataframe()

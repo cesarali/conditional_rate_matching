@@ -458,10 +458,10 @@ class TemporalGraphConvNet(torch.nn.Module):
         #...define GNN layers
         self.conv1 = GCNConv(self.dim_hidden_t + 1, self.dim_hidden_x)
         self.conv2 = GCNConv(self.dim_hidden_x, self.dim_hidden_x)
-        self.linear = nn.Linear(self.dim_hidden_x, self.dimensions * self.vocab_size)
+        self.linear = nn.Linear(self.dim_hidden_x, self.dimensions * self.vocab_size )
 
     def forward(self, adj, times):
-        B, N, _ = adj.shape
+        B, N, D = adj.shape
         node_degree = adj.sum(dim=1).unsqueeze(-1)
         time_embeddings = transformer_timestep_embedding(times, embedding_dim=self.dim_hidden_t) 
         time_embeddings = time_embeddings.unsqueeze(1).repeat(1, N, 1) 
@@ -475,8 +475,10 @@ class TemporalGraphConvNet(torch.nn.Module):
         batched_data = Batch.from_data_list(data_list)  
         
         h = self.conv1(batched_data.x, batched_data.edge_index)
-        h = self.act_fn(h)
+        if self.act_fn is not None: h = self.act_fn(h)
         h = self.conv2(h, batched_data.edge_index)
-        h = self.act_fn(h)
+        if self.act_fn is not None: h = self.act_fn(h)
         h = torch_geometric.nn.global_mean_pool(h, batched_data.batch) 
-        return self.linear(h)
+        rate_logits = self.linear(h)
+        rate_logits = rate_logits.reshape(B, self.dimensions, self.vocab_size)
+        return rate_logits
