@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn.functional import softplus,softmax
 from conditional_rate_matching.configs.config_crm import CRMConfig
 
-from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
+from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
 from functools import reduce
 

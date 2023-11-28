@@ -1,14 +1,8 @@
 import numpy as np
 import torch
-from tqdm import tqdm
 from torch.optim.adam import Adam
-from torch.utils.tensorboard import SummaryWriter
 
-from typing import List
-from dataclasses import dataclass,field
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
-
 
 from conditional_rate_matching.models.generative_models.crm import (
     CRM,
@@ -18,7 +12,6 @@ from conditional_rate_matching.models.generative_models.crm import (
 
 from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
-from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
 
 
 class CRMDataloder:
@@ -138,8 +131,7 @@ class CRMTrainer(Trainer):
 
 
 if __name__=="__main__":
-    from conditional_rate_matching.configs.experiments_configs.testing_MNIST import experiment_MNIST, experiment_MNIST_Convnet
-    from conditional_rate_matching.configs.experiments_configs.testing_graphs import small_community, community
+    from conditional_rate_matching.configs.experiments_configs.old_experiments.testing_graphs import small_community
     from dataclasses import asdict
     from pprint import pprint
 

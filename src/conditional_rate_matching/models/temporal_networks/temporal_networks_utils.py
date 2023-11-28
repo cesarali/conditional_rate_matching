@@ -5,10 +5,9 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     ConvNetAutoencoderConfig
 )
 
-from conditional_rate_matching.models.temporal_networks.mlp import (
-    TemporalMLP,
-    ConvNetAutoencoder
-)
+from conditional_rate_matching.models.temporal_networks.temporal_convnet import ConvNetAutoencoder
+from conditional_rate_matching.models.temporal_networks.temporal_mlp import TemporalMLP
+
 
 def load_temporal_network(config:CRMConfig, device):
     if isinstance(config.temporal_network,TemporalMLPConfig):

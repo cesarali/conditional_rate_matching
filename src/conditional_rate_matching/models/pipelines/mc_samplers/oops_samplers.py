@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.distributions as dists
 import numpy as np
 from conditional_rate_matching.configs.config_oops import OopsConfig
-import conditional_rate_matching.models.temporal_networks.mlp_diff_utils as utils
+import conditional_rate_matching.models.networks.mlp_diff_utils as utils
 
 # Gibbs-With-Gradients for binary data
 class DiffSampler(nn.Module):

@@ -1,5 +1,30 @@
 from dataclasses import dataclass,asdict
 
+
+@dataclass
+class TemporalDeepMLPConfig:
+    name : str = "TemporalDeepMLP"
+    time_embed_dim : int = 39
+    hidden_dim : int = 200
+    activation : str = 'ReLU'
+    num_layers : int = 2
+
+@dataclass
+class TemporalDeepSetsConfig:
+    name : str = "TemporalDeepSets"
+    time_embed_dim : int = 39
+    hidden_dim : int = 200
+    pool : str = "sum"
+    activation : str = 'ReLU'
+    num_layers : int = 2
+
+@dataclass
+class TemporalGraphConvNetConfig:
+    name : str = "TemporalGraphConvNet"
+    time_embed_dim : int = 39
+    hidden_dim : int = 200
+    activation : str = 'ReLU'
+
 @dataclass
 class TemporalMLPConfig:
     name:str = "TemporalMLP"

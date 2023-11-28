@@ -1,9 +1,8 @@
-import os
 from pprint import pprint
 from dataclasses import asdict
 
 from conditional_rate_matching.configs.config_oops import OopsConfig
-from conditional_rate_matching.models.temporal_networks.mlp_config import ResNetEBMConfig,MLPEBMConfig
+from conditional_rate_matching.models.networks.mlp_config import MLPEBMConfig
 from conditional_rate_matching.data.graph_dataloaders_config import EgoConfig,GridConfig,CommunitySmallConfig
 from conditional_rate_matching.models.pipelines.mc_samplers.oops_sampler_config import DiffSamplerConfig,PerDimGibbsSamplerConfig
 

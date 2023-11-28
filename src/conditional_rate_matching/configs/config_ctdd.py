@@ -19,11 +19,8 @@ from conditional_rate_matching.data.states_dataloaders_config import StatesDatal
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
+from conditional_rate_matching.configs import temporal_network_configs
 
-temporal_network_configs = {
-    "TemporalMLP":TemporalMLPConfig,
-    "ConvNetAutoencoder":ConvNetAutoencoderConfig,
-}
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
