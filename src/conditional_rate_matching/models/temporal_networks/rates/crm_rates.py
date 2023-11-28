@@ -34,7 +34,6 @@ class ClassificationForwardRate(nn.Module):
         self.dimensions = config.data1.dimensions
 
         self.expected_data_shape = config.data1.temporal_net_expected_shape
-
         self.define_deep_models(config,device)
         self.to(device)
 
