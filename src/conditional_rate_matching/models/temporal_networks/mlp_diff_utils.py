@@ -5,11 +5,8 @@ import torchvision
 import torchvision.transforms as tr
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
-import visualize_flow
 import matplotlib.pyplot as plt
 import pickle
-import rbm
-import samplers
 from tqdm import tqdm
 import os
 
