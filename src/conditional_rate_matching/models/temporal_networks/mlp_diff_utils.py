@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import toy_data
+from conditional_rate_matching.data.utils.toy_data import *
 import torchvision
 import torchvision.transforms as tr
 from torch.utils.data import DataLoader, TensorDataset
