@@ -29,6 +29,15 @@ data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GrayCodesDataloader":GrayCodesDataloaderConfig}
 
 image_data_path = os.path.join(data_path,"raw")
+@dataclass
+class OptimalTransportSamplerConfig:
+    name: str = "OTPlanSampler" # uniform
+    method: str = "exact"
+    reg: float = 0.05
+    reg_m: float = 1.0
+    normalize_cost: bool = False
+    warn: bool = True
+
 
 @dataclass
 class ConstantProcessConfig:
@@ -52,6 +61,8 @@ class CRMConfig:
     process = ConstantProcessConfig = ConstantProcessConfig()
     # temporal network
     temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig] = TemporalMLPConfig()
+    # ot
+    optimal_transport:OptimalTransportSamplerConfig = OptimalTransportSamplerConfig()
     # training
     trainer: BasicTrainerConfig = BasicTrainerConfig()
     #pipeline
@@ -66,6 +77,9 @@ class CRMConfig:
 
         if isinstance(self.temporal_network,dict):
             self.temporal_network = temporal_network_configs[self.temporal_network["name"]](**self.temporal_network)
+
+        if isinstance(self.optimal_transport,dict):
+            self.optimal_transport = OptimalTransportSamplerConfig(**self.optimal_transport)
 
         if isinstance(self.process,dict):
             self.process = ConstantProcessConfig(**self.process)

@@ -12,6 +12,12 @@ temporal_network_configs = {
     "ConvNetAutoencoder":ConvNetAutoencoderConfig,
     "TemporalDeepMLP":TemporalDeepMLPConfig,
     "TemporalDeepSets":TemporalDeepSetsConfig,
+<<<<<<< HEAD
     "TemporalGraphConvNet":TemporalGraphConvNetConfig,
     "TemporalDeepMLP":TemporalDeepEBMConfig
 }
+=======
+    "TemporalGraphConvNet":TemporalGraphConvNetConfig
+}
+
+>>>>>>> origin/main

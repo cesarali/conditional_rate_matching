@@ -3,6 +3,7 @@ import torch
 from torch import nn
 from dataclasses import dataclass
 from torch.utils.data import DataLoader
+from dataclasses import asdict
 
 from typing import Union
 from dataclasses import asdict
@@ -19,6 +20,8 @@ from conditional_rate_matching.models.temporal_networks.rates.crm_rates import(
 )
 
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
+from conditional_rate_matching.models.metrics.optimal_transport import OTPlanSampler
+import numpy as np
 
 @dataclass
 class CRM:
@@ -29,6 +32,7 @@ class CRM:
     dataloader_0: Union[GraphDataloaders,DataLoader] = None
     dataloader_1: Union[GraphDataloaders,DataLoader] = None
     forward_rate: Union[ClassificationForwardRate] = None
+    op_sampler: OTPlanSampler = None
     pipeline:CRMPipeline = None
     device: torch.device = None
 
@@ -57,6 +61,7 @@ class CRM:
 
         self.forward_rate = ClassificationForwardRate(config, self.device).to(self.device)
         self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
+        self.op_sampler = OTPlanSampler(**asdict(self.config.optimal_transport))
 
     def load_from_experiment(self,experiment_dir,device=None):
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
@@ -77,6 +82,7 @@ class CRM:
         self.dataloader_0, self.dataloader_1 = get_dataloaders_crm(self.config)
 
         self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
+        self.op_sampler = OTPlanSampler(**asdict(self.config.optimal_transport))
 
     def start_new_experiment(self):
         #create directories
@@ -92,6 +98,26 @@ class CRM:
 
     def align_configs(self):
         pass
+
+    def sample_pair(self,batch_1, batch_0,device:torch.device,seed=1980):
+        x1,x0 = uniform_pair_x0_x1(batch_1, batch_0, device=torch.device("cpu"))
+        x1 = x1.float()
+        x0 = x0.float()
+        if self.config.optimal_transport.name == "OTPlanSampler":
+            batch_size = x0.size(0)
+            torch.manual_seed(seed)
+            np.random.seed(seed)
+            pi = self.op_sampler.get_map(x0, x1)
+            #indices_i, indices_j = crm.op_sampler.sample_map(pi, batch_size=batch_size, replace=True)
+            #new_x0, new_x1 = x0[indices_i], x1[indices_j]
+
+            torch.manual_seed(seed)
+            np.random.seed(seed)
+            x0, x1 = self.op_sampler.sample_plan(x0, x1, replace=True)
+
+        x0 = x0.to(self.device)
+        x1 = x1.to(self.device)
+        return x1,x0
 
 def conditional_probability(config, x, x0, t, t0):
     """
@@ -185,8 +211,8 @@ def uniform_pair_x0_x1(batch_1, batch_0,device=torch.device("cpu")):
 
     batch_size = min(batch_size_0, batch_size_1)
 
-    x_0 = x_0[:batch_size, :].to(device)
-    x_1 = x_1[:batch_size, :].to(device)
+    x_0 = x_0[:batch_size, :]
+    x_1 = x_1[:batch_size, :]
 
     return x_1, x_0
 

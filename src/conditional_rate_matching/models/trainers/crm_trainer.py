@@ -1,7 +1,6 @@
-import numpy as np
 import torch
+import numpy as np
 from torch.optim.adam import Adam
-
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 
 from conditional_rate_matching.models.generative_models.crm import (
@@ -10,9 +9,8 @@ from conditional_rate_matching.models.generative_models.crm import (
     uniform_pair_x0_x1
 )
 
-from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
-
+from conditional_rate_matching.configs.config_crm import CRMConfig
 
 class CRMDataloder:
 
@@ -61,10 +59,8 @@ class CRMTrainer(Trainer):
     def train_step(self,databatch, number_of_training_step,epoch):
         batch_0, batch_1 = databatch
         # data pair and time sample
-        x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
-
-        x_0 = x_0.float().to(self.device)
-        x_1 = x_1.float().to(self.device)
+        x_1, x_0 = self.generative_model.sample_pair(batch_1,batch_0,self.device)
+        #x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
 
         if len(x_0.shape) > 2:
             batch_size = x_0.size(0)
@@ -93,7 +89,6 @@ class CRMTrainer(Trainer):
         loss.backward()
         self.optimizer.step()
         self.writer.add_scalar('training loss', loss.item(), number_of_training_step)
-
         return loss
 
     def test_step(self,databatch,number_of_test_step,epoch):
