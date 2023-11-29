@@ -13,3 +13,4 @@ temporal_network_configs = {
     "TemporalDeepSets":TemporalDeepSetsConfig,
     "TemporalGraphConvNet":TemporalGraphConvNetConfig
 }
+

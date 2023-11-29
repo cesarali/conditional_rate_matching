@@ -58,10 +58,11 @@ if __name__=="__main__":
     from dataclasses import asdict
     from pprint import pprint
 
-    config = experiment_comunity_small(number_of_epochs=10)
+    config = experiment_comunity_small(number_of_epochs=500)
     #config = experiment_grid(number_of_epochs=10)
     #config = experiment_ego(number_of_epochs=500)
+    #config.optimal_transport.name = "uniform"
 
     pprint(asdict(config))
-    results,metrics = call_trainer(config)
+    results,metrics = call_trainer(config,experiment_name="ot_test")
     print(metrics)

@@ -61,10 +61,9 @@ class CRMTrainer(Trainer):
     def train_step(self,databatch, number_of_training_step,epoch):
         batch_0, batch_1 = databatch
         # data pair and time sample
-        x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
+        x_1, x_0 = self.generative_model.sample_pair(batch_1,batch_0,self.device)
+        #x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
 
-        x_0 = x_0.float().to(self.device)
-        x_1 = x_1.float().to(self.device)
 
         if len(x_0.shape) > 2:
             batch_size = x_0.size(0)
