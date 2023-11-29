@@ -2,17 +2,76 @@ from multiprocessing import pool
 from pprint import pprint
 from dataclasses import asdict
 import datetime
+from matplotlib.pyplot import gray
 import numpy as np
 import os
 import optuna
 from optuna.visualization import plot_optimization_history, plot_slice, plot_contour, plot_parallel_coordinate, plot_param_importances
 
 from conditional_rate_matching.configs.config_crm import CRMConfig, BasicTrainerConfig, ConstantProcessConfig
+from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
+from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig
-from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
+from conditional_rate_matching.data.gray_codes_dataloaders_config import AvailableGrayCodes
+
+
+def CRM_single_run(dynamics="crm",
+                    experiment_type="graycode",
+                    experiment_indentifier="run",
+                    model="mlp",
+                    dataset0=None,
+                    dataset1=AvailableGrayCodes.swissroll,
+                    metrics=[MetricsAvaliable.marginal_binary_histograms,
+                             MetricsAvaliable.grayscale_plot],
+                    device="cpu",
+                    epochs=100,
+                    batch_size=256,
+                    learning_rate=1e-3, 
+                    hidden_dim=64, 
+                    num_layers=2,
+                    activation="ReLU",
+                    time_embed_dim=8,
+                    num_timesteps=64):
+
+    databridge = dataset0 + "_" + dataset1 if dataset0 is not None else dataset1
+    experiment_type = experiment_type + "_" + databridge + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
+    experiment_files = ExperimentFiles(experiment_name=dynamics,
+                                       experiment_type=experiment_type,
+                                       experiment_indentifier=experiment_indentifier,
+                                       delete=True)
+    #...configs:
+
+    crm_config = CRMConfig()
+
+    if dataset0 is None: crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
+    else: crm_config.data0 = GrayCodesDataloaderConfig(dataset_name=dataset0, batch_size=batch_size)
+    
+    crm_config.data1 = GrayCodesDataloaderConfig(dataset_name=dataset1, batch_size=batch_size)
+    
+    if model=="mlp":
+        crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
+                                                            time_embed_dim = time_embed_dim,
+                                                            num_layers = num_layers,
+                                                            activation = activation)
+        
+    if model=="deepEBM":
+        pass
+    
+    crm_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
+                                            learning_rate=learning_rate,
+                                            device=device,
+                                            metrics=metrics)
+    
+    crm_config.pipeline.number_of_steps = num_timesteps
+
+    #...train
+
+    crm = CRMTrainer(crm_config, experiment_files)
+    _ , metrics = crm.train()
+    return metrics
 
 
 class CRM_Scan_Optuna:
@@ -21,9 +80,6 @@ class CRM_Scan_Optuna:
                  experiment_type="graycode",
                  experiment_indentifier="optuna_scan",
                  model="mlp",
-                 full_adjacency=False,
-                 flatten=True,
-                 as_image=False,
                  device="cpu",
                  n_trials=100,
                  epochs=500,
@@ -42,9 +98,6 @@ class CRM_Scan_Optuna:
         self.experiment_indentifier = experiment_indentifier
         self.workdir = "/home/df630/conditional_rate_matching/results/{}/{}".format(dynamics, self.experiment_type)
         self.model = model
-        self.full_adjacency = full_adjacency
-        self.flatten = flatten
-        self.as_image = as_image
         self.device = device
         self.epochs = epochs
         self.batch_size = batch_size
@@ -99,12 +152,9 @@ class CRM_Scan_Optuna:
         gamma = self.def_param(trial, 'gamma', self.gamma, type="float")
 
         crm_config = CRMConfig()
-            
-        crm_config.data1 = GrayCodesDataloaderConfig(dataset_name="gaussians",
-                                                    batch_size=batch_size)
+        crm_config.data0 = GrayCodesDataloaderConfig(dataset_name="gaussians",batch_size=batch_size)
         
-        crm_config.data0 = GrayCodesDataloaderConfig(dataset_name="swissroll",
-                                                    batch_size=batch_size)
+        crm_config.data1 = GrayCodesDataloaderConfig(dataset_name="swissroll",batch_size=batch_size)
         
         crm_config.process = ConstantProcessConfig(gamma=gamma)
 
@@ -124,7 +174,6 @@ class CRM_Scan_Optuna:
         crm = CRMTrainer(crm_config, self.experiment_files)
         _ , metrics = crm.train()
         print('all metric: ', metrics)
-        self.graph_metric = (metrics["degree"] + metrics["orbit"]) / 2.0
         if self.graph_metric < self.metric: self.metric = self.graph_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         
@@ -132,44 +181,25 @@ class CRM_Scan_Optuna:
 
 
 if __name__ == "__main__":
-                                   
-    scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="graph",
-                           experiment_indentifier="optuna_scan_trial",
-                           model="gcn",
-                           full_adjacency=True,
-                           flatten=False,
-                           n_trials=2,
-                           epochs=1000,
-                           batch_size=(16, 100),
-                           learning_rate=(1e-7, 1e-3), 
-                           hidden_dim=(32, 256), 
-                           num_layers=(2, 5),
-                           activation=(None, 'ReLU', 'Sigmoid'),
-                           time_embed_dim=(32, 256), 
-                           gamma=(0.00001, 1),
-                           device='cpu')
-    
-    df = scan.study.trials_dataframe()
-    df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
 
-    # Save Optimization History
-    fig = plot_optimization_history(scan.study)
-    fig.write_image(scan.workdir + "/optimization_history.png")
 
-    # Save Slice Plot
-    fig = plot_slice(scan.study)
-    fig.write_image(scan.workdir + "/slice_plot.png")
+    '''
+    swissroll, circles, moons, gaussians, pinwheel, spirals, checkerboard, line, cos
 
-    # Save Contour Plot
-    fig = plot_contour(scan.study)
-    fig.write_image(scan.workdir + "/contour_plot.png")
+    '''
 
-    # Save Parallel Coordinate Plot
-    fig = plot_parallel_coordinate(scan.study)
-    fig.write_image(scan.workdir + "/parallel_coordinate.png")
 
-    # Save Parameter Importances
-    fig = plot_param_importances(scan.study)
-    fig.write_image(scan.workdir + "/param_importances.png")
-
+    CRM_single_run(dataset0=AvailableGrayCodes.swissroll, 
+                   dataset1=AvailableGrayCodes.checkerboard,
+                   metrics=[MetricsAvaliable.mse_histograms,
+                             MetricsAvaliable.marginal_binary_histograms,
+                             MetricsAvaliable.kdmm,
+                             MetricsAvaliable.grayscale_plot],
+                   epochs=100,
+                   batch_size=20,
+                   learning_rate=1e-3, 
+                   hidden_dim=64, 
+                   num_layers=2,
+                   activation="ReLU",
+                   time_embed_dim=8,
+                   device="cuda:0")

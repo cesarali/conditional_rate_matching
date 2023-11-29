@@ -4,6 +4,8 @@ from dataclasses import asdict
 import datetime
 import numpy as np
 import os
+
+from torch import exp_
 import optuna
 from optuna.visualization import plot_optimization_history, plot_slice, plot_contour, plot_parallel_coordinate, plot_param_importances
 
@@ -15,6 +17,81 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
                                                                                          TemporalDeepSetsConfig, 
                                                                                          TemporalGraphConvNetConfig)
 from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig
+
+def CRM_single_run(dynamics="crm",
+                    experiment_type="graph",
+                    experiment_indentifier="optuna_scan",checkerboard,
+                    model="mlp",
+                    full_adjacency=False,
+                    flatten=True,
+                    as_image=False,
+                    metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                    device="cpu",
+                    epochs=500,
+                    batch_size=20,
+                    learning_rate=1e-3, 
+                    hidden_dim=256, 
+                    num_layers=2,
+                    activation="ReLU",
+                    time_embed_dim=32,
+                    gamma=1.0,
+                    num_timesteps=100):
+
+    experiment_files = ExperimentFiles(experiment_name=dynamics,
+                                       experiment_type=experiment_type,
+                                       experiment_indentifier=experiment_indentifier,
+                                       delete=True)
+    #...configs:
+
+    crm_config = CRMConfig()
+        
+    crm_config.data0 = StatesDataloaderConfig(dataset_name="categorical_dirichlet",
+                                              dirichlet_alpha=100.,
+                                              batch_size=batch_size,
+                                              as_image=as_image)
+    
+    crm_config.data1 = CommunitySmallConfig(dataset_name="community_small",
+                                            batch_size=batch_size,
+                                            full_adjacency=full_adjacency,
+                                            flatten=flatten,
+                                            as_image=as_image,
+                                            max_training_size=None,
+                                            max_test_size=2000)
+    
+    crm_config.process = ConstantProcessConfig(gamma=gamma)
+
+    if model == "mlp":
+        crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
+                                                            time_embed_dim = time_embed_dim,
+                                                            num_layers = num_layers,
+                                                            activation = activation)
+    elif model == "deepsets":
+        crm_config.temporal_network = TemporalDeepSetsConfig(hidden_dim = hidden_dim,
+                                                             time_embed_dim = time_embed_dim,
+                                                             num_layers = num_layers,
+                                                             pool = "sum",
+                                                             activation = activation)
+    elif model == "gcn":
+        crm_config.temporal_network = TemporalGraphConvNetConfig(hidden_dim = hidden_dim,
+                                                                time_embed_dim = time_embed_dim,
+                                                                activation = activation)
+
+    crm_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
+                                            learning_rate=learning_rate,
+                                            device=device,
+                                            metrics=metrics)
+
+    crm_config.pipeline.number_of_steps = num_timesteps
+
+    #...train
+
+    crm = CRMTrainer(crm_config, experiment_files)
+    _ , metrics = crm.train()
+    return metrics
 
 
 class CRM_Scan_Optuna:
@@ -36,9 +113,14 @@ class CRM_Scan_Optuna:
                  activation=("ReLU", "LeakyReLU"),
                  time_embed_dim=(8, 64), 
                  gamma=(0.0, 2.0),
-                 num_timesteps=100):
+                 num_timesteps=100,
+                 metrics=["mse_histograms", 
+                          "binary_paths_histograms", 
+                          "marginal_binary_histograms", 
+                          "graphs_metrics", 
+                          "graphs_plot"]):
 
-        # params
+        #...params
         self.dynamics = dynamics
         self.experiment_type = experiment_type + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
         self.experiment_indentifier = experiment_indentifier
@@ -57,7 +139,9 @@ class CRM_Scan_Optuna:
         self.time_embed_dim = time_embed_dim
         self.gamma = gamma
         self.num_timesteps = num_timesteps
+        self.metrics = metrics
 
+        #...scan
         self.iteration, self.metric = 0, np.inf
         self.study = optuna.create_study(direction='minimize')
         self.study.optimize(self.objective, n_trials=n_trials)
@@ -86,11 +170,7 @@ class CRM_Scan_Optuna:
         self.iteration += 1
         exp_id = self.experiment_indentifier + "_" + str(self.iteration)
 
-        self.experiment_files = ExperimentFiles(experiment_name=self.dynamics,
-                                                experiment_type=self.experiment_type,
-                                                experiment_indentifier=exp_id,
-                                                delete=True)
-
+        #...scaning params:
         epochs = self.def_param(trial, 'epochs', self.epochs, type="int")
         batch_size = self.def_param(trial, 'bach_size', self.batch_size, type="int")
         learning_rate = self.def_param(trial, 'lr', self.learning_rate, type="float")
@@ -100,53 +180,26 @@ class CRM_Scan_Optuna:
         time_embed_dim = self.def_param(trial, 'dim_t_emb', self.time_embed_dim, type="int")
         gamma = self.def_param(trial, 'gamma', self.gamma, type="float")
 
-        crm_config = CRMConfig()
-            
-        crm_config.data1 = CommunitySmallConfig(dataset_name="community_small",
-                                                batch_size=batch_size,
-                                                full_adjacency=self.full_adjacency,
-                                                flatten=self.flatten,
-                                                as_image=self.as_image,
-                                                max_training_size=None,
-                                                max_test_size=2000)
+        #...run single experiment:
+        metrics = CRM_single_run(dynamics=self.dynamics,
+                                 experiment_type=self.experiment_type,
+                                 experiment_indentifier=exp_id,
+                                 model=self.model,
+                                 full_adjacency=self.full_adjacency,
+                                 flatten=self.flatten,
+                                 as_image=self.as_image,
+                                 metrics=self.metrics,
+                                 device=self.device,
+                                 epochs=epochs,
+                                 batch_size=batch_size,
+                                 learning_rate=learning_rate, 
+                                 hidden_dim=hidden_dim, 
+                                 num_layers=num_layers,
+                                 activation=activation,
+                                 time_embed_dim=time_embed_dim,
+                                 gamma=gamma,
+                                 num_timesteps=self.num_timesteps)
         
-        crm_config.data0 = StatesDataloaderConfig(dataset_name="categorical_dirichlet",
-                                                  dirichlet_alpha=100.,
-                                                  batch_size=batch_size,
-                                                  as_image=self.as_image)
-        
-        crm_config.process = ConstantProcessConfig(gamma=gamma)
-
-        if self.model == "mlp":
-            crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
-                                                                time_embed_dim = time_embed_dim,
-                                                                num_layers = num_layers,
-                                                                activation = activation)
-        elif self.model == "deepsets":
-            crm_config.temporal_network = TemporalDeepSetsConfig(hidden_dim = hidden_dim,
-                                                                 time_embed_dim = time_embed_dim,
-                                                                 num_layers = num_layers,
-                                                                 pool = "sum",
-                                                                 activation = activation)
-        elif self.model == "gcn":
-            crm_config.temporal_network = TemporalGraphConvNetConfig(hidden_dim = hidden_dim,
-                                                                    time_embed_dim = time_embed_dim,
-                                                                    activation = activation)
-
-        crm_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
-                                                learning_rate=learning_rate,
-                                                device=self.device,
-                                                metrics=["mse_histograms", 
-                                                        "binary_paths_histograms", 
-                                                        "marginal_binary_histograms", 
-                                                        "graphs_metrics",
-                                                        "graphs_plot"])
-        
-        crm_config.pipeline.number_of_steps = self.num_timesteps
-
-        # Train the model
-        crm = CRMTrainer(crm_config, self.experiment_files)
-        _ , metrics = crm.train()
         print('all metric: ', metrics)
         self.graph_metric = (metrics["degree"] + metrics["orbit"]) / 2.0
         if self.graph_metric < self.metric: self.metric = self.graph_metric
@@ -155,14 +208,88 @@ class CRM_Scan_Optuna:
         return self.graph_metric
 
 
+    # def objective(self, trial):
+
+    #     self.iteration += 1
+    #     exp_id = self.experiment_indentifier + "_" + str(self.iteration)
+
+    #     self.experiment_files = ExperimentFiles(experiment_name=self.dynamics,
+    #                                             experiment_type=self.experiment_type,
+    #                                             experiment_indentifier=exp_id,
+    #                                             delete=True)
+
+    #     epochs = self.def_param(trial, 'epochs', self.epochs, type="int")
+    #     batch_size = self.def_param(trial, 'bach_size', self.batch_size, type="int")
+    #     learning_rate = self.def_param(trial, 'lr', self.learning_rate, type="float")
+    #     hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int")
+    #     num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int")
+    #     activation = self.def_param(trial, 'activation', self.activation, type="cat")
+    #     time_embed_dim = self.def_param(trial, 'dim_t_emb', self.time_embed_dim, type="int")
+    #     gamma = self.def_param(trial, 'gamma', self.gamma, type="float")
+
+    #     crm_config = CRMConfig()
+            
+    #     crm_config.data1 = CommunitySmallConfig(dataset_name="community_small",
+    #                                             batch_size=batch_size,
+    #                                             full_adjacency=self.full_adjacency,
+    #                                             flatten=self.flatten,
+    #                                             as_image=self.as_image,
+    #                                             max_training_size=None,
+    #                                             max_test_size=2000)
+        
+    #     crm_config.data0 = StatesDataloaderConfig(dataset_name="categorical_dirichlet",
+    #                                               dirichlet_alpha=100.,
+    #                                               batch_size=batch_size,
+    #                                               as_image=self.as_image)
+        
+    #     crm_config.process = ConstantProcessConfig(gamma=gamma)
+
+    #     if self.model == "mlp":
+    #         crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
+    #                                                             time_embed_dim = time_embed_dim,
+    #                                                             num_layers = num_layers,
+    #                                                             activation = activation)
+    #     elif self.model == "deepsets":
+    #         crm_config.temporal_network = TemporalDeepSetsConfig(hidden_dim = hidden_dim,
+    #                                                              time_embed_dim = time_embed_dim,
+    #                                                              num_layers = num_layers,
+    #                                                              pool = "sum",
+    #                                                              activation = activation)
+    #     elif self.model == "gcn":
+    #         crm_config.temporal_network = TemporalGraphConvNetConfig(hidden_dim = hidden_dim,
+    #                                                                 time_embed_dim = time_embed_dim,
+    #                                                                 activation = activation)
+
+    #     crm_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
+    #                                             learning_rate=learning_rate,
+    #                                             device=self.device,
+    #                                             metrics=["mse_histograms", 
+    #                                                     "binary_paths_histograms", 
+    #                                                     "marginal_binary_histograms", 
+    #                                                     "graphs_metrics",
+    #                                                     "graphs_plot"])
+        
+    #     crm_config.pipeline.number_of_steps = self.num_timesteps
+
+    #     # Train the model
+    #     crm = CRMTrainer(crm_config, self.experiment_files)
+    #     _ , metrics = crm.train()
+    #     print('all metric: ', metrics)
+    #     self.graph_metric = (metrics["degree"] + metrics["orbit"]) / 2.0
+    #     if self.graph_metric < self.metric: self.metric = self.graph_metric
+    #     else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
+        
+    #     return self.graph_metric
+
+
 if __name__ == "__main__":
                                    
     scan = CRM_Scan_Optuna(dynamics="crm",
                            experiment_type="graph",
                            experiment_indentifier="optuna_scan_trial",
-                           model="gcn",
-                           full_adjacency=True,
-                           flatten=False,
+                           model="mlp",
+                           full_adjacency=False,
+                           flatten=True,
                            n_trials=2,
                            epochs=1000,
                            batch_size=(16, 100),
@@ -197,3 +324,4 @@ if __name__ == "__main__":
     fig = plot_param_importances(scan.study)
     fig.write_image(scan.workdir + "/param_importances.png")
 
+    # CRM_single_run()
