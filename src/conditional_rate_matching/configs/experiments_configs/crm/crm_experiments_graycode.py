@@ -11,16 +11,17 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import AvailableGrayCodes
 AvailableGrayCodes.checkerboard
-def experiment_nist(number_of_epochs=300,
+
+def experiment_graycode(number_of_epochs=300,
                     dataset_name="checkerboard",
                     temporal_network_name="mlp",
                     berlin=True):
     crm_config = CRMConfig()
     if temporal_network_name == "mlp":
-        crm_config.data1 = GrayCodesDataloaderConfig(dataset_name=dataset_name,batch_size=64)
+        crm_config.data1 = GrayCodesDataloaderConfig(dataset_name=dataset_name,batch_size=128,training_size=60000)
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=64)
-        crm_config.temporal_network = TemporalMLPConfig()
-    crm_config.pipeline.number_of_steps = 5
+        crm_config.temporal_network = TemporalMLPConfig(hidden_dim=100,time_embed_dim=100)
+    crm_config.pipeline.number_of_steps = 100
     crm_config.trainer = BasicTrainerConfig(number_of_epochs=number_of_epochs,
                                             berlin=berlin,
                                             metrics=[MetricsAvaliable.kdmm,
@@ -32,7 +33,7 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(4,AvailableGrayCodes.swissroll)
-    config.trainer.debug = True
+    config = experiment_graycode(400,AvailableGrayCodes.swissroll)
+    config.trainer.debug = False
 
     call_trainer(config)
