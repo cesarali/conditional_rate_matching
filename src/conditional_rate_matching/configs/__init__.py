@@ -3,7 +3,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     ConvNetAutoencoderConfig,
     TemporalDeepSetsConfig,
     TemporalGraphConvNetConfig,
-    TemporalDeepMLPConfig
+    TemporalDeepMLPConfig,
+    TemporalDeepEBMConfig
 )
 
 temporal_network_configs = {
@@ -11,5 +12,6 @@ temporal_network_configs = {
     "ConvNetAutoencoder":ConvNetAutoencoderConfig,
     "TemporalDeepMLP":TemporalDeepMLPConfig,
     "TemporalDeepSets":TemporalDeepSetsConfig,
-    "TemporalGraphConvNet":TemporalGraphConvNetConfig
+    "TemporalGraphConvNet":TemporalGraphConvNetConfig,
+    "TemporalDeepMLP":TemporalDeepEBMConfig
 }

@@ -42,6 +42,14 @@ class TemporalDeepMLPConfig:
     num_layers : int = 2
 
 @dataclass
+class TemporalDeepEBMConfig:
+    name : str = "TemporalDeepMLP"
+    time_embed_dim : int = 32
+    hidden_dim : int = 256
+    activation : str = 'ELU'
+    num_layers : int = 4
+
+@dataclass
 class TemporalDeepSetsConfig:
     name : str = "TemporalDeepSets"
     time_embed_dim : int = 39
