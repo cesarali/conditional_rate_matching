@@ -22,16 +22,17 @@ def experiment_nist(number_of_epochs=300,
         crm_config.temporal_network = TemporalMLPConfig()
     crm_config.pipeline.number_of_steps = 5
     crm_config.trainer = BasicTrainerConfig(number_of_epochs=number_of_epochs,
-                                             berlin=berlin,
-                                             metrics=[MetricsAvaliable.mse_histograms,
-                                                      MetricsAvaliable.marginal_binary_histograms,
-                                                      MetricsAvaliable.grayscale_plot],
-                                             learning_rate=1e-4)
+                                            berlin=berlin,
+                                            metrics=[MetricsAvaliable.kdmm,
+                                                     MetricsAvaliable.marginal_binary_histograms,
+                                                     MetricsAvaliable.grayscale_plot],
+                                            max_test_size=4000,#size of test sample for measuring distance
+                                            learning_rate=1e-4)
     return crm_config
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     config = experiment_nist(4,AvailableGrayCodes.swissroll)
     config.trainer.debug = True
-    pprint(config)
+
     call_trainer(config)

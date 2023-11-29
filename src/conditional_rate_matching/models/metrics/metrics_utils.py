@@ -124,9 +124,9 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
 
     metric_string_name = "kdmm"
     if metric_string_name in metrics_to_log:
-        mse_0 = kmmd(generative_sample,test_sample)
-        mse_metrics = {"mse_histograms_0": mse_0.item()}
-        all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=mse_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
+        kdmm_ = kmmd(generative_sample,test_sample)
+        kdmm_metrics = {"kdmm": kdmm_.item()}
+        all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=kdmm_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
 
     # GRAPHS
     if "graphs_metrics" in metrics_to_log or "graphs_plot" in metrics_to_log:
@@ -214,8 +214,11 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
             plt.close()
             test_sample_gray_image = data_dataloader.get_images(test_sample)
             generative_sample_gray_image = data_dataloader.get_images(generative_sample)
-            plot_path_gray = generative_model.experiment_files.plot_path.format("graycode_plot_{0}".format(epoch))
+
             plot_path_test_gray = generative_model.experiment_files.plot_path.format("graycode_plot_test_{0}".format(epoch))
-            plot_samples(test_sample_gray_image, plot_path_gray, lim=data_dataloader.db.f_scale)
-            plot_samples(generative_sample_gray_image,plot_path_test_gray,lim=data_dataloader.db.f_scale)
+            plot_path_gray = generative_model.experiment_files.plot_path.format("graycode_plot_{0}".format(epoch))
+
+            plot_samples(test_sample_gray_image, plot_path_test_gray , lim=data_dataloader.db.f_scale)
+            plot_samples(generative_sample_gray_image,plot_path_gray,lim=data_dataloader.db.f_scale)
+
     return all_metrics

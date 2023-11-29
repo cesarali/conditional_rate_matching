@@ -16,11 +16,12 @@ from conditional_rate_matching.models.generative_models.crm import (
     CRM,
     ClassificationForwardRate
 )
+
+from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.config_files import get_experiment_dir
-import pytest
 from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.configs.config_files import ExperimentFiles
+import pytest
 
 def test_training():
     experiment_files = ExperimentFiles(experiment_name="crm",experiment_type="trainer_call")
@@ -31,9 +32,7 @@ def test_training():
 
 @pytest.mark.skip
 def test_optimal_trasnport():
-
     seed = 1980
-
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="trainer_call")
     config = CRMConfig()
