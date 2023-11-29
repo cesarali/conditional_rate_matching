@@ -1,7 +1,6 @@
-import torch
 import torch.nn as nn
 
-from conditional_rate_matching.models.temporal_networks.mlp import Swish
+from conditional_rate_matching.models.networks.mlp import Swish
 
 def conv_transpose_3x3(in_planes, out_planes, stride=1):
     return nn.ConvTranspose2d(in_planes, out_planes,

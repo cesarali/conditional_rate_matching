@@ -1,19 +1,11 @@
-import os
-import sys
-
 import json
 import torch
-from torch import nn
 from typing import Union
 from dataclasses import asdict
 
 from conditional_rate_matching.configs.config_oops import OopsConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 
-
-from conditional_rate_matching.models.temporal_networks.rates.ctdd_rates import BackRateMLP
-
-from conditional_rate_matching.data.ctdd_target import CTDDTargetData
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.data.dataloaders_utils import get_dataloader_oops
 
@@ -21,7 +13,7 @@ from conditional_rate_matching.models.losses.oops_losses import OopsEBMLoss
 from conditional_rate_matching.models.pipelines.pipeline_oops import OopsPipeline
 from conditional_rate_matching.models.pipelines.mc_samplers.oops_samplers import PerDimGibbsSampler,DiffSampler
 from conditional_rate_matching.models.pipelines.mc_samplers.oops_samplers_utils import get_oops_samplers
-from conditional_rate_matching.models.temporal_networks.ebm import EBM
+from conditional_rate_matching.models.networks.ebm import EBM
 
 from dataclasses import dataclass
 

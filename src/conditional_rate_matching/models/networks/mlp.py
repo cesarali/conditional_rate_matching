@@ -2,10 +2,8 @@ from platform import node
 import time
 import torch
 import torch.nn as nn
-from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_oops import OopsConfig
-from conditional_rate_matching.configs.config_crm import CRMConfig as CRMConfig
-from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
+
 
 class Swish(nn.Module):
     def __init__(self):
@@ -175,40 +173,6 @@ class ResNetEBM_cat(nn.Module):
         out = out.view(out.size(0), out.size(1), -1).mean(-1)
         return self.energy_linear(out).squeeze()
 
-class TemporalMLP(nn.Module):
-    """
-
-    """
-    def __init__(self, config:CRMConfig, device):
-        super().__init__()
-        self.dimensions = config.data0.dimensions
-        self.vocab_size = config.data0.vocab_size
-        self.define_deep_models(config)
-        self.init_weights()
-        self.to(device)
-        self.expected_output_shape = [self.dimensions,self.vocab_size]
-
-    def define_deep_models(self,config):
-        self.time_embed_dim = config.temporal_network.time_embed_dim
-        self.hidden_layer = config.temporal_network.hidden_dim
-        self.f1 = nn.Linear(self.dimensions, self.hidden_layer)
-        self.f2 = nn.Linear(self.hidden_layer + self.time_embed_dim, self.dimensions * self.vocab_size)
-
-    def forward(self, x, times):
-        batch_size = x.shape[0]
-        time_embbedings = transformer_timestep_embedding(times,
-                                                         embedding_dim=self.time_embed_dim)
-
-        step_one = self.f1(x)
-        step_two = torch.concat([step_one, time_embbedings], dim=1)
-        rate_logits = self.f2(step_two)
-        rate_logits = rate_logits.reshape(batch_size, self.dimensions, self.vocab_size)
-
-        return rate_logits
-
-    def init_weights(self):
-        nn.init.xavier_uniform_(self.f1.weight)
-        nn.init.xavier_uniform_(self.f2.weight)
 
 # Define a ResNet block
 class ResNetBlock(nn.Module):
@@ -236,6 +200,7 @@ class ResNetBlock(nn.Module):
             x+= h[:,:,None,None]
         return x
 
+<<<<<<< HEAD:src/conditional_rate_matching/models/temporal_networks/mlp.py
 class ConvNetAutoencoder(nn.Module):
     def __init__(self, config:CRMConfig,device):
         super(ConvNetAutoencoder, self).__init__()
@@ -494,3 +459,5 @@ class TemporalGraphConvNet(torch.nn.Module):
         rate_logits = self.linear(h)
         rate_logits = rate_logits.reshape(B, self.dimensions * self.dimensions, self.vocab_size)
         return rate_logits
+=======
+>>>>>>> origin/main:src/conditional_rate_matching/models/networks/mlp.py

@@ -5,9 +5,9 @@ import torch
 from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig
 
 from conditional_rate_matching.configs.config_oops import OopsConfig
-from conditional_rate_matching.models.temporal_networks.mlp_utils import get_net
-from conditional_rate_matching.models.temporal_networks.ebm import EBM
-from conditional_rate_matching.models.temporal_networks.mlp_config import MLPEBMConfig,ResNetEBMConfig
+from conditional_rate_matching.models.networks.mlp_utils import get_net
+from conditional_rate_matching.models.networks.ebm import EBM
+from conditional_rate_matching.models.networks.mlp_config import MLPEBMConfig
 
 from conditional_rate_matching.data.dataloaders_utils import get_dataloader_oops
 

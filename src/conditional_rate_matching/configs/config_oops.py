@@ -1,8 +1,7 @@
 import os
-from pprint import pprint
 from typing import List,Union
 from dataclasses import dataclass
-from dataclasses import field,asdict
+from dataclasses import field
 from conditional_rate_matching import data_path
 
 # model config
@@ -17,7 +16,7 @@ from conditional_rate_matching.data.image_dataloader_config import NISTLoaderCon
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 
-from conditional_rate_matching.models.temporal_networks.mlp_config import ResNetEBMConfig,MLPEBMConfig
+from conditional_rate_matching.models.networks.mlp_config import ResNetEBMConfig,MLPEBMConfig
 from conditional_rate_matching.models.pipelines.mc_samplers.oops_sampler_config import DiffSamplerConfig,PerDimGibbsSamplerConfig
 
 

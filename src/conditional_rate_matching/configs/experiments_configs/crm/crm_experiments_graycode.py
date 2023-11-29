@@ -15,7 +15,6 @@ def experiment_nist(number_of_epochs=300,
                     dataset_name="checkerboard",
                     temporal_network_name="mlp",
                     berlin=True):
-
     crm_config = CRMConfig()
     if temporal_network_name == "mlp":
         crm_config.data1 = GrayCodesDataloaderConfig(dataset_name=dataset_name,batch_size=64)

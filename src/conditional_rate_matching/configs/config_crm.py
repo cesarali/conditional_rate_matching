@@ -19,16 +19,9 @@ from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloa
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
-
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
+from conditional_rate_matching.configs import temporal_network_configs
 
-temporal_network_configs = {
-    "TemporalMLP":TemporalMLPConfig,
-    "TemporalDeepMLP":TemporalDeepMLPConfig,
-    "TemporalDeepSets":TemporalDeepSetsConfig,
-    "TemporalGraphConvNet":TemporalGraphConvNetConfig,
-    "ConvNetAutoencoderConfig":ConvNetAutoencoderConfig,
-}
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,

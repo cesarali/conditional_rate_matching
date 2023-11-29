@@ -1,9 +1,8 @@
-import os
 from conditional_rate_matching.configs.config_oops import OopsConfig
-from conditional_rate_matching.models.temporal_networks.mlp import ResNetEBM
-from conditional_rate_matching.models.temporal_networks.mlp import MLP_EBM
-from conditional_rate_matching.models.temporal_networks.mlp_config import ResNetEBMConfig
-from conditional_rate_matching.models.temporal_networks.mlp_config import MLPEBMConfig
+from conditional_rate_matching.models.networks.mlp import ResNetEBM
+from conditional_rate_matching.models.networks.mlp import MLP_EBM
+from conditional_rate_matching.models.networks.mlp_config import ResNetEBMConfig
+from conditional_rate_matching.models.networks.mlp_config import MLPEBMConfig
 
 
 def get_net(config:OopsConfig, device):

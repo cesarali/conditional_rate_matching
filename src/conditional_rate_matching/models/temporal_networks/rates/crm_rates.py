@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn.functional import softplus,softmax
 from conditional_rate_matching.configs.config_crm import CRMConfig
 
-from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
+from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
 from functools import reduce
 
@@ -34,7 +34,6 @@ class ClassificationForwardRate(nn.Module):
         self.dimensions = config.data1.dimensions
 
         self.expected_data_shape = config.data1.temporal_net_expected_shape
-
         self.define_deep_models(config,device)
         self.to(device)
 

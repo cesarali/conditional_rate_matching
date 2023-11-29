@@ -8,7 +8,7 @@ from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 
 from typing import Union, Tuple
 from torchtyping import TensorType
-from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
+from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import GaussianTargetRate
 
 from dataclasses import dataclass
