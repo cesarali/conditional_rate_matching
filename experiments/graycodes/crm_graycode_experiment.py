@@ -39,8 +39,6 @@ def CRM_single_run(dynamics="crm",
                     training_size=60000,
                     test_size=1200):
 
-    databridge = dataset0 + "_" + dataset1 if dataset0 is not None else dataset1
-    experiment_type = experiment_type + "_" + databridge + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
     experiment_files = ExperimentFiles(experiment_name=dynamics,
                                        experiment_type=experiment_type,
                                        experiment_indentifier=experiment_indentifier,
@@ -167,9 +165,12 @@ class CRM_Scan_Optuna:
 
         #...run single experiment:
 
-        metrics = CRM_single_run(dataset0=self.dataset0,
+        metrics = CRM_single_run(dynamics=self.dynamics,
+                                experiment_type=self.experiment_type,
+                                experiment_indentifier=exp_id,
+                                model=self.model,
+                                dataset0=self.dataset0,
                                 dataset1=self.dataset1,
-                                model="deepEBM",
                                 metrics=self.metrics,
                                 device=self.device,
                                 epochs=epochs,
@@ -183,11 +184,11 @@ class CRM_Scan_Optuna:
                                 num_timesteps=self.num_timesteps)
         
         print('all metric: ', metrics)
-        self.graph_metric = metrics["mse_histograms_0"]
-        if self.graph_metric < self.metric: self.metric = self.graph_metric
+        self.graycode_metric = metrics["kdmm"]
+        if self.graycode_metric < self.metric: self.metric = self.graycode_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         
-        return self.graph_metric
+        return self.graycode_metric
 
 
 
@@ -203,13 +204,13 @@ if __name__ == "__main__":
                            experiment_type="grayscale",
                            experiment_indentifier="optuna_scan_trial",
                            model="deepEBM",
-                           n_trials=2,
-                           epochs=100,
-                           batch_size=(16, 100),
+                           n_trials=100,
+                           epochs=2000,
+                           batch_size=(16, 256),
                            learning_rate=(1e-6, 1e-2), 
                            hidden_dim=(32, 256), 
                            num_layers=(2, 5),
-                           activation=(None, 'ReLU', 'Sigmoid', 'ELU'),
+                           activation=('ReLU', 'Sigmoid', 'ELU'),
                            time_embed_dim=(8, 256), 
                            gamma=(0.00001, 1),
                            device='cuda:1')

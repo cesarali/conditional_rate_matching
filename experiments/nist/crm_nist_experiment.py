@@ -2,44 +2,40 @@ from multiprocessing import pool
 from pprint import pprint
 from dataclasses import asdict
 import datetime
+from matplotlib.pyplot import gray
 import numpy as np
 import os
-
-from torch import exp_
 import optuna
 from optuna.visualization import plot_optimization_history, plot_slice, plot_contour, plot_parallel_coordinate, plot_param_importances
 
 from conditional_rate_matching.configs.config_crm import CRMConfig, BasicTrainerConfig, ConstantProcessConfig
+from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (TemporalDeepMLPConfig, 
-                                                                                         TemporalDeepSetsConfig, 
-                                                                                         TemporalGraphConvNetConfig)
-from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, ConvNetAutoencoderConfig 
+
 
 def CRM_single_run(dynamics="crm",
-                    experiment_type="graph",
-                    experiment_indentifier="optuna_scan",
-                    model="mlp",
-                    full_adjacency=False,
-                    flatten=True,
-                    as_image=False,
-                    metrics=["mse_histograms", 
-                             "binary_paths_histograms", 
-                             "marginal_binary_histograms", 
-                             "graphs_metrics", 
-                             "graphs_plot"],
+                    experiment_type="mnist",
+                    experiment_indentifier="run",
+                    model="convnet",
+                    dataset1="mnist",
+                    metrics=[MetricsAvaliable.mse_histograms,
+                             MetricsAvaliable.mnist_plot,
+                             MetricsAvaliable.marginal_binary_histograms],
                     device="cpu",
-                    epochs=500,
-                    batch_size=20,
+                    epochs=100,
+                    batch_size=64,
                     learning_rate=1e-3, 
-                    hidden_dim=256, 
-                    num_layers=2,
+                    hidden_dim=256,
+                    time_embed_dim=128,
+                    num_layers=3,
                     activation="ReLU",
-                    time_embed_dim=32,
                     gamma=1.0,
-                    num_timesteps=100):
+                    num_timesteps=1000,
+                   ):
 
     experiment_files = ExperimentFiles(experiment_name=dynamics,
                                        experiment_type=experiment_type,
@@ -48,43 +44,25 @@ def CRM_single_run(dynamics="crm",
     #...configs:
 
     crm_config = CRMConfig()
-        
-    crm_config.data0 = StatesDataloaderConfig(dataset_name="categorical_dirichlet",
-                                              dirichlet_alpha=100.,
-                                              batch_size=batch_size,
-                                              as_image=as_image)
-    
-    crm_config.data1 = CommunitySmallConfig(dataset_name="community_small",
-                                            batch_size=batch_size,
-                                            full_adjacency=full_adjacency,
-                                            flatten=flatten,
-                                            as_image=as_image,
-                                            max_training_size=None,
-                                            max_test_size=2000)
-    
     crm_config.process = ConstantProcessConfig(gamma=gamma)
+    crm_config.data0 = StatesDataloaderConfig( dirichlet_alpha=100., batch_size=batch_size)
 
-    if model == "mlp":
+    if model=="mlp":
+        crm_config.data1 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset1)
         crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
                                                             time_embed_dim = time_embed_dim,
                                                             num_layers = num_layers,
                                                             activation = activation)
-    elif model == "deepsets":
-        crm_config.temporal_network = TemporalDeepSetsConfig(hidden_dim = hidden_dim,
-                                                             time_embed_dim = time_embed_dim,
-                                                             num_layers = num_layers,
-                                                             pool = "sum",
-                                                             activation = activation)
-    elif model == "gcn":
-        crm_config.temporal_network = TemporalGraphConvNetConfig(hidden_dim = hidden_dim,
-                                                                time_embed_dim = time_embed_dim,
-                                                                activation = activation)
-
+        
+    if model=="convnet":
+        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
+        crm_config.temporal_network = ConvNetAutoencoderConfig()
+    
     crm_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
                                             learning_rate=learning_rate,
                                             device=device,
                                             metrics=metrics)
-
+    
     crm_config.pipeline.number_of_steps = num_timesteps
 
     #...train
@@ -94,16 +72,17 @@ def CRM_single_run(dynamics="crm",
     return metrics
 
 
+
+
+
 class CRM_Scan_Optuna:
     def __init__(self, 
                  dynamics="crm",
-                 experiment_type="graph",
+                 experiment_type="grayscale",
                  experiment_indentifier="optuna_scan",
+                 dataset1='mnist',
                  model="mlp",
-                 full_adjacency=False,
-                 flatten=True,
-                 as_image=False,
-                 device="cpu",
+                 device="cuda:0",
                  n_trials=100,
                  epochs=500,
                  batch_size=(5, 50),
@@ -114,21 +93,17 @@ class CRM_Scan_Optuna:
                  time_embed_dim=(8, 64), 
                  gamma=(0.0, 2.0),
                  num_timesteps=100,
-                 metrics=["mse_histograms", 
-                          "binary_paths_histograms", 
-                          "marginal_binary_histograms", 
-                          "graphs_metrics", 
-                          "graphs_plot"]):
+                 metrics=[MetricsAvaliable.mse_histograms,
+                          MetricsAvaliable.mnist_plot,
+                          MetricsAvaliable.marginal_binary_histograms]):
 
         #...params
         self.dynamics = dynamics
         self.experiment_type = experiment_type + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
         self.experiment_indentifier = experiment_indentifier
         self.workdir = "/home/df630/conditional_rate_matching/results/{}/{}".format(dynamics, self.experiment_type)
+        self.dataset1 = dataset1
         self.model = model
-        self.full_adjacency = full_adjacency
-        self.flatten = flatten
-        self.as_image = as_image
         self.device = device
         self.epochs = epochs
         self.batch_size = batch_size
@@ -181,51 +156,58 @@ class CRM_Scan_Optuna:
         gamma = self.def_param(trial, 'gamma', self.gamma, type="float")
 
         #...run single experiment:
+
         metrics = CRM_single_run(dynamics=self.dynamics,
-                                 experiment_type=self.experiment_type,
-                                 experiment_indentifier=exp_id,
-                                 model=self.model,
-                                 full_adjacency=self.full_adjacency,
-                                 flatten=self.flatten,
-                                 as_image=self.as_image,
-                                 metrics=self.metrics,
-                                 device=self.device,
-                                 epochs=epochs,
-                                 batch_size=batch_size,
-                                 learning_rate=learning_rate, 
-                                 hidden_dim=hidden_dim, 
-                                 num_layers=num_layers,
-                                 activation=activation,
-                                 time_embed_dim=time_embed_dim,
-                                 gamma=gamma,
-                                 num_timesteps=self.num_timesteps)
+                                experiment_type=self.experiment_type,
+                                experiment_indentifier=exp_id,
+                                model=self.model,
+                                dataset1=self.dataset1,
+                                metrics=self.metrics,
+                                device=self.device,
+                                epochs=epochs,
+                                batch_size=batch_size,
+                                learning_rate=learning_rate, 
+                                hidden_dim=hidden_dim, 
+                                num_layers=num_layers,
+                                activation=activation,
+                                time_embed_dim=time_embed_dim,
+                                gamma=gamma,
+                                num_timesteps=self.num_timesteps)
         
+
         print('all metric: ', metrics)
-        self.graph_metric = (metrics["degree"] + metrics["orbit"]) / 2.0
-        if self.graph_metric < self.metric: self.metric = self.graph_metric
+        self.nist_metric = metrics["mse_marginal_histograms"]
+        if self.nist_metric < self.metric: self.metric = self.nist_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         
-        return self.graph_metric
+        return self.nist_metric
+
 
 
 if __name__ == "__main__":
-                                   
+
+    # CRM_single_run(model="mlp",
+    #                epochs=100,
+    #                dataset1="mnist",
+    #                batch_size=128,
+    #                learning_rate=1e-4, 
+    #                device="cuda:0",
+    #                num_timesteps=250)
+
     scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="graph",
+                           experiment_type="nist",
                            experiment_indentifier="optuna_scan_trial",
                            model="mlp",
-                           full_adjacency=False,
-                           flatten=True,
-                           n_trials=2,
+                           n_trials=300,
                            epochs=1000,
-                           batch_size=(16, 100),
-                           learning_rate=(1e-7, 1e-3), 
+                           batch_size=(16, 256),
+                           learning_rate=(1e-6, 1e-2), 
                            hidden_dim=(32, 256), 
                            num_layers=(2, 5),
-                           activation=(None, 'ReLU', 'Sigmoid'),
-                           time_embed_dim=(32, 256), 
-                           gamma=(0.00001, 1),
-                           device='cpu')
+                           activation=('ReLU', 'Sigmoid', 'ELU', 'LeakyReLU'),
+                           time_embed_dim=(8, 256), 
+                           gamma=(0.00001, 10),
+                           device='cuda:2')
     
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
@@ -249,5 +231,3 @@ if __name__ == "__main__":
     # Save Parameter Importances
     fig = plot_param_importances(scan.study)
     fig.write_image(scan.workdir + "/param_importances.png")
-
-    # CRM_single_run()

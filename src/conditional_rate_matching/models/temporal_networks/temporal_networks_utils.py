@@ -14,7 +14,6 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     TemporalGraphConvNetConfig
 )
 
-<<<<<<< HEAD
 from conditional_rate_matching.models.temporal_networks.temporal_convnet import ConvNetAutoencoder
 from conditional_rate_matching.models.temporal_networks.temporal_mlp import TemporalMLP, TemporalDeepMLP
 from conditional_rate_matching.models.temporal_networks.temporal_EBM import TemporalDeepEBM
@@ -22,8 +21,6 @@ from conditional_rate_matching.models.temporal_networks.temporal_deep_set import
 from conditional_rate_matching.models.temporal_networks.temporal_graphs import TemporalGraphConvNet
 
 
-=======
->>>>>>> origin/main
 def load_temporal_network(config:CRMConfig, device):
     if isinstance(config.temporal_network,TemporalMLPConfig):
         temporal_network = TemporalMLP(config,device)
