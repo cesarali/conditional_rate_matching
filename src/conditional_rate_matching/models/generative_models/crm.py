@@ -16,7 +16,6 @@ from conditional_rate_matching.configs.config_crm import CRMConfig
 
 from conditional_rate_matching.models.temporal_networks.rates.crm_rates import(
     ClassificationForwardRate,
-    beta_integral
 )
 
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
@@ -37,7 +36,7 @@ class CRM:
     device: torch.device = None
 
     def __post_init__(self):
-        self.loss = nn.CrossEntropyLoss()
+        self.loss = nn.CrossEntropyLoss(reduction='none')
         if self.dataloader_0 is not None:
             self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
         else:
@@ -107,7 +106,7 @@ class CRM:
             batch_size = x0.size(0)
             torch.manual_seed(seed)
             np.random.seed(seed)
-            pi = self.op_sampler.get_map(x0, x1)
+            #pi = self.op_sampler.get_map(x0, x1)
             #indices_i, indices_j = crm.op_sampler.sample_map(pi, batch_size=batch_size, replace=True)
             #new_x0, new_x1 = x0[indices_i], x1[indices_j]
 
@@ -118,81 +117,6 @@ class CRM:
         x0 = x0.to(self.device)
         x1 = x1.to(self.device)
         return x1,x0
-
-def conditional_probability(config, x, x0, t, t0):
-    """
-
-    \begin{equation}
-    P(x(t) = i|x(t_0)) = \frac{1}{s} + w_{t,t_0}\left(-\frac{1}{s} + \delta_{i,x(t_0)}\right)
-    \end{equation}
-
-    \begin{equation}
-    w_{t,t_0} = e^{-S \int_{t_0}^{t} \beta(r)dr}
-    \end{equation}
-
-    """
-    right_shape = lambda x: x if len(x.shape) == 3 else x[:, :, None]
-    right_time_size = lambda t: t if isinstance(t, torch.Tensor) else torch.full((x.size(0),), t).to(x.device)
-
-    t = right_time_size(t).to(x0.device)
-    t0 = right_time_size(t0).to(x0.device)
-
-    S = config.vocab_size
-    integral_t0 = beta_integral(config.process.gamma, t, t0)
-
-    w_t0 = torch.exp(-S * integral_t0)
-
-    x = right_shape(x)
-    x0 = right_shape(x0)
-
-    delta_x = (x == x0).float()
-    probability = 1. / S + w_t0[:, None, None] * ((-1. / S) + delta_x)
-
-    return probability
-
-def telegram_bridge_probability(config, x, x1, x0, t):
-    """
-    \begin{equation}
-    P(x_t=x|x_0,x_1) = \frac{p(x_1|x_t=x) p(x_t = x|x_0)}{p(x_1|x_0)}
-    \end{equation}
-    """
-
-    P_x_to_x1 = conditional_probability(config, x1, x, t=1., t0=t)
-    P_x0_to_x = conditional_probability(config, x, x0, t=t, t0=0.)
-    P_x0_to_x1 = conditional_probability(config, x1, x0, t=1., t0=0.)
-
-    conditional_transition_probability = (P_x_to_x1 * P_x0_to_x) / P_x0_to_x1
-    return conditional_transition_probability
-
-def constant_rate(config, x, t):
-    batch_size = x.size(0)
-    dimension = x.size(1)
-
-    rate_ = torch.full((batch_size, dimension, config.vocab_size),
-                       config.process.gamma)
-    return rate_
-
-def where_to_go_x(config,x):
-    x_to_go = torch.arange(0, config.vocab_size)
-    x_to_go = x_to_go[None, None, :].repeat((x.size(0), config.dimensions, 1)).float()
-    x_to_go = x_to_go.to(x.device)
-    return x_to_go
-
-def conditional_transition_rate(config, x, x1, t):
-    """
-    \begin{equation}
-    f_t(\*x'|\*x,\*x_1) = \frac{p(\*x_1|x_t=\*x')}{p(\*x_1|x_t=\*x)}f_t(\*x'|\*x)
-    \end{equation}
-    """
-    x_to_go = where_to_go_x(config, x)
-
-    P_xp_to_x1 = conditional_probability(config, x1, x_to_go, t=1., t0=t)
-    P_x_to_x1 = conditional_probability(config, x1, x, t=1., t0=t)
-
-    forward_rate = constant_rate(config, x, t).to(x.device)
-    rate_transition = (P_xp_to_x1 / P_x_to_x1) * forward_rate
-
-    return rate_transition
 
 def uniform_pair_x0_x1(batch_1, batch_0,device=torch.device("cpu")):
     """
@@ -215,13 +139,6 @@ def uniform_pair_x0_x1(batch_1, batch_0,device=torch.device("cpu")):
     x_1 = x_1[:batch_size, :]
 
     return x_1, x_0
-
-def sample_x(config,x_1, x_0, time):
-    device = x_1.device
-    x_to_go = where_to_go_x(config, x_0)
-    transition_probs = telegram_bridge_probability(config, x_to_go, x_1, x_0, time)
-    sampled_x = Categorical(transition_probs).sample().to(device)
-    return sampled_x
 
 if __name__=="__main__":
     from conditional_rate_matching.configs.config_files import get_experiment_dir

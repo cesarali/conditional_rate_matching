@@ -154,6 +154,7 @@ class ReferenceProcess:
         return flipped_spin,timesteps
 
 class GaussianTargetRate(ReferenceProcess):
+
     def __init__(self, cfg:Union[CTDDConfig], device,rank=None):
         ReferenceProcess.__init__(self,cfg,device)
         self.S = S = cfg.data0.vocab_size

@@ -215,7 +215,7 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
             test_sample_gray_image = data_dataloader.get_images(test_sample)
             generative_sample_gray_image = data_dataloader.get_images(generative_sample)
 
-            plot_path_test_gray = generative_model.experiment_files.plot_path.format("graycode_plot_test_{0}".format(epoch))
+            plot_path_test_gray = generative_model.experiment_files.plot_path.format("graycode_plot_test")
             plot_path_gray = generative_model.experiment_files.plot_path.format("graycode_plot_{0}".format(epoch))
 
             plot_samples(test_sample_gray_image, plot_path_test_gray , lim=data_dataloader.db.f_scale)

@@ -1,5 +1,4 @@
 import os
-import unittest
 
 import torch
 import numpy as np
@@ -7,8 +6,6 @@ from torch import nn
 from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
 
 from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
-from conditional_rate_matching.models.generative_models.crm import conditional_probability
-from conditional_rate_matching.models.generative_models.crm import telegram_bridge_probability
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 from torch.utils.data import DataLoader, TensorDataset
 

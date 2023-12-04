@@ -18,7 +18,9 @@ from conditional_rate_matching.data.image_dataloader_config import NISTLoaderCon
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
 from conditional_rate_matching.configs import temporal_network_configs
+from conditional_rate_matching.configs import thermostat_configs
 
+from  conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig,LogThermostatConfig
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
@@ -26,6 +28,13 @@ data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GrayCodesDataloader":GrayCodesDataloaderConfig}
 
 image_data_path = os.path.join(data_path,"raw")
+
+@dataclass
+class CRMTrainerConfig(BasicTrainerConfig):
+    name:str = "CRMTrainer"
+    loss_regularize:bool = False
+    loss_regularize_square:bool = True
+
 @dataclass
 class OptimalTransportSamplerConfig:
     name: str = "OTPlanSampler" # uniform
@@ -34,13 +43,6 @@ class OptimalTransportSamplerConfig:
     reg_m: float = 1.0
     normalize_cost: bool = False
     warn: bool = True
-
-
-@dataclass
-class ConstantProcessConfig:
-    name:str="ConstantProcess"
-    process_name:int = "constant" # constant
-    gamma:float = .9
 
 @dataclass
 class BasicPipelineConfig:
@@ -55,13 +57,13 @@ class CRMConfig:
     data0: StatesDataloaderConfig = StatesDataloaderConfig()
     data1: NISTLoaderConfig = NISTLoaderConfig()
     # process
-    process = ConstantProcessConfig = ConstantProcessConfig()
+    thermostat : Union[ConstantThermostatConfig,LogThermostatConfig] = ConstantThermostatConfig()
     # temporal network
     temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig] = TemporalMLPConfig()
     # ot
     optimal_transport:OptimalTransportSamplerConfig = OptimalTransportSamplerConfig()
     # training
-    trainer: BasicTrainerConfig = BasicTrainerConfig()
+    trainer: CRMTrainerConfig = CRMTrainerConfig()
     #pipeline
     pipeline = BasicPipelineConfig = BasicPipelineConfig()
 
@@ -78,11 +80,11 @@ class CRMConfig:
         if isinstance(self.optimal_transport,dict):
             self.optimal_transport = OptimalTransportSamplerConfig(**self.optimal_transport)
 
-        if isinstance(self.process,dict):
-            self.process = ConstantProcessConfig(**self.process)
+        if isinstance(self.thermostat, dict):
+            self.thermostat = thermostat_configs[self.thermostat["name"]](**self.thermostat)
 
         if isinstance(self.trainer,dict):
-            self.trainer = BasicTrainerConfig(**self.trainer)
+            self.trainer = CRMTrainerConfig(**self.trainer)
 
         if isinstance(self.pipeline,dict):
             self.pipeline = BasicPipelineConfig(**self.pipeline)
