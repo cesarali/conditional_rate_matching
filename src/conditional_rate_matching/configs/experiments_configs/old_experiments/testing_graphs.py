@@ -1,6 +1,6 @@
 from pprint import pprint
 from dataclasses import asdict
-from conditional_rate_matching.configs.config_crm import CRMConfig,BasicTrainerConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig,CRMTrainerConfig
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
 
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -27,11 +27,10 @@ def small_community(number_of_epochs=300,berlin=True):
     crm_config.temporal_network.time_embed_dim = 50
 
     # TRAINER
-    crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms",
-                                                     "binary_paths_histograms",
-                                                     "marginal_binary_histograms",
-                                                     "graphs_plot"],
-                                                     #"graphs_metrics"],
+    crm_config.trainer = CRMTrainerConfig(metrics=["mse_histograms"
+                                                   "binary_paths_histograms",
+                                                   "marginal_binary_histograms",
+                                                   "graphs_plot"],
                                             number_of_epochs=number_of_epochs,
                                             learning_rate = 1e-4,
                                             berlin=berlin)
@@ -59,11 +58,11 @@ def community(number_of_epochs=300,berlin=True):
     crm_config.temporal_network.time_embed_dim = 50
 
     # TRAINER
-    crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms",
-                                                     "binary_paths_histograms",
-                                                     "marginal_binary_histograms",
-                                                     "graphs_plot",
-                                                     "graphs_metrics"],
+    crm_config.trainer = CRMTrainerConfig(metrics=["mse_histograms",
+                                                   "binary_paths_histograms",
+                                                   "marginal_binary_histograms",
+                                                   "graphs_plot",
+                                                   "graphs_metrics"],
                                             number_of_epochs=number_of_epochs,
                                             learning_rate = 1e-4,
                                             berlin=berlin)
