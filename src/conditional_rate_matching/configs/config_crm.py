@@ -19,6 +19,7 @@ from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCod
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
 from conditional_rate_matching.configs import temporal_network_configs
 from conditional_rate_matching.configs import thermostat_configs
+from conditional_rate_matching.models.pipelines.pipelines_config import BasicPipelineConfig
 
 from  conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig,LogThermostatConfig
 

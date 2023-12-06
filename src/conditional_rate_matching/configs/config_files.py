@@ -188,9 +188,3 @@ class ExperimentFiles:
             print("Experiment Empty")
             return None
 
-        # self.model = results_['current_model'].to(device)
-        # SETS ALL OTHER CLASSES FROM CONFIG AND START NEW EXPERIMENT IF REQUIERED
-        # self.config.align_configurations()
-        # self.set_classes_from_config(self.config, device)
-
-

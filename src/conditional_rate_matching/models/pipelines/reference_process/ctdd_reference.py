@@ -6,6 +6,7 @@ from typing import Tuple,Union
 from torchtyping import TensorType
 from torch.distributions import Exponential, Bernoulli
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.utils.flips_utils import binary_to_spins,spins_to_binary
 
 class ReferenceProcess:
     """
@@ -132,13 +133,14 @@ class ReferenceProcess:
 
     def sample_path(self,start_spins:torch.Tensor,timesteps:torch.Tensor):
         device = timesteps.device
+        start_spins = binary_to_spins(start_spins)
 
         timesteps_size = timesteps.size(0)
         batch_size, number_of_spins = start_spins.shape
         #timesteps_ = torch.repeat_interleave(timesteps,batch_size)
         timesteps_ = timesteps.repeat(batch_size)
         flipped_spin = torch.repeat_interleave(start_spins,timesteps_size,dim=0)
-        #flipped_spin = start_spins.repeat((timesteps_size,1))
+
 
         # From Doucet Original Code
         qt0 = self.transition(timesteps_.float()) # (B, S, S)
@@ -149,6 +151,7 @@ class ReferenceProcess:
         flips = Bernoulli(flip_probabilities).sample()
         flips = (-1.) ** flips
         flipped_spin = flipped_spin * flips
+        flipped_spin = spins_to_binary(flipped_spin)
 
         flipped_spin = flipped_spin.reshape(batch_size,timesteps_size,number_of_spins)
         return flipped_spin,timesteps

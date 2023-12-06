@@ -20,6 +20,12 @@ def sinkhorn_plot(sinkhorn_iteration,
     :param states_legends:
     :return:
     """
+    states_histogram_at_0 = states_histogram_at_0.cpu().numpy()
+    states_histogram_at_1 = states_histogram_at_1.cpu().numpy()
+    backward_histogram = backward_histogram.cpu().numpy()
+    forward_histogram = forward_histogram.cpu().numpy()
+    time_ = time_.cpu().numpy()
+
     start_target = backward_histogram[0,:]
     end_target = forward_histogram[-1,:]
     number_of_total_states = states_histogram_at_0.shape[0]

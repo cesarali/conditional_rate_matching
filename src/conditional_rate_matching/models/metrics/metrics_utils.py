@@ -192,6 +192,7 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
                                                  train=True, maximum_test_sample_size=max_test_size)
         histogram1 = binary_histogram_dataloader(data_dataloader, dimensions=dimensions,
                                                  train=True, maximum_test_sample_size=max_test_size)
+
         marginal_histograms_tuple = (histogram0, histogram0, histogram1, histograms_generative)
         plot_marginals_binary_histograms(marginal_histograms_tuple,plots_path=plot_path)
 

@@ -80,6 +80,7 @@ class CRMTrainer(Trainer):
         sampled_x = sampled_x.view(-1)
 
         loss = self.generative_model.loss(model_classification_,sampled_x)
+
         if self.config.trainer.loss_regularize:
             if self.config.trainer.loss_regularize_square:
                 rate_regularizer = self.generative_model.forward_rate.thermostat(time)

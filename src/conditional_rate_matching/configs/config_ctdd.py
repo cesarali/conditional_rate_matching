@@ -22,6 +22,8 @@ from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCod
 from conditional_rate_matching.configs import temporal_network_configs
 
 
+from conditional_rate_matching.models.pipelines.pipelines_config import BasicPipelineConfig
+
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
                 "StatesDataloader":StatesDataloaderConfig,

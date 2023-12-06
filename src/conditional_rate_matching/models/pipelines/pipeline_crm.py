@@ -75,18 +75,3 @@ class CRMPipeline:
         else:
             return x_f
 
-    """
-        def __call__(self,sample_size,train=True,return_path=False,return_intermediaries=False):
-  
-
-        if return_intermediaries:
-            return_path = False
-
-        x_0 = self.get_x0_sample(sample_size=sample_size,train=train).to(self.device)
-        x_f, x_hist, x0_hist,ts = TauLeaping(self.config, self.model, x_0, forward=True,return_path=return_path)
-
-        if return_path or return_intermediaries:
-            return x_f,x_hist,ts
-        else:
-            return x_f
-    """

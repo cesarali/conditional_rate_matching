@@ -6,47 +6,52 @@ from typing import Union,Tuple,List
 from .ctdd_reference import ReferenceProcess
 from torchtyping import TensorType
 
-from graph_bridges.configs.spin_glass.spin_glass_config_sb import SBConfig
-from graph_bridges.models.spin_glass.ising_parameters import ParametrizedSpinGlassHamiltonian
-from graph_bridges.data.spin_glass_dataloaders_config import ParametrizedSpinGlassHamiltonianConfig
-from graph_bridges.models.reference_process.reference_process_config import GlauberDynamicsConfig
-from graph_bridges.data.transforms import BinaryTensorToSpinsTransform
-from graph_bridges.data.transforms import SpinsToBinaryTensor
+from conditional_rate_matching.configs.config_dsb import DSBConfig
+
+
+from conditional_rate_matching.models.generative_models.spin_glass.spin_glasses_parametrized import ParametrizedSpinGlassHamiltonian
+from conditional_rate_matching.models.generative_models.spin_glass.spin_glasses_configs import SpinGlassVariablesConfig
+from conditional_rate_matching.models.pipelines.reference_process.reference_process_config import GlauberDynamicsConfig
+from conditional_rate_matching.data.transforms import BinaryTensorToSpinsTransform
+from conditional_rate_matching.data.transforms import SpinsToBinaryTensor
 
 spins_to_binary = SpinsToBinaryTensor()
+from conditional_rate_matching.models.generative_models.spin_glass.spin_glasses_parametrized import simulate_fields_and_couplings
 
-class GlauberDynamics:
+def create_parametrized_hamiltonian(cfg,device):
+    # create parametrized hamiltonian to be used in the computation of the dynamics
+    if cfg.process.fom_data_hamiltonian:
+        assert isinstance(cfg.data, SpinGlassVariablesConfig)
+        hamiltonian = ParametrizedSpinGlassHamiltonian(cfg.data, device)
+    else:
+        if cfg.process.fields is not None and cfg.process.couplings is not None:
+            assert isinstance(cfg.process, GlauberDynamicsConfig)
+            hamiltonian = ParametrizedSpinGlassHamiltonian(cfg.process, device)
+            cfg.process.fields = hamiltonian.fields.tolist()
+            cfg.process.couplings = hamiltonian.couplings.tolist()
+        else:
+            fields, couplings = simulate_fields_and_couplings(cfg.data.dimensions)
+            cfg.process.fields = fields.tolist()
+            cfg.process.couplings = couplings.tolist()
+            hamiltonian = ParametrizedSpinGlassHamiltonian(cfg.process, device)
+    return hamiltonian
+
+
+class GlauberDynamics(ReferenceProcess):
     """
-
     """
-    def __init__(self, cfg:SBConfig, device,rank=None):
-        ReferenceProcess.__init__(self,cfg,device)
-
-        self.D = cfg.data.dimensions
-        self.S = cfg.data.vocab_size
+    def __init__(self, cfg:DSBConfig, device,rank=None):
+        self.D = cfg.data0.dimensions
+        self.S = cfg.data1.vocab_size
         self.as_spins = False
-        self.gamma = cfg.reference.gamma
-        self.beta = cfg.reference.beta
-        self.min_t = cfg.sampler.min_t
+        self.gamma = cfg.process.gamma
+        self.beta = cfg.process.beta
+        self.min_t = cfg.pipeline.min_t
         self.tau = self.min_t
         self.device = device
+        self.hamiltonian = ParametrizedSpinGlassHamiltonian(cfg.process,device)
 
-        # create parametrized hamiltonian to be used in the computation of the dynamics
-        if cfg.reference.fom_data_hamiltonian:
-            assert isinstance(cfg.data, ParametrizedSpinGlassHamiltonianConfig)
-            self.hamiltonian = ParametrizedSpinGlassHamiltonian(cfg.data, self.device)
-        else:
-            if cfg.reference.fields is not None and cfg.reference.couplings is not None:
-                assert isinstance(cfg.reference,GlauberDynamicsConfig)
-                self.hamiltonian = ParametrizedSpinGlassHamiltonian(cfg.reference, self.device)
-                cfg.reference.fields = self.hamiltonian.fields.tolist()
-                cfg.reference.couplings = self.hamiltonian.couplings.tolist()
-            else:
-                from graph_bridges.data.spin_glass_dataloaders import simulate_fields_and_couplings
-                fields,couplings = simulate_fields_and_couplings(cfg.data.dimensions)
-                cfg.reference.fields = fields.tolist()
-                cfg.reference.couplings = couplings.tolist()
-                self.hamiltonian = ParametrizedSpinGlassHamiltonian(cfg.reference,self.device)
+
     def to(self,device):
         self.device = device
         self.hamiltonian.to(self.device)
