@@ -1,8 +1,11 @@
 import os
+import re
 import json
 import torch
+
 from torch import nn
 from typing import Union
+from pathlib import Path
 from dataclasses import asdict
 from dataclasses import dataclass
 from torchtyping import TensorType
@@ -32,13 +35,22 @@ class DSBExperimentsFiles(ExperimentFiles):
         self.best_model_path_checkpoint = os.path.join(self.experiment_dir,
                                                        "model_checkpoint_sinkhorn_{0}_{1}.tr".format(sinkhorn_iteration,
                                                                                                      "{0}"))
-        self.best_model_path = os.path.join(self.experiment_dir, "best_model_sinkhorn_{0}_{1}.tr".format(sinkhorn_iteration,
-                                                                                                     "{0}"))
+        self.best_model_path = os.path.join(self.experiment_dir, "best_model_sinkhorn_{0}.tr".format(sinkhorn_iteration))
         self.metrics_file = os.path.join(self.experiment_dir, "metrics_sinkhorn_{0}_{1}.json".format(sinkhorn_iteration,
                                                                                                      "{0}"))
         self.plot_path = os.path.join(self.experiment_dir, "plot_sinkhorn_{0}_{1}.png".format(sinkhorn_iteration,
                                                                                                      "{0}"))
 
+    def extract_digits(self,s):
+        pattern = Path(self.best_model_path_checkpoint)
+        pattern = pattern.name
+        pattern = pattern.format("(\d+)")
+        match = re.match(pattern, s)
+        if match is not None:
+            number = int(match.group(1))
+            return number
+        else:
+            return None
 
 
 @dataclass
@@ -59,10 +71,11 @@ class DSB:
 
     pipeline: DSBPipeline = None
     device: torch.device = None
+    sinkhorn_iteration: int = 0
 
     def __post_init__(self):
         if self.experiment_dir is not None:
-            self.load_from_experiment(self.experiment_dir,self.device)
+            self.load_from_experiment(self.experiment_dir,self.device,sinkhorn=self.sinkhorn_iteration)
         elif self.config is not None:
             self.initialize_from_config(config=self.config,device=self.device)
 
@@ -82,11 +95,12 @@ class DSB:
         self.past_rate = SchrodingerBridgeRate(config, self.device).to(self.device)
         self.current_rate = SchrodingerBridgeRate(config, self.device).to(self.device)
         self.process = load_reference(self.config, self.device)
-        self.pipeline = DSBPipeline(self.config, self.past_rate, self.dataloader_0, self.dataloader_1)
+        self.pipeline = DSBPipeline(self.config, self.dataloader_0, self.dataloader_1,self.device)
         self.backward_ratio_estimator = BackwardRatioSteinEstimator(config, self.device)
 
-    def load_from_experiment(self,experiment_dir,device=None):
+    def load_from_experiment(self,experiment_dir,device=None,sinkhorn=0):
         self.experiment_files = DSBExperimentsFiles(experiment_dir=experiment_dir)
+        self.experiment_files.set_sinkhorn(sinkhorn_iteration=sinkhorn)
 
         results_ = self.experiment_files.load_results()
         self.past_rate = results_["past_rate"]
@@ -107,7 +121,7 @@ class DSB:
         self.dataloader_0, self.dataloader_1 = get_dataloaders_dsb(self.config)
         self.process = load_reference(self.config,self.device)
 
-        self.pipeline = DSBPipeline(self.config, self.current_rate, self.dataloader_0, self.dataloader_1)
+        self.pipeline = DSBPipeline(self.config, self.dataloader_0, self.dataloader_1,self.device)
         self.backward_ratio_estimator = BackwardRatioSteinEstimator(self.config, self.device)
 
     def start_new_experiment(self):

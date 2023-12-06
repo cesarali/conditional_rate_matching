@@ -2,7 +2,7 @@ import os
 from pprint import pprint
 from dataclasses import asdict
 
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig,CRMTrainerConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -23,7 +23,7 @@ def experiment_graycode(number_of_epochs=300,
         crm_config.temporal_network = TemporalMLPConfig(hidden_dim=50,time_embed_dim=50)
     crm_config.pipeline.number_of_steps = 100
     crm_config.optimal_transport.name = "uniform"
-    crm_config.trainer = BasicTrainerConfig(number_of_epochs=number_of_epochs,
+    crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
                                             berlin=berlin,
                                             metrics=[MetricsAvaliable.kdmm,
                                                      MetricsAvaliable.marginal_binary_histograms,

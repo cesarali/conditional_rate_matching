@@ -4,13 +4,16 @@ from tqdm import tqdm
 from torch import functional as F
 from typing import Union,Tuple,List
 
-from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
+
+from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.models.temporal_networks.rates.crm_rates import ClassificationForwardRate
 from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate
 
 
 
-def TauLeaping(config:ConditionalRateMatchingConfig,
+def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
                rate_model:Union[ClassificationForwardRate,SchrodingerBridgeRate],
                x_0:torch.Tensor,
                forward=True,

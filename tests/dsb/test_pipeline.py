@@ -30,15 +30,11 @@ def test_pipeline():
 
     config = experiment_comunity_small()
     dsb = DSB(config,experiment_files=experiment_files)
-    databatch1 = next(dsb.dataloader_1.train().__iter__())
-
-    x0 = databatch1[0].to(dsb.device)
-    x1 = databatch1[0].to(dsb.device)
-    time = torch.rand((x1.size(0))).to(dsb.device)
-    sample, path, x0_hist, ts = TauLeaping(config,dsb.current_rate,x1,forward=False,return_path=True)
-    print(sample.shape)
-    print(path.shape)
-    print(ts)
+    current_model = dsb.current_rate
+    #past_model = dsb.past_rate
+    past_model = dsb.process
+    xf = dsb.pipeline(current_model,sample_size=29,forward=False)
+    print(xf.shape)
 
 
 def test_pipeline_log():

@@ -61,7 +61,7 @@ class Trainer(ABC):
     """
 
     dataloader:Union[GraphDataloaders,NISTLoaderConfig] = None
-    dsb:Union[CTDD,Oops,CRM] = None
+    generative_model:Union[CTDD,Oops,CRM] = None
     config:Union[CTDDConfig,OopsConfig,CRMConfig] = None
 
     def parameters_info(self):
@@ -71,9 +71,9 @@ class Trainer(ABC):
 
         print("# Current Model ************************************")
 
-        print(self.dsb.experiment_files.experiment_type)
-        print(self.dsb.experiment_files.experiment_name)
-        print(self.dsb.experiment_files.experiment_indentifier)
+        print(self.generative_model.experiment_files.experiment_type)
+        print(self.generative_model.experiment_files.experiment_name)
+        print(self.generative_model.experiment_files.experiment_indentifier)
 
         print("# ==================================================")
         print("# Number of Epochs {0}".format(self.number_of_epochs))
@@ -90,7 +90,7 @@ class Trainer(ABC):
     def initialize_(self):
         self.initialize()
         self.parameters_info()
-        self.writer = SummaryWriter(self.dsb.experiment_files.tensorboard_path)
+        self.writer = SummaryWriter(self.generative_model.experiment_files.tensorboard_path)
         self.tqdm_object = tqdm(range(self.config.trainer.number_of_epochs))
 
     @abstractmethod
@@ -139,7 +139,7 @@ class Trainer(ABC):
         results_ = {}
         self.saved = False
 
-        training_state = TrainerState(self.dsb)
+        training_state = TrainerState(self.generative_model)
         training_state.best_loss = np.inf
         for epoch in self.tqdm_object:
             #TRAINING
@@ -178,10 +178,10 @@ class Trainer(ABC):
         #=====================================================
         # BEST MODEL IS READ AND METRICS ARE STORED
         #=====================================================
-        experiment_dir = self.dsb.experiment_files.experiment_dir
+        experiment_dir = self.generative_model.experiment_files.experiment_dir
         if self.saved:
-            self.dsb = self.generative_model_class(experiment_dir=experiment_dir)
-        all_metrics = log_metrics(self.dsb, all_metrics=all_metrics, epoch="best", writer=self.writer)
+            self.generative_model = self.generative_model_class(experiment_dir=experiment_dir)
+        all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best", writer=self.writer)
         self.writer.close()
         return results_,all_metrics
 
@@ -197,11 +197,11 @@ class Trainer(ABC):
         }
 
         if checkpoint:
-            best_model_path_checkpoint = self.dsb.experiment_files.best_model_path_checkpoint.format(epoch)
+            best_model_path_checkpoint = self.generative_model.experiment_files.best_model_path_checkpoint.format(epoch)
             torch.save(RESULTS,best_model_path_checkpoint)
             self.saved = True
         else:
-            torch.save(RESULTS, self.dsb.experiment_files.best_model_path)
+            torch.save(RESULTS, self.generative_model.experiment_files.best_model_path)
             self.saved = True
         return RESULTS
 

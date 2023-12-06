@@ -151,7 +151,7 @@ if __name__=="__main__":
     # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph",
-                                       experiment_indentifier="log_berlin2",
+                                       experiment_indentifier="log_berlin3",
                                        delete=True)
 
     # Configuration
@@ -161,7 +161,6 @@ if __name__=="__main__":
     #config = small_community(number_of_epochs=400,berlin=True)
     config = small_community(number_of_epochs=500,berlin=True)
     #config.thermostat = LogThermostatConfig()
-
     pprint(asdict(config))
 
     crm_trainer = CRMTrainer(config,experiment_files)

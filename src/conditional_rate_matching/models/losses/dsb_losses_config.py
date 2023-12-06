@@ -19,4 +19,4 @@ class SteinSpinEstimatorConfig:
 
 all_flip_configs = {"GradientEstimator":GradientEstimatorConfig,
                     "SteinSpinEstimator":SteinSpinEstimatorConfig,
-                    "RealFlipConfig":RealFlipConfig}
+                    "RealFlip":RealFlipConfig}

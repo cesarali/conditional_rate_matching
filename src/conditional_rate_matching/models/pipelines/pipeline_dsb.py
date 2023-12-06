@@ -15,14 +15,12 @@ from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils imp
 class DSBPipeline:
     """
     """
-    def __init__(self, config:DSBConfig, model, dataloader_0, dataloader_1):
-        self.model = model
+    def __init__(self, config:DSBConfig, dataloader_0, dataloader_1,device=torch.device("cpu")):
         self.config = config
         self.dataloder_0 = dataloader_0
         self.dataloder_1 = dataloader_1
-        self.model = model
-        self.device = check_model_devices(self.model)
         self.min_t = config.pipeline.min_t
+        self.device = device
         self.number_of_steps = config.pipeline.number_of_steps
 
     def get_time_steps(self,forward=True):
@@ -42,18 +40,10 @@ class DSBPipeline:
         x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
         return x_0
 
-    def __call__(self,sample_size,forward=True,train=True,return_path=False,return_intermediaries=False,batch_size=128):
+    def __call__(self,sample_size,model:Union[SchrodingerBridgeRate,ReferenceProcess],forward=True,
+                 train=False,return_path=False,return_intermediaries=False,batch_size=128):
         """
-        For Conditional Rate Matching We Move Forward in Time
-
-        :param sample_size:
-        :param train:
-        :param return_path:
-        :param return_intermediaries:
-        :param batch_size: Maximum size of the batch to process in one go.
-        :return:
         """
-
         if return_intermediaries:
             return_path = False
 
@@ -62,7 +52,7 @@ class DSBPipeline:
 
         # If batch_size is not set or sample_size is within the batch limit, process normally
         if batch_size is None or sample_size <= batch_size:
-            x_f, x_hist, x0_hist, ts = TauLeaping(self.config, self.model, x_0, forward=forward, return_path=return_path)
+            x_f, x_hist, x0_hist, ts = TauLeaping(self.config, model, x_0, forward=forward, return_path=return_path)
         else:
             # Initialize lists to store results from each batch
             x_f_batches = []
@@ -73,7 +63,7 @@ class DSBPipeline:
             for i in range(0, sample_size, batch_size):
                 x_0_batch = x_0[i:i + batch_size]
                 x_f_batch, x_hist_batch, x0_hist_batch, ts = TauLeaping(self.config,
-                                                                        self.model,
+                                                                        model,
                                                                         x_0_batch,
                                                                         forward=forward,
                                                                         return_path=return_path)
@@ -181,6 +171,17 @@ class DSBPipeline:
             assert sinkhorn_iteration == 0
 
         return self.paths_iterators_train(start_dataloader, past_model, forward=True, train=True)
+
+    def sample_paths_for_test(self,
+                                  past_model:Union[SchrodingerBridgeRate,ReferenceProcess],
+                                  sinkhorn_iteration=0):
+        start_dataloader, is_past_forward = self.direction_of_past_model(sinkhorn_iteration)
+
+        if isinstance(past_model,ReferenceProcess):
+            past_model: GaussianTargetRate
+            assert sinkhorn_iteration == 0
+
+        return self.paths_iterators_train(start_dataloader, past_model, forward=True, train=False)
 
     def histograms_paths_for_inference(self,
                                        current_model:SchrodingerBridgeRate,

@@ -39,7 +39,8 @@ from conditional_rate_matching.models.pipelines.reference_process.reference_proc
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
                 "StatesDataloader":StatesDataloaderConfig,
-                "GrayCodesDataloader":GrayCodesDataloaderConfig}
+                "GrayCodesDataloader":GrayCodesDataloaderConfig,
+                "GaussianTarget":GaussianTargetConfig}
 
 image_data_path = os.path.join(data_path,"raw")
 
