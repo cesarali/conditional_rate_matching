@@ -14,13 +14,14 @@ from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.models.generative_models.ctdd import CTDD
 from conditional_rate_matching.models.generative_models.oops import Oops
 from conditional_rate_matching.models.generative_models.crm import CRM
+from conditional_rate_matching.models.generative_models.dsb import DSB
 
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.data.image_dataloaders import NISTLoaderConfig
 
 @dataclass
 class TrainerState:
-    model: Union[CTDD,CRM]
+    model: Union[CTDD,CRM,DSB]
     best_loss : float = np.inf
 
     average_train_loss : float = 0.
@@ -180,7 +181,7 @@ class Trainer(ABC):
         experiment_dir = self.generative_model.experiment_files.experiment_dir
         if self.saved:
             self.generative_model = self.generative_model_class(experiment_dir=experiment_dir)
-        all_metrics = log_metrics(self.generative_model,all_metrics=all_metrics,epoch="best", writer=self.writer)
+        all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best", writer=self.writer)
         self.writer.close()
         return results_,all_metrics
 
@@ -204,4 +205,3 @@ class Trainer(ABC):
             self.saved = True
         return RESULTS
 
-# Rest of your class implementation...

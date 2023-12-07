@@ -1,5 +1,6 @@
 from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.config_dsb import DSBConfig
 from conditional_rate_matching.data.image_dataloaders import get_data
 from conditional_rate_matching.data.states_dataloaders import sample_categorical_from_dirichlet
 
@@ -75,6 +76,9 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_0 = NISTLoader(config.data0)
     elif isinstance(config.data0,StatesDataloaderConfig):
         config.data0.dimensions = config.data1.dimensions
+        config.data0.temporal_net_expected_shape = [config.data0.dimensions]
+        config.data0.sample_size = config.data1.total_data_size
+        config.data0.test_split = config.data1.test_split
         dataloader_0 = StatesDataloader(config.data0)
     elif isinstance(config.data0,GraphDataloaderConfig):
         dataloader_0 = GraphDataloaders(config.data0)
@@ -129,3 +133,38 @@ def get_dataloader_oops(config):
         raise Exception("DataLoader not Defined")
 
     return dataloader_0
+
+from conditional_rate_matching.data.ctdd_target_config import GaussianTargetConfig
+
+def get_dataloaders_dsb(config:DSBConfig):
+    """
+
+    :param config:
+
+    :return: dataloader_0,dataloader_1
+    """
+    #=====================================================
+    # DATA STUFF
+    #=====================================================
+    if isinstance(config.data0,NISTLoaderConfig):
+        dataloader_0 = NISTLoader(config.data0)
+    elif isinstance(config.data0,StatesDataloaderConfig):
+        dataloader_0 = StatesDataloader(config.data0)
+    elif isinstance(config.data0,GraphDataloaderConfig):
+        dataloader_0 = GraphDataloaders(config.data0)
+    else:
+        raise Exception("DataLoader not Defined")
+
+    if isinstance(config.data1,NISTLoaderConfig):
+        dataloader_1 = NISTLoader(config.data0)
+    elif isinstance(config.data1,StatesDataloaderConfig):
+        dataloader_1 = StatesDataloader(config.data0)
+    elif isinstance(config.data1,GraphDataloaderConfig):
+        dataloader_1 = GraphDataloaders(config.data0)
+    elif isinstance(config.data1,GaussianTargetConfig):
+        dataloader_1 = CTDDTargetData(config)
+    else:
+        raise Exception("DataLoader not Defined")
+
+
+    return dataloader_0,dataloader_1

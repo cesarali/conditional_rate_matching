@@ -157,7 +157,7 @@ class ExperimentFiles:
 
             elif any:
                 best_model_path_checkpoint = self.best_model_path_checkpoint
-                extract_digits = lambda s: int(re.search(r'\d+', s).group()) if re.search(r'\d+', s) else None
+                #extract_digits = lambda s: int(re.search(r'\d+', s).group()) if re.search(r'\d+', s) else None
 
                 generic_metric_path_ = best_model_path_checkpoint.format("*")
                 generic_metric_path_to_fill = best_model_path_checkpoint.format("{0}")
@@ -167,7 +167,7 @@ class ExperimentFiles:
                 numbers_available = []
                 available_files = list(generic_metric_path_.parent.glob(generic_metric_path_.name))
                 for file_ in available_files:
-                    digits = extract_digits(str(file_.name))
+                    digits = self.extract_digits(str(file_.name))
                     numbers_available.append(digits)
 
                 if len(numbers_available) > 0:
@@ -188,9 +188,8 @@ class ExperimentFiles:
             print("Experiment Empty")
             return None
 
-        # self.model = results_['current_model'].to(device)
-        # SETS ALL OTHER CLASSES FROM CONFIG AND START NEW EXPERIMENT IF REQUIERED
-        # self.config.align_configurations()
-        # self.set_classes_from_config(self.config, device)
-
-
+    def extract_digits(self,s):
+        if re.search(r'\d+', s):
+            return int(re.search(r'\d+', s).group())
+        else:
+            return None

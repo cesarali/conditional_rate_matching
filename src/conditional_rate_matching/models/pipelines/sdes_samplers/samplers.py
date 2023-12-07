@@ -4,13 +4,17 @@ from tqdm import tqdm
 from torch import functional as F
 from typing import Union,Tuple,List
 
-from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
+
+from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.models.temporal_networks.rates.crm_rates import ClassificationForwardRate
+from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate
 
 
 
-def TauLeaping(config:ConditionalRateMatchingConfig,
-               rate_model:Union[ClassificationForwardRate],
+def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
+               rate_model:Union[ClassificationForwardRate,SchrodingerBridgeRate],
                x_0:torch.Tensor,
                forward=True,
                return_path=False):
@@ -24,7 +28,7 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
 
     number_of_paths = x_0.size(0)
     D = x_0.size(1)
-    S = config.data1.vocab_size
+    S = config.data0.vocab_size
     num_steps = config.pipeline.number_of_steps
     min_t = 1./num_steps
     device = x_0.device
@@ -79,4 +83,4 @@ def TauLeaping(config:ConditionalRateMatchingConfig,
             x_hist = torch.cat(x_hist,dim=1).float()
             x0_hist = torch.cat(x0_hist,dim=1).float()
 
-        return x_0max.detach().float(), x_hist, x0_hist, torch.Tensor(save_ts.copy())
+        return x_0max.detach().float(), x_hist, x0_hist, torch.Tensor(save_ts.copy()).to(device)

@@ -4,16 +4,9 @@ def spins_to_bool(x):
     """Convert a 1 and -1 vector to a boolean vector"""
     return (x == 1).type(torch.bool)
 
-def spins_to_binary(x):
-    """Convert a 1 and -1 vector to a boolean vector"""
-    return (x == 1.).type(torch.bool).float()
-
 def bool_to_spins(x):
     """Convert a boolean vector to a 1 and -1 vector"""
     return (2*x.type(torch.int8) - 1).type(torch.float32)
-
-def binary_to_spins(x):
-    return bool_to_spins(x.bool())
 
 def get_bool_flips(x):
     """Get all spin flips of a binary vector, one dimension at a time"""
@@ -23,7 +16,7 @@ def get_bool_flips(x):
 def get_spin_flips(x):
   return bool_to_spins(get_bool_flips(spins_to_bool(x)))
 
-def flip_and_copy_bool(X:torch.BoolTensor):
+def flip_and_copy_bool(X:torch.device):
     """
     Here we flip:
     Args:
@@ -39,11 +32,8 @@ def flip_and_copy_bool(X:torch.BoolTensor):
     X_flipped = X[: ,None ,:].bool() ^ flip_mask.bool()
     X_flipped = X_flipped.reshape(number_of_paths *number_of_spins ,number_of_spins)
     X_copy = X.repeat_interleave(number_of_spins ,0)
-    return X_copy,X_flipped
 
-def flip_and_copy_binary(X:torch.FloatTensor):
-    X_copy,X_flipped = flip_and_copy_bool(X.bool())
-    return X_copy.float(),X_flipped.float()
+    return X_copy ,X_flipped
 
 def copy_and_flip_spins(X_spins):
     """
@@ -69,4 +59,3 @@ def flip_and_copy_spins(X_spins):
     X_copy = X_spins.repeat_interleave(number_of_spins,dim=0)
     X_flipped = X_copy*flip_mask
     return X_copy,X_flipped
-

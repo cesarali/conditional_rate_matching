@@ -1,5 +1,3 @@
-import os
-
 import torch
 import numpy as np
 from torch import nn
@@ -75,15 +73,16 @@ def test_conditional_probability():
     print(probs.sum(axis=-1))
     print(probs_transition.sum(axis=-1))
 
-@pytest.mark.skip(reason="No way of currently testing this")
+#@pytest.mark.skip(reason="No way of currently testing this")
 def test_load():
     from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
     from conditional_rate_matching.utils.plots.images_plots import mnist_grid
 
-    experiment_dir = get_experiment_dir(experiment_name="crm",
-                                        experiment_type="mnist",
-                                        experiment_indentifier="save_n_loads8")
+
+    experiment_dir = get_experiment_dir(experiment_name="ot_test",
+                                        experiment_type="trainer_call",
+                                        experiment_indentifier="1701864662")
 
     crm = CRM(experiment_dir=experiment_dir,device=torch.device("cpu"))
     generative_sample = crm.pipeline(32)
-    mnist_grid(generative_sample)
+    #mnist_grid(generative_sample)

@@ -1,74 +1,88 @@
 import os
+from typing import List,Union
+from pprint import pprint
 from dataclasses import dataclass
+from dataclasses import field,asdict
 from conditional_rate_matching import data_path
 
+# model config
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
+    TemporalMLPConfig,
+    ConvNetAutoencoderConfig,
+)
+
+# data config
+from conditional_rate_matching.data.ctdd_target_config import GaussianTargetConfig
+from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig,CommunitySmallConfig
+from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
+from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
+from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
+from conditional_rate_matching.configs import temporal_network_configs
+from conditional_rate_matching.configs import thermostat_configs
+
+from conditional_rate_matching.models.pipelines.pipelines_config import DSBPipelineConfig
+
+from conditional_rate_matching.models.losses.dsb_losses_config import (
+    RealFlipConfig,
+    GradientEstimatorConfig,
+    SteinSpinEstimatorConfig,
+    all_flip_configs
+)
+
+from conditional_rate_matching.models.pipelines.reference_process.reference_process_config import (
+    GlauberDynamicsConfig,
+    GaussianTargetRateConfig,
+    all_reference_process_configs
+)
+
+data_configs = {"NISTLoader":NISTLoaderConfig,
+                "GraphDataloader":GraphDataloaderConfig,
+                "StatesDataloader":StatesDataloaderConfig,
+                "GrayCodesDataloader":GrayCodesDataloaderConfig,
+                "GaussianTarget":GaussianTargetConfig}
+
 image_data_path = os.path.join(data_path,"raw")
-@dataclass
-class Config:
 
+@dataclass
+class DSBTrainerConfig(BasicTrainerConfig):
+    name:str = "DSBTrainer"
+    number_of_sinkhorn_iterations:int = 10
+
+@dataclass
+class DSBConfig:
     # data
-    dataset_name_0:str = "categorical_dirichlet"
-    dataset_name_1:str = "categorical_dirichlet"
-
-    number_of_spins :int = 3
-    number_of_states :int = 4
-    sample_size :int = 200
-    test_split:float = .2
-
-    dirichlet_alpha_0 :float = 0.1
-    dirichlet_alpha_1 :float = 100.
-
-    bernoulli_probability_0 :float = 0.2
-    bernoulli_probability_0 :float = 0.8
-
-    # process
-    process_name:int = "constant" # constant
-    gamma:float = .9
-
-    # model
-
+    data0: Union[GraphDataloaderConfig,NISTLoaderConfig] = CommunitySmallConfig(flatten=True,as_image=False,full_adjacency=False)
+    data1: GaussianTargetConfig = GaussianTargetConfig()
     # temporal network
-    time_embed_dim :int = 9
-    hidden_dim :int = 50
-
-    # rate
-    loss:str = "classifier" # classifier,naive
-    flip_estimator: str = "stein" # stein, gradient, flip
-    # rate
-
+    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig] = TemporalMLPConfig()
+    #flip estimator
+    flip_estimator:Union[RealFlipConfig,GradientEstimatorConfig,SteinSpinEstimatorConfig] = RealFlipConfig()
+    #reference
+    process: Union[GaussianTargetRateConfig,GlauberDynamicsConfig] = GaussianTargetRateConfig()
     # training
-    number_of_sinkhorn = 10
-    number_of_epochs = 300
-    learning_rate = 0.01
-    batch_size :int = 5
-    device = "cuda:0"
-
+    trainer: DSBTrainerConfig = DSBTrainerConfig()
     #pipeline
-    number_of_steps:int = 20
-    num_intermediates:int = None
+    pipeline = DSBPipelineConfig = DSBPipelineConfig()
 
     def __post_init__(self):
-        self.num_intermediates = int(.5*self.number_of_steps)
+        if isinstance(self.data0,dict):
+            self.data0 = data_configs[self.data0["name"]](**self.data0)
 
-@dataclass
-class NistConfig(Config):
+        if isinstance(self.data1,dict):
+            self.data1 = data_configs[self.data1["name"]](**self.data1)
 
-    dataset_name_0:str = "categorical_dirichlet"
-    dataset_name_1:str = "mnist"
+        if isinstance(self.temporal_network,dict):
+            self.temporal_network = temporal_network_configs[self.temporal_network["name"]](**self.temporal_network)
 
-    number_of_spins:int = 784
-    number_of_states:int = 2
-    sample_size:int = 1000
-    as_image:bool = False
+        if isinstance(self.process, dict):
+            self.process = all_reference_process_configs[self.process["name"]](**self.process)
 
-    pepper_threshold:float = 0.5
-    data_dir:str = image_data_path
+        if isinstance(self.flip_estimator,dict):
+            self.flip_estimator = all_flip_configs[self.flip_estimator["name"]](**self.flip_estimator)
 
-    def __post_init__(self):
-        self.num_intermediates = int(.5*self.number_of_steps)
-        self.dimension = self.number_of_spins
+        if isinstance(self.trainer,dict):
+            self.trainer = DSBTrainerConfig(**self.trainer)
 
-
-
-
-
+        if isinstance(self.pipeline,dict):
+            self.pipeline = DSBPipelineConfig(**self.pipeline)

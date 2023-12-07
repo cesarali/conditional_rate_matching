@@ -9,7 +9,6 @@ from conditional_rate_matching.data.transforms import BinaryTensorToSpinsTransfo
 
 class CTDDTargetData():
     config : Union[CTDDConfig]
-
     doucet:bool = True
 
     def __init__(self,config:CTDDConfig,rank=None):
@@ -19,9 +18,7 @@ class CTDDTargetData():
         self.shape = self.config.data0.temporal_net_expected_shape
 
         self.S = self.config.data0.vocab_size
-        sampler_config = self.config.pipeline
-
-        self.initial_dist = sampler_config.initial_dist
+        self.initial_dist = 'gaussian'
         if self.initial_dist == 'gaussian':
             self.initial_dist_std = self.config.process.Q_sigma
         else:
@@ -44,13 +41,11 @@ class CTDDTargetData():
         else:
             raise NotImplementedError('Unrecognized initial dist ' + self.initial_dist)
 
-        return [x,None]
+        return [x.float(),None]
 
     def train(self):
-
         training_size = self.config.data0.training_size
         batch_size = self.config.data0.batch_size
-
         current_index = 0
         while current_index < training_size:
             remaining = min(training_size - current_index, batch_size)
@@ -62,8 +57,10 @@ class CTDDTargetData():
     def test(self):
         test_size = self.config.data0.test_size
         batch_size = self.config.data0.batch_size
-
-        number_of_batches = int(test_size / batch_size) + 1
-        for a in range(number_of_batches):
-            x = self.sample(batch_size)
+        current_index = 0
+        while current_index < test_size:
+            remaining = min(test_size - current_index, batch_size)
+            x = self.sample(remaining)
+            # Your processing code here
+            current_index += remaining
             yield x

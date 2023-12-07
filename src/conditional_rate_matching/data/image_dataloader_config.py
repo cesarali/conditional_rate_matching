@@ -53,8 +53,8 @@ class NISTLoaderConfig:
     flatten: bool = True
     as_image: bool = False
 
-    max_training_size:int = 2000
-    max_test_size:int=2000
+    max_training_size:int = None
+    max_test_size:int = None
 
     total_data_size: int = None
     training_size: int = None

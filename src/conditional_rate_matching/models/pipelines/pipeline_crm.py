@@ -51,9 +51,13 @@ class CRMPipeline:
             x_hist_batches = []
             x0_hist_batches = []
 
-            # Process in batches
-            for i in range(0, sample_size, batch_size):
-                x_0_batch = x_0[i:i + batch_size]
+            remaining = x_0.size(0)
+            while remaining > 0:
+                # Determine the number of elements to process
+                batch_size = min(remaining, batch_size)
+
+                # Slice the data into a batch
+                x_0_batch = x_0[:batch_size]
                 x_f_batch, x_hist_batch, x0_hist_batch, ts = TauLeaping(self.config, self.model, x_0_batch,
                                                                               forward=True, return_path=return_path)
 
@@ -62,6 +66,8 @@ class CRMPipeline:
                 if return_path or return_intermediaries:
                     x_hist_batches.append(x_hist_batch)
                     x0_hist_batches.append(x0_hist_batch)
+                x_0 = x_0[batch_size:]
+                remaining -= batch_size
 
             # Concatenate the results from all batches
             x_f = torch.cat(x_f_batches, dim=0)
@@ -75,18 +81,3 @@ class CRMPipeline:
         else:
             return x_f
 
-    """
-        def __call__(self,sample_size,train=True,return_path=False,return_intermediaries=False):
-  
-
-        if return_intermediaries:
-            return_path = False
-
-        x_0 = self.get_x0_sample(sample_size=sample_size,train=train).to(self.device)
-        x_f, x_hist, x0_hist,ts = TauLeaping(self.config, self.model, x_0, forward=True,return_path=return_path)
-
-        if return_path or return_intermediaries:
-            return x_f,x_hist,ts
-        else:
-            return x_f
-    """

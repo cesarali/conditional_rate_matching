@@ -139,12 +139,3 @@ def uniform_pair_x0_x1(batch_1, batch_0,device=torch.device("cpu")):
     x_1 = x_1[:batch_size, :]
 
     return x_1, x_0
-
-if __name__=="__main__":
-    from conditional_rate_matching.configs.config_files import get_experiment_dir
-
-    experiment_dir = get_experiment_dir(experiment_name="crm",
-                                        experiment_type="dirichlet_K",
-                                        experiment_indentifier="save_n_load_3")
-
-    crm = CRM(experiment_dir=experiment_dir)

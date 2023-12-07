@@ -9,7 +9,9 @@ class BasicTrainerConfig:
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
     max_test_size:int = 2000
-
+    do_ema:bool = True
+    clip_grad:bool = False
+    clip_max_norm:float = 10.
 
     learning_rate:float = 0.001
     weight_decay:float = .0
