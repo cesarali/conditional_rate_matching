@@ -162,7 +162,7 @@ def clustering_worker(param):
         clustering_coeffs_list, bins=bins, range=(0.0, 1.0), density=False)
     return hist
 
-
+"""
 def clustering_stats(graph_ref_list, graph_pred_list, bins=100, windows=True,is_parallel=True):
     sample_ref = []
     sample_pred = []
@@ -202,7 +202,44 @@ def clustering_stats(graph_ref_list, graph_pred_list, bins=100, windows=True,is_
     if PRINT_TIME:
         print('Time computing clustering mmd: ', elapsed)
     return mmd_dist
+"""
 
+def clustering_stats(graph_ref_list, graph_pred_list, KERNEL=gaussian, bins=100, windows=True,is_parallel=True):
+    sample_ref = []
+    sample_pred = []
+    graph_pred_list_remove_empty = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
+
+    prev = datetime.now()
+    if is_parallel:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for clustering_hist in executor.map(clustering_worker,
+                                                [(G, bins) for G in graph_ref_list]):
+                sample_ref.append(clustering_hist)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for clustering_hist in executor.map(clustering_worker,
+                                                [(G, bins) for G in graph_pred_list_remove_empty]):
+                sample_pred.append(clustering_hist)
+    else:
+        for i in range(len(graph_ref_list)):
+            clustering_coeffs_list = list(nx.clustering(graph_ref_list[i]).values())
+            hist, _ = np.histogram(
+                clustering_coeffs_list, bins=bins, range=(0.0, 1.0), density=False)
+            sample_ref.append(hist)
+
+        for i in range(len(graph_pred_list_remove_empty)):
+            clustering_coeffs_list = list(nx.clustering(graph_pred_list_remove_empty[i]).values())
+            hist, _ = np.histogram(
+                clustering_coeffs_list, bins=bins, range=(0.0, 1.0), density=False)
+            sample_pred.append(hist)
+    try:
+        mmd_dist = compute_mmd(sample_ref, sample_pred, kernel=gaussian_emd,
+                            sigma=1.0 / 10, distance_scaling=bins)
+    except:
+        mmd_dist = compute_mmd(sample_ref, sample_pred, kernel=KERNEL, sigma=1.0 / 10)
+    elapsed = datetime.now() - prev
+    if PRINT_TIME:
+        print('Time computing clustering mmd: ', elapsed)
+    return mmd_dist
 
 # maps motif/orbit name string to its corresponding list of indices from orca_berlin output
 motif_to_indices = {
@@ -383,6 +420,6 @@ if __name__=="__main__":
     graph_list_2 = [nx.barabasi_albert_graph(100,3) for i in range(20)]
 
     node_orbit_counts = orca(graph_list_1[0])
-    results_ = eval_graph_list(graph_list_1, graph_list_2,methods=["orbit"],windows=True)
+    results_ = eval_graph_list(graph_list_1, graph_list_2,methods=["cluster"],windows=True)
     print(results_)
 
