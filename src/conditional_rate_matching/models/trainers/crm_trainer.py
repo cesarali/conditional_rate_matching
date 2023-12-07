@@ -145,27 +145,30 @@ class CRMTrainer(Trainer):
 if __name__=="__main__":
     from conditional_rate_matching.configs.experiments_configs.old_experiments.testing_graphs import small_community
     from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import LogThermostatConfig
+    from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
+
     from dataclasses import asdict
     from pprint import pprint
 
     # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="graph",
-                                       experiment_indentifier="log_berlin3",
+                                       experiment_type="mnist",
+                                       experiment_indentifier="log_potsdam",
                                        delete=True)
-
     # Configuration
-    #config = experiment_MNIST(max_training_size=1000)
-    #config = experiment_MNIST_Convnet(max_training_size=5000,max_test_size=2000)
-    #config = experiment_kStates()
-    #config = small_community(number_of_epochs=400,berlin=True)
-    config = small_community(number_of_epochs=500,berlin=True)
-    #config.thermostat = LogThermostatConfig()
-    pprint(asdict(config))
+    #config = experiment_nist(number_of_epochs=10,
+    #                         dataset_name="mnist",
+    #                         temporal_network_name="conv0")
+
+    config = small_community(number_of_epochs=10)
+
+    config.trainer.debug = True
+    config.trainer.max_test_size = 1000
+
 
     crm_trainer = CRMTrainer(config,experiment_files)
     results_,all_metrics = crm_trainer.train()
-    print(all_metrics)
+
 
 
 

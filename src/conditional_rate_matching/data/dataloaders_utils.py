@@ -76,6 +76,9 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_0 = NISTLoader(config.data0)
     elif isinstance(config.data0,StatesDataloaderConfig):
         config.data0.dimensions = config.data1.dimensions
+        config.data0.temporal_net_expected_shape = [config.data0.dimensions]
+        config.data0.sample_size = config.data1.total_data_size
+        config.data0.test_split = config.data1.test_split
         dataloader_0 = StatesDataloader(config.data0)
     elif isinstance(config.data0,GraphDataloaderConfig):
         dataloader_0 = GraphDataloaders(config.data0)
