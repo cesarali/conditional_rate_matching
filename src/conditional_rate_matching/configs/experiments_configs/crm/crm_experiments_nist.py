@@ -2,7 +2,7 @@ import os
 from pprint import pprint
 from dataclasses import asdict
 
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig, CRMTrainerConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -26,7 +26,7 @@ def experiment_nist(number_of_epochs=300,
         crm_config.temporal_network = ConvNetAutoencoderConfig()
 
     crm_config.pipeline.number_of_steps = 100
-    crm_config.trainer = BasicTrainerConfig(number_of_epochs=number_of_epochs,
+    crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
                                              berlin=berlin,
                                              metrics=[MetricsAvaliable.mse_histograms,
                                                       MetricsAvaliable.mnist_plot,
@@ -36,7 +36,7 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(4,"mnist")
+    config = experiment_nist(4,"mnist",temporal_network_name="conv0")
     config.trainer.debug = True
     pprint(config)
     call_trainer(config)

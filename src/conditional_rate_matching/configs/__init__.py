@@ -20,11 +20,8 @@ temporal_network_configs = {
     "TemporalGraphConvNet":TemporalGraphConvNetConfig,
     "TemporalDeepMLP":TemporalDeepEBMConfig
 }
-<<<<<<< HEAD
-=======
 
 thermostat_configs = {
     "LogThermostat":LogThermostatConfig,
     "ConstantThermostat":ConstantThermostatConfig
 }
->>>>>>> origin/main

@@ -24,16 +24,21 @@ class TemporalDeepMLP(nn.Module):
         self.hidden_layer = config.temporal_network.hidden_dim
         self.num_layers = config.temporal_network.num_layers
         self.act_fn = get_activation_function(config.temporal_network.activation)
+        self.dropout_rate = config.temporal_network.dropout # Assuming dropout rate is specified in the config
 
-        layers = [nn.Linear(self.dimensions + self.time_embed_dim, self.hidden_layer)]
-        if self.act_fn: layers.append(self.act_fn)
+        layers = [nn.Linear(self.dimensions + self.time_embed_dim, self.hidden_layer),
+                  nn.BatchNorm1d(self.hidden_layer),   
+                  self.act_fn]
+        
+        if self.dropout_rate: layers.append(nn.Dropout(self.dropout_rate))  # Adding dropout if specified
 
         for _ in range(self.num_layers - 2):
-            layers.extend([nn.Linear(self.hidden_layer, self.hidden_layer)])
-            if self.act_fn: layers.extend([self.act_fn])
+            layers.extend([nn.Linear(self.hidden_layer, self.hidden_layer),
+                           nn.BatchNorm1d(self.hidden_layer),   
+                           self.act_fn])
+            if self.dropout_rate: layers.extend([nn.Dropout(self.dropout_rate)])  # Adding dropout
 
         layers.append(nn.Linear(self.hidden_layer, self.dimensions * self.vocab_size))
-
         self.model = nn.Sequential(*layers)
 
     def forward(self, x, times):

@@ -9,6 +9,7 @@ from conditional_rate_matching import data_path
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     TemporalDeepMLPConfig,
+    TemporalDeepEBMConfig,
     TemporalDeepSetsConfig,
     TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
@@ -23,7 +24,7 @@ from conditional_rate_matching.models.trainers.trainers_config import BasicTrain
 from conditional_rate_matching.configs import temporal_network_configs
 from conditional_rate_matching.configs import thermostat_configs
 
-from  conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig,LogThermostatConfig
+from  conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
@@ -60,9 +61,14 @@ class CRMConfig:
     data0: StatesDataloaderConfig = StatesDataloaderConfig()
     data1: NISTLoaderConfig = NISTLoaderConfig()
     # process
-    thermostat : Union[ConstantThermostatConfig,LogThermostatConfig] = ConstantThermostatConfig()
+    thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal network
-    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig] = TemporalMLPConfig()
+    temporal_network: Union[TemporalMLPConfig, 
+                            TemporalDeepMLPConfig, 
+                            TemporalDeepEBMConfig, 
+                            TemporalDeepSetsConfig, 
+                            TemporalGraphConvNetConfig,
+                            ConvNetAutoencoderConfig] = TemporalMLPConfig()
     # ot
     optimal_transport:OptimalTransportSamplerConfig = OptimalTransportSamplerConfig()
     # training
