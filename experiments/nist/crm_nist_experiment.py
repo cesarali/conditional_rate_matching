@@ -17,84 +17,14 @@ from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvalia
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
-
-# from conditional_rate_matching.configs.config_crm import CRMConfig, BasicTrainerConfig, ConstantProcessConfig
-# from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
-# from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
-# from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
-# from conditional_rate_matching.configs.config_files import ExperimentFiles
-# from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-# from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, ConvNetAutoencoderConfig 
-
-
-def CRM_single_run(dynamics="crm",
-                    experiment_type="nist",
-                    experiment_indentifier="run",
-                    thermostat=None,
-                    coupling_method = 'uniform',
-                    model="convnet",
-                    dataset1="mnist",
-                    metrics=[MetricsAvaliable.mse_histograms,
-                             MetricsAvaliable.mnist_plot,
-                             MetricsAvaliable.marginal_binary_histograms],
-                    device="cpu",
-                    epochs=100,
-                    batch_size=64,
-                    learning_rate=1e-3, 
-                    hidden_dim=256,
-                    time_embed_dim=128,
-                    dropout=0.1,
-                    num_layers=3,
-                    activation="ReLU",
-                    gamma=1.0,
-                    num_timesteps=1000,
-                   ):
-
-    experiment_files = ExperimentFiles(experiment_name=dynamics,
-                                       experiment_type=experiment_type,
-                                       experiment_indentifier=experiment_indentifier,
-                                       delete=True)
-    #...configs:
-
-    crm_config = CRMConfig()
-    crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
-
-    if model=="mlp":
-        crm_config.data1 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
-                                                            time_embed_dim = time_embed_dim,
-                                                            num_layers = num_layers,
-                                                            activation = activation,
-                                                            dropout = dropout)
-        
-    if model=="convnet":
-        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = ConvNetAutoencoderConfig()
-    
-    if thermostat == "log":  crm_config.thermostat = LogThermostatConfig()
-    else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
-
-    crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
-                                          learning_rate=learning_rate,
-                                          device=device,
-                                          metrics=metrics,
-                                          loss_regularize_square=False,
-                                          loss_regularize=False)
-    
-    crm_config.pipeline.number_of_steps = num_timesteps
-    crm_config.optimal_transport.name = coupling_method
-    #...train
-
-    crm = CRMTrainer(crm_config, experiment_files)
-    _ , metrics = crm.train()
-    return metrics
-
+from crm_nist_single_run import CRM_single_run
 
 class CRM_Scan_Optuna:
     def __init__(self, 
                  dynamics="crm",
                  experiment_type="nist",
                  experiment_indentifier="optuna_scan",
+                 dataset0=None,
                  dataset1='mnist',
                  thermostat=None,
                  coupling_method = 'uniform',
@@ -112,6 +42,7 @@ class CRM_Scan_Optuna:
                  gamma=(0.0, 2.0),
                  num_timesteps=100,
                  metrics=[MetricsAvaliable.mse_histograms,
+                         'fid_nist',
                           MetricsAvaliable.mnist_plot,
                           MetricsAvaliable.marginal_binary_histograms]):
 
@@ -120,6 +51,7 @@ class CRM_Scan_Optuna:
         self.experiment_type = experiment_type + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
         self.experiment_indentifier = experiment_indentifier
         self.workdir = "/home/df630/conditional_rate_matching/results/{}/{}".format(dynamics, self.experiment_type)
+        self.dataset0 = dataset0
         self.dataset1 = dataset1
         self.model = model
         self.thermostat = thermostat
@@ -185,6 +117,7 @@ class CRM_Scan_Optuna:
                                 model=self.model,
                                 thermostat=self.thermostat,
                                 coupling_method=self.coupling_method,
+                                dataset0=self.dataset0,
                                 dataset1=self.dataset1,
                                 metrics=self.metrics,
                                 device=self.device,
@@ -201,7 +134,13 @@ class CRM_Scan_Optuna:
         
 
         print('all metric: ', metrics)
-        self.nist_metric = metrics["mse_marginal_histograms"]
+
+        fid_layer_1 = metrics["fid_nist_layer_1"]
+        fid_layer_2 = metrics["fid_nist_layer_2"]
+        fid_layer_3 = metrics["fid_nist_layer_3"]
+
+        self.nist_metric = (fid_layer_1 + fid_layer_2 + fid_layer_3) / 3.0
+
         if self.nist_metric < self.metric: self.metric = self.nist_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         
@@ -211,57 +150,47 @@ class CRM_Scan_Optuna:
 
 if __name__ == "__main__":
 
-    CRM_single_run(dynamics="crm",
-                   experiment_type="mnist_LogThermostat",
-                   model="convnet",
-                   epochs=10,
-                   thermostat="log",
-                   coupling_method='uniform',
-                   dataset1="mnist",
-                   batch_size=128,
-                   learning_rate=1e-4, 
-                   device="cuda:3",
-                   dropout=0.25,
-                   num_timesteps=250)
 
-    # scan = CRM_Scan_Optuna(dynamics="crm",
-    #                        experiment_type="enist_LogThermostat",
-    #                        experiment_indentifier="optuna_scan_trial",
-    #                        dataset1="mnist",
-    #                        thermostat="log",
-    #                        coupling_method='uniform',
-    #                        model="mlp",
-    #                        n_trials=100,
-    #                        epochs=5000,
-    #                        batch_size=256,
-    #                        learning_rate=(1e-6, 1e-2), 
-    #                        hidden_dim=(32, 256), 
-    #                        num_layers=(2, 6),
-    #                        activation=('ReLU', 'Sigmoid', 'SELU'),
-    #                        time_embed_dim=(32, 256), 
-    #                        dropout=(0.01, 0.5),
-    #                        gamma=None,
-    #                        device='cuda:2')
+    scan = CRM_Scan_Optuna(dynamics="crm",
+                           experiment_type="mnist_LogThermostat",
+                           experiment_indentifier="optuna_scan_trial",
+                           dataset0="emnist",
+                           dataset1="mnist",
+                           thermostat="log",
+                           coupling_method='uniform',
+                           model="convnet",
+                           metrics = ['fid_nist', "mnist_plot", "marginal_binary_histograms"],
+                           n_trials=100,
+                           epochs=10,
+                           batch_size=256,
+                           learning_rate=(1e-6, 1e-2), 
+                           hidden_dim=(32, 256), 
+                           num_layers=(8, 64),
+                           activation='ReLU',
+                           time_embed_dim=(32, 256), 
+                           dropout=(0.1, 1.0),
+                           gamma=(100, 3000),
+                           device='cuda:3')
     
-    # df = scan.study.trials_dataframe()
-    # df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+    df = scan.study.trials_dataframe()
+    df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
 
-    # # Save Optimization History
-    # fig = plot_optimization_history(scan.study)
-    # fig.write_image(scan.workdir + "/optimization_history.png")
+    # Save Optimization History
+    fig = plot_optimization_history(scan.study)
+    fig.write_image(scan.workdir + "/optimization_history.png")
 
-    # # Save Slice Plot
-    # fig = plot_slice(scan.study)
-    # fig.write_image(scan.workdir + "/slice_plot.png")
+    # Save Slice Plot
+    fig = plot_slice(scan.study)
+    fig.write_image(scan.workdir + "/slice_plot.png")
 
-    # # Save Contour Plot
-    # fig = plot_contour(scan.study)
-    # fig.write_image(scan.workdir + "/contour_plot.png")
+    # Save Contour Plot
+    fig = plot_contour(scan.study)
+    fig.write_image(scan.workdir + "/contour_plot.png")
 
-    # # Save Parallel Coordinate Plot
-    # fig = plot_parallel_coordinate(scan.study)
-    # fig.write_image(scan.workdir + "/parallel_coordinate.png")
+    # Save Parallel Coordinate Plot
+    fig = plot_parallel_coordinate(scan.study)
+    fig.write_image(scan.workdir + "/parallel_coordinate.png")
 
-    # # Save Parameter Importances
-    # fig = plot_param_importances(scan.study)
-    # fig.write_image(scan.workdir + "/param_importances.png")
+    # Save Parameter Importances
+    fig = plot_param_importances(scan.study)
+    fig.write_image(scan.workdir + "/param_importances.png")

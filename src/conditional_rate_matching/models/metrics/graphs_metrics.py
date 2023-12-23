@@ -162,13 +162,8 @@ def clustering_worker(param):
         clustering_coeffs_list, bins=bins, range=(0.0, 1.0), density=False)
     return hist
 
-<<<<<<< HEAD
-
-def clustering_stats(graph_ref_list, graph_pred_list, bins=100, windows=False,is_parallel=True):
-=======
 """
 def clustering_stats(graph_ref_list, graph_pred_list, bins=100, windows=True,is_parallel=True):
->>>>>>> origin/main
     sample_ref = []
     sample_pred = []
     graph_pred_list_remove_empty = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
@@ -422,12 +417,7 @@ if __name__=="__main__":
     graph_list_1 = [nx.barabasi_albert_graph(100,3) for i in range(20)]
     graph_list_2 = [nx.barabasi_albert_graph(100,3) for i in range(20)]
 
-<<<<<<< HEAD
-    node_orbit_counts = orca(graph_list_1[0], windows=False)
-    results_ = eval_graph_list(graph_list_1, graph_list_2, methods=['degree', 'cluster', 'orbit'], windows=False)
-=======
     node_orbit_counts = orca(graph_list_1[0])
     results_ = eval_graph_list(graph_list_1, graph_list_2,methods=["cluster"],windows=True)
->>>>>>> origin/main
     print(results_)
 

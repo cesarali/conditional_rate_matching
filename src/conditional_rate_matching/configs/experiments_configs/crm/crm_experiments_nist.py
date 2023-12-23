@@ -27,20 +27,12 @@ def experiment_nist(number_of_epochs=300,
 
     crm_config.pipeline.number_of_steps = 100
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
-<<<<<<< HEAD
-                                             berlin=berlin,
-                                             metrics=[MetricsAvaliable.mse_histograms,
-                                                      MetricsAvaliable.mnist_plot,
-                                                      MetricsAvaliable.marginal_binary_histograms],
-                                             learning_rate=1e-4)
-=======
                                           berlin=berlin,
                                           metrics=[MetricsAvaliable.mse_histograms,
                                                    MetricsAvaliable.mnist_plot,
                                                    MetricsAvaliable.marginal_binary_histograms],
                                           max_test_size=4000,
                                           learning_rate=1e-4)
->>>>>>> origin/main
     return crm_config
 
 if __name__=="__main__":

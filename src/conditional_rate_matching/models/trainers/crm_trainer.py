@@ -167,13 +167,8 @@ if __name__=="__main__":
 
 
     crm_trainer = CRMTrainer(config,experiment_files)
-<<<<<<< HEAD
-    results_, all_metrics = crm_trainer.train()
-    print(all_metrics)
-=======
     results_,all_metrics = crm_trainer.train()
 
->>>>>>> origin/main
 
 
 

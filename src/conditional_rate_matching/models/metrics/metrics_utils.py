@@ -208,6 +208,45 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
             plot_path_test = generative_model.experiment_files.plot_path.format("nist_plot_test_{0}".format(epoch))
             mnist_grid(generative_sample, plot_path)
             mnist_grid(test_sample, plot_path_test)
+
+    #====================================
+    #IMAGE METRICS
+    #====================================
+
+    #FID with LeNet5
+    metric_string_name = "fid_nist"
+    if metric_string_name in metrics_to_log:
+        import torch
+        from conditional_rate_matching.models.metrics.fid.fid_metric import compute_fid
+        from conditional_rate_matching.models.metrics.fid.classifiers import LeNet5
+        classifier_path = '/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/metrics/fid/pretrained/LeNet5_BinaryMNIST.pth'
+        classifier = LeNet5(num_classes=10)
+        classifier.load_state_dict(torch.load(classifier_path))
+        fid_layer1 = compute_fid('mnist', classifier, generative_sample, test_sample, activation_layer='fc1', device='cpu')
+        fid_layer2 = compute_fid('mnist', classifier, generative_sample, test_sample, activation_layer='fc2', device='cpu')
+        fid_layer3 = compute_fid('mnist', classifier, generative_sample, test_sample, activation_layer='fc3', device='cpu')
+        fid_metrics = {"fid_nist_layer_1": fid_layer1.tolist()}
+        fid_metrics["fid_nist_layer_2"] = fid_layer2.tolist()
+        fid_metrics["fid_nist_layer_3"] = fid_layer3.tolist()
+        all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=fid_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
+
+    #FID with ResNet34 
+    #Comment: maybe not necessary... LeNet-5 may be enough
+    metric_string_name = "fid_resnet_nist"
+    if metric_string_name in metrics_to_log:
+        import torch
+        from conditional_rate_matching.models.metrics.fid.fid_metric import compute_fid
+        from conditional_rate_matching.models.metrics.fid.classifiers import ResNet34
+        classifier_path = '/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/metrics/fid/pretrained/ResNet34_BinaryMNIST.pth'
+        classifier = ResNet34(num_classes=10)
+        classifier.load_state_dict(torch.load(classifier_path))
+        fid_avgpool4 = compute_fid('mnist', classifier, generative_sample, test_sample, activation_layer='AvgPool4', device='cpu')
+        fid_resnet_metrics = {"fid_nist_resnet_AvgPool4":  fid_avgpool4.tolist()}
+        all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=fid_resnet_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
+
+    #====================================
+    #====================================
+
     #GRAYCODE
     metric_string_name = MetricsAvaliable.grayscale_plot
     if metric_string_name in metrics_to_log:

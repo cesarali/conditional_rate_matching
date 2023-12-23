@@ -35,6 +35,7 @@ def CRM_single_run(dynamics="crm",
                     epochs=500,
                     batch_size=20,
                     learning_rate=1e-3, 
+                    weight_decay=0.0,
                     hidden_dim=64, 
                     num_layers=2,
                     activation="ReLU",
@@ -90,6 +91,7 @@ def CRM_single_run(dynamics="crm",
 
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
                                           learning_rate=learning_rate,
+                                          weight_decay=weight_decay,
                                           device=device,
                                           metrics=metrics,
                                           loss_regularize=False,
@@ -120,6 +122,7 @@ class CRM_Scan_Optuna:
                  epochs=500,
                  batch_size=(5, 50),
                  learning_rate=(1e-5, 1e-2), 
+                 weight_decay=0.0,
                  hidden_dim=(16, 512), 
                  num_layers=(1, 5),
                  activation=("ReLU", "LeakyReLU"),
@@ -148,6 +151,7 @@ class CRM_Scan_Optuna:
         self.epochs = epochs
         self.batch_size = batch_size
         self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.activation = list(activation)
@@ -190,6 +194,7 @@ class CRM_Scan_Optuna:
         epochs = self.def_param(trial, 'epochs', self.epochs, type="int")
         batch_size = self.def_param(trial, 'bach_size', self.batch_size, type="int")
         learning_rate = self.def_param(trial, 'lr', self.learning_rate, type="float")
+        weight_decay = self.def_param(trial, 'wd', self.weight_decay, type="float")
         hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int")
         num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int")
         activation = self.def_param(trial, 'activation', self.activation, type="cat")
@@ -212,6 +217,7 @@ class CRM_Scan_Optuna:
                                  epochs=epochs,
                                  batch_size=batch_size,
                                  learning_rate=learning_rate, 
+                                 weight_decay=weight_decay,
                                  hidden_dim=hidden_dim, 
                                  num_layers=num_layers,
                                  activation=activation,
@@ -221,7 +227,7 @@ class CRM_Scan_Optuna:
                                  num_timesteps=self.num_timesteps)
         
         print('all metric: ', metrics)
-        self.graph_metric = (metrics["degree"] + metrics["orbit"]) / 2.0
+        self.graph_metric = (metrics["degree"] + metrics["cluster"]  + metrics["orbit"]) / 3.0
         if self.graph_metric < self.metric: self.metric = self.graph_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         
@@ -230,50 +236,312 @@ class CRM_Scan_Optuna:
 
 if __name__ == "__main__":
                                    
-    scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="graph_LogThermostat",
-                           experiment_indentifier="optuna_scan_trial",
-                           model="mlp",
-                           full_adjacency=False,
-                           thermostat="log",
-                           flatten=True,
-                           n_trials=100,
-                           epochs=5000,
-                           batch_size=(16, 100),
-                           learning_rate=(1e-7, 1e-2), 
-                           hidden_dim=(32, 256), 
-                           num_layers=(2, 6),
-                           activation=('ReLU', 'Sigmoid', 'SELU'),
-                           time_embed_dim=(32, 256), 
-                           dropout=(0.01, 0.5),
-                           gamma=None,
-                           device='cuda:2')
+    # scan = CRM_Scan_Optuna(dynamics="crm",
+    #                        experiment_type="graph_LogThermostat",
+    #                        experiment_indentifier="optuna_scan_trial",
+    #                        model="mlp",
+    #                        full_adjacency=False,
+    #                        thermostat="log",
+    #                        flatten=True,
+    #                        n_trials=100,
+    #                        epochs=1000,
+    #                        batch_size=(16, 100),
+    #                        learning_rate=(1e-7, 1e-2), 
+    #                        hidden_dim=(32, 256), 
+    #                        num_layers=(2, 6),
+    #                        activation=['SELU'],
+    #                        time_embed_dim=(32, 256), 
+    #                        dropout=(0.001, 0.6),
+    #                        gamma=None,
+    #                        device='cuda:2')
     
-    df = scan.study.trials_dataframe()
-    df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+    # df = scan.study.trials_dataframe()
+    # df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
 
-    from optuna.visualization import plot_optimization_history, plot_slice, plot_contour, plot_parallel_coordinate, plot_param_importances
+    # from optuna.visualization import plot_optimization_history, plot_slice, plot_contour, plot_parallel_coordinate, plot_param_importances
 
-    # Save Optimization History
-    fig = plot_optimization_history(scan.study)
-    fig.write_image(scan.workdir + "/optimization_history.png")
+    # # Save Optimization History
+    # fig = plot_optimization_history(scan.study)
+    # fig.write_image(scan.workdir + "/optimization_history.png")
 
-    # Save Slice Plot
-    fig = plot_slice(scan.study)
-    fig.write_image(scan.workdir + "/slice_plot.png")
+    # # Save Slice Plot
+    # fig = plot_slice(scan.study)
+    # fig.write_image(scan.workdir + "/slice_plot.png")
 
-    # Save Contour Plot
-    fig = plot_contour(scan.study)
-    fig.write_image(scan.workdir + "/contour_plot.png")
+    # # Save Contour Plot
+    # fig = plot_contour(scan.study)
+    # fig.write_image(scan.workdir + "/contour_plot.png")
 
-    # Save Parallel Coordinate Plot
-    fig = plot_parallel_coordinate(scan.study)
-    fig.write_image(scan.workdir + "/parallel_coordinate.png")
+    # # Save Parallel Coordinate Plot
+    # fig = plot_parallel_coordinate(scan.study)
+    # fig.write_image(scan.workdir + "/parallel_coordinate.png")
 
-    # Save Parameter Importances
-    fig = plot_param_importances(scan.study)
-    fig.write_image(scan.workdir + "/param_importances.png")
+    # # Save Parameter Importances
+    # fig = plot_param_importances(scan.study)
+    # fig.write_image(scan.workdir + "/param_importances.png")
 
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_1",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_2",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+
+
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_3",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+
+
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_4",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+    
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_5",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_6",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_7",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+    
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_8",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+    
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_9",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+
+
+    CRM_single_run(experiment_type="graph_LogThermostat",
+                   experiment_indentifier="run_10",
+                   thermostat="log",
+                   coupling_method="uniform",
+                   model="mlp",
+                   full_adjacency=False,
+                   flatten=True,
+                   as_image=False,
+                   metrics=["mse_histograms", 
+                             "binary_paths_histograms", 
+                             "marginal_binary_histograms", 
+                             "graphs_metrics", 
+                             "graphs_plot"],
+                   device="cuda:1",
+                   epochs=5000,
+                   batch_size=128,
+                   learning_rate=1e-4,
+                   weight_decay=0, 
+                   dropout=0.25,
+                   activation="ReLU",
+                   num_layers=5,
+                   hidden_dim=128,                
+                   time_embed_dim=64,
+                   num_timesteps=500)
+    
     # CRM_single_run(experiment_type="graph_LogThermostat",
     #                thermostat="log",
     #                coupling_method="uniform",
@@ -287,13 +555,13 @@ if __name__ == "__main__":
     #                          "graphs_metrics", 
     #                          "graphs_plot"],
     #                device="cuda:1",
-    #                epochs=500,
-    #                batch_size=20,
-    #                learning_rate=1e-3, 
-    #                hidden_dim=64, 
-    #                num_layers=2,
+    #                epochs=1000,
+    #                batch_size=80,
+    #                learning_rate=3.37e-4,
+    #                weight_decay=0, 
+    #                dropout=0.3897,
     #                activation="ReLU",
-    #                time_embed_dim=64,
-    #                dropout=0.25,
-    #                gamma=1.0,
+    #                num_layers=5,
+    #                hidden_dim=98,                
+    #                time_embed_dim=78,
     #                num_timesteps=100)
