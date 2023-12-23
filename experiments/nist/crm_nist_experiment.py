@@ -115,7 +115,7 @@ class CRM_Scan_Optuna:
                                 experiment_type=self.experiment_type,
                                 experiment_indentifier=exp_id,
                                 model=self.model,
-                                thermostat=self.thermostat,
+                               thermostat=self.thermostat,
                                 coupling_method=self.coupling_method,
                                 dataset0=self.dataset0,
                                 dataset1=self.dataset1,
@@ -135,11 +135,12 @@ class CRM_Scan_Optuna:
 
         print('all metric: ', metrics)
 
+        mse_histograms = metrics["mse_marginal_histograms"]
         fid_layer_1 = metrics["fid_nist_layer_1"]
         fid_layer_2 = metrics["fid_nist_layer_2"]
         fid_layer_3 = metrics["fid_nist_layer_3"]
 
-        self.nist_metric = (fid_layer_1 + fid_layer_2 + fid_layer_3) / 3.0
+        self.nist_metric = (100000*mse_histograms + fid_layer_1 + fid_layer_2 + fid_layer_3) / 4.0
 
         if self.nist_metric < self.metric: self.metric = self.nist_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
@@ -154,22 +155,22 @@ if __name__ == "__main__":
     scan = CRM_Scan_Optuna(dynamics="crm",
                            experiment_type="mnist_LogThermostat",
                            experiment_indentifier="optuna_scan_trial",
-                           dataset0="emnist",
+                        #    dataset0="emnist",
                            dataset1="mnist",
                            thermostat="log",
                            coupling_method='uniform',
-                           model="convnet",
-                           metrics = ['fid_nist', "mnist_plot", "marginal_binary_histograms"],
-                           n_trials=100,
-                           epochs=10,
+                           model="mlp",
+                           metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
+                           n_trials=200,
+                           epochs=50,
                            batch_size=256,
                            learning_rate=(1e-6, 1e-2), 
                            hidden_dim=(32, 256), 
-                           num_layers=(8, 64),
-                           activation='ReLU',
+                           num_layers=(2, 8),
+                           activation=('ReLU', 'Sigmoid', 'SELU'),
                            time_embed_dim=(32, 256), 
-                           dropout=(0.1, 1.0),
-                           gamma=(100, 3000),
+                           dropout=(0.001, 0.5),
+                           gamma=None,
                            device='cuda:3')
     
     df = scan.study.trials_dataframe()
