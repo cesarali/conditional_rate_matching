@@ -25,6 +25,7 @@ from conditional_rate_matching.utils.plots.histograms_plots import plot_marginal
 
 #mnist
 from conditional_rate_matching.utils.plots.images_plots import mnist_grid
+from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 
 #graph
 from conditional_rate_matching.models.metrics.graphs_metrics import eval_graph_list
@@ -44,8 +45,8 @@ class MetricsAvaliable:
     binary_paths_histograms: str = "binary_paths_histograms"
     marginal_binary_histograms: str = "marginal_binary_histograms"
     mnist_plot: str = "mnist_plot"
+    fid_nist: str = "fid_nist"
     grayscale_plot: str = "grayscale_plot"
-
 
 def store_metrics(experiment_files,all_metrics,new_metrics,metric_string_name,epoch,where_to_log=None):
     if key_in_dict(where_to_log, metric_string_name):
@@ -88,7 +89,6 @@ def sample_oops(oops,config):
     sizes = (vocab_size, dimensions, max_test_size)
     return sizes,source_dataloader, data_dataloader, generative_sample,test_sample
 
-
 def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {}, metrics_to_log=None, where_to_log=None, writer=None):
     """
     After the training procedure is done, the model is updated
@@ -128,6 +128,14 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
         kdmm_metrics = {"kdmm": kdmm_.item()}
         all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=kdmm_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
 
+    #FID's
+    metric_string_name = "fid_nist"
+    if metric_string_name in metrics_to_log:
+        #here calculates the fid score in the same device as the trainer
+        fid_nist_metrics = fid_nist(generative_sample, test_sample,config.data1.dataset_name,config.trainer.device)
+        all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=fid_nist_metrics,
+                                    metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
+
     # GRAPHS
     if "graphs_metrics" in metrics_to_log or "graphs_plot" in metrics_to_log:
         if isinstance(data_dataloader,GraphDataloaders):
@@ -148,6 +156,10 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
                 plot_path = generative_model.experiment_files.plot_path.format("graphs_test")
                 plot_graphs_list2(generated_graphs, title="Generative",save_dir=plot_path_generative)
                 plot_graphs_list2(test_graphs, title="Test",save_dir=plot_path)
+
+    #=======================================================
+    #                          PLOTS
+    #=======================================================
 
     # HISTOGRAMS PLOTS
     metric_string_name = "categorical_histograms"
@@ -208,7 +220,8 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
             plot_path_test = generative_model.experiment_files.plot_path.format("nist_plot_test_{0}".format(epoch))
             mnist_grid(generative_sample, plot_path)
             mnist_grid(test_sample, plot_path_test)
-    #GRAYCODE
+
+    #GRAYCODE PLOTS
     metric_string_name = MetricsAvaliable.grayscale_plot
     if metric_string_name in metrics_to_log:
         if isinstance(data_dataloader,GrayCodeDataLoader):

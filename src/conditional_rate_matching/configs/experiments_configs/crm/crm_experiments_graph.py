@@ -46,8 +46,8 @@ def experiment_grid(number_of_epochs=300,berlin=True):
     crm_config.temporal_network.hidden_dim = 50
     crm_config.temporal_network.time_embed_dim = 50
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,berlin=berlin,metrics=[MetricsAvaliable.mse_histograms,
-                                                                                                     MetricsAvaliable.graphs_plot,
-                                                                                                     MetricsAvaliable.marginal_binary_histograms],
+                                                                                                   MetricsAvaliable.graphs_plot,
+                                                                                                   MetricsAvaliable.marginal_binary_histograms],
                                             learning_rate=1e-4)
     return crm_config
 
