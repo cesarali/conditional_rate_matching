@@ -7,15 +7,15 @@ import numpy as np
 import os
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from conditional_rate_matching.configs.config_crm import CRMConfig, CRMTrainerConfig
-from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
+from conditional_rate_matching.models.trainers.ctdd_trainer import CTDDTrainer
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+# from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, ConvNetAutoencoderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
-def CRM_single_run(dynamics="crm",
+def CTDD_single_run(dynamics="ctdd",
                     experiment_type="nist",
                     experiment_indentifier="run",
                     thermostat=None,
@@ -75,18 +75,17 @@ def CRM_single_run(dynamics="crm",
     else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
 
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
-                                    learning_rate=learning_rate,
-                                    device=device,
-                                    metrics=metrics,
-                                    loss_regularize_square=False,
-                                    loss_regularize=False)
+                                        learning_rate=learning_rate,
+                                        device=device,
+                                        metrics=metrics,
+                                        loss_regularize_square=False,
+                                        loss_regularize=False)
     
     crm_config.pipeline.number_of_steps = num_timesteps
     crm_config.optimal_transport.name = coupling_method
-
     #...train
 
-    crm = CRMTrainer(crm_config, experiment_files)
+    crm = CTDDTrainer(crm_config, experiment_files)
     _ , metrics = crm.train()
 
     print('metrics=',metrics)
@@ -95,21 +94,21 @@ def CRM_single_run(dynamics="crm",
 
 if __name__ == "__main__":
 
-    CRM_single_run(dynamics="crm",
-                   experiment_type="mnist_LogThermostat_3",
+    CTDD_single_run(dynamics="crm",
+                   experiment_type="mnist_LogThermostat_1",
                    model="mlp",
-                   epochs=100,
+                   epochs=2000,
                    thermostat="log",
                    coupling_method='uniform',
                    dataset0="emnist",
                    dataset1="mnist",
                    metrics = ["mse_histograms", 'fid_nist', "mnist_plot", "marginal_binary_histograms"],
                    batch_size=256,
-                   learning_rate= 0.000186,
-                   hidden_dim=234,
-                   time_embed_dim=51,
+                   learning_rate= 0.0015496,
+                   hidden_dim=83,
+                   time_embed_dim=103,
                    activation="ReLU", 
-                   num_layers=7,
-                   dropout=0.21,
+                   num_layers=6,
+                   dropout=0.087,
                    num_timesteps=1000,
                    device="cuda:1")
