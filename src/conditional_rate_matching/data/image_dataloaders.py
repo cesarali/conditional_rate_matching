@@ -27,6 +27,8 @@ def get_data(config:NISTLoaderConfig):
     if not config.as_image:
         transform.append(SqueezeTransform)
 
+    if config.unet_resize:
+        transform.append(transforms.Resize((32, 32)))
 
     transform = transforms.Compose(transform)
 

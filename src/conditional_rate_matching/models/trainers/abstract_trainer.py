@@ -170,7 +170,11 @@ class Trainer(ABC):
             if (epoch + 1) % self.config.trainer.save_model_epochs == 0:
                 results_ = self.save_results(training_state,epoch+1,checkpoint=True)
             # SAVE RESULTS IF LOSS DECREASES IN VALIDATION
-            if training_state.average_test_loss < training_state.best_loss:
+            if self.config.trainer.save_model_test_stopping:
+                current_average = training_state.average_test_loss
+            else:
+                current_average = training_state.average_train_loss
+            if current_average < training_state.best_loss:
                 if self.config.trainer.warm_up_best_model_epoch < epoch or epoch == self.number_of_epochs - 1:
                     results_ = self.save_results(training_state,epoch + 1,checkpoint=False)
                 training_state.best_loss = training_state.average_test_loss

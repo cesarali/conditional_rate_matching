@@ -6,6 +6,7 @@ class BasicTrainerConfig:
     number_of_epochs:int = 300
     log_loss:int = 100
     warm_up_best_model_epoch = 1e6
+    save_model_test_stopping:bool = True
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
     max_test_size:int = 2000

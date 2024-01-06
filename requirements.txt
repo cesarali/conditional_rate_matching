@@ -11,6 +11,7 @@ matplotlib
 pyyaml
 torchtyping
 torch_geometric
+pot
 diffusers[torch]
 transformers
-
+pytest
