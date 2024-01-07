@@ -6,8 +6,8 @@ import torch.nn.functional as F
 from typing import Union
 
 from conditional_rate_matching.utils.graph_utils import mask_adjs, pow_tensor,mask_x,node_feature_to_matrix
-from conditional_rate_matching.models.temporal_networks.temporal_gnn.temporal_layers import TemporalDenseGCNConv, MLP,TemporalMLP
 from conditional_rate_matching.models.temporal_networks.temporal_gnn.temporal_attention import TemporalAttentionLayer
+from conditional_rate_matching.models.temporal_networks.temporal_gnn.temporal_layers import TemporalDenseGCNConv, MLP,TemporalMLP
 
 from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig

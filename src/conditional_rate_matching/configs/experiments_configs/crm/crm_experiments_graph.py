@@ -77,7 +77,7 @@ def experiment_grid(number_of_epochs=300,berlin=True,network="mlp"):
                                           metrics=[MetricsAvaliable.mse_histograms,
                                                    MetricsAvaliable.graphs_plot,
                                                    MetricsAvaliable.marginal_binary_histograms],
-                                           learning_rate=1e-4)
+                                           learning_rate=1e-2)
     return crm_config
 
 if __name__=="__main__":
@@ -85,14 +85,15 @@ if __name__=="__main__":
     from dataclasses import asdict
     from pprint import pprint
 
-    #config = experiment_comunity_small(number_of_epochs=15,network="gnn")
-
+    config = experiment_comunity_small(number_of_epochs=15,network="gnn")
     #config = experiment_grid(number_of_epochs=10)
-    config = experiment_ego(number_of_epochs=50,network="gnn")
+    #config = experiment_ego(number_of_epochs=15,network="gnn")
 
     #config.optimal_transport.name = "uniform"
     config.trainer.save_model_test_stopping = True
     config.data1.init = "deg"
+
+    config.pipeline.number_of_steps = 100
 
     pprint(asdict(config))
     results,metrics = call_trainer(config,experiment_name="gnn_test")

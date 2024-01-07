@@ -11,8 +11,8 @@ from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 from conditional_rate_matching.configs.config_oops import OopsConfig
 from conditional_rate_matching.configs.config_crm import CRMConfig
 
-from conditional_rate_matching.models.generative_models.ctdd import CTDD
 from conditional_rate_matching.models.generative_models.oops import Oops
+from conditional_rate_matching.models.generative_models.ctdd import CTDD
 from conditional_rate_matching.models.generative_models.crm import CRM
 from conditional_rate_matching.models.generative_models.dsb import DSB
 
@@ -52,8 +52,8 @@ class TrainerState:
         self.test_loss.append(loss)
 
 
-# Assuming CTDDConfig, CTDD, and other necessary classes are defined elsewhere
 
+# Assuming CTDDConfig, CTDD, and other necessary classes are defined elsewhere
 class Trainer(ABC):
     """
     This trainer is intended to obtain a backward process of a markov jump via
@@ -63,6 +63,7 @@ class Trainer(ABC):
     dataloader:Union[GraphDataloaders,NISTLoaderConfig] = None
     generative_model:Union[CTDD,Oops,CRM] = None
     config:Union[CTDDConfig,OopsConfig,CRMConfig] = None
+    do_ema:bool = False
 
     def parameters_info(self):
         print("# ==================================================")
@@ -92,6 +93,7 @@ class Trainer(ABC):
         self.parameters_info()
         self.writer = SummaryWriter(self.generative_model.experiment_files.tensorboard_path)
         self.tqdm_object = tqdm(range(self.config.trainer.number_of_epochs))
+
 
     @abstractmethod
     def train_step(self, current_model, databatch, number_of_training_step):
@@ -140,7 +142,6 @@ class Trainer(ABC):
         self.saved = False
 
         training_state = TrainerState(self.generative_model)
-        training_state.best_loss = np.inf
         for epoch in self.tqdm_object:
             #TRAINING
             for step, databatch in enumerate(self.dataloader.train()):
@@ -199,13 +200,11 @@ class Trainer(ABC):
             "training_loss":training_state.average_train_loss,
             "test_loss":training_state.average_test_loss,
         }
-
         if checkpoint:
             best_model_path_checkpoint = self.generative_model.experiment_files.best_model_path_checkpoint.format(epoch)
             torch.save(RESULTS,best_model_path_checkpoint)
-            self.saved = True
         else:
             torch.save(RESULTS, self.generative_model.experiment_files.best_model_path)
-            self.saved = True
+        self.saved = True
         return RESULTS
 

@@ -12,10 +12,12 @@ class BasicTrainerConfig:
     max_test_size:int = 2000
     do_ema:bool = True
     clip_grad:bool = False
-    clip_max_norm:float = 10.
+    clip_max_norm:float = 1.
 
     learning_rate:float = 0.001
-    weight_decay:float = .0
+    weight_decay:float =  0.0001
+    lr_decay:float =  0.999
+
     device:str = "cuda:0"
     berlin: bool = True
     distributed: bool = False

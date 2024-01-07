@@ -40,12 +40,14 @@ class CRMTrainerConfig(BasicTrainerConfig):
 
 @dataclass
 class OptimalTransportSamplerConfig:
-    name: str = "OTPlanSampler" # uniform
+    name: str = "uniform" # uniform,OTPlanSampler
     method: str = "exact"
     reg: float = 0.05
     reg_m: float = 1.0
     normalize_cost: bool = False
     warn: bool = True
+
+
 
 @dataclass
 class BasicPipelineConfig:

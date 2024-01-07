@@ -1,9 +1,13 @@
+from typing import Union
+
 import torch
 from torch import nn
+
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.config_crm import CRMConfig
 
 class EMA():
-    def __init__(self, cfg:CTDDConfig):
+    def __init__(self, cfg:Union[CTDDConfig,CRMConfig]):
         self.decay = cfg.temporal_network.ema_decay
         if self.decay < 0.0 or self.decay > 1.0:
             raise ValueError('Decay must be between 0 and 1')

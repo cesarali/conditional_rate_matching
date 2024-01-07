@@ -1,7 +1,6 @@
 from typing import List
 from dataclasses import dataclass,asdict,field
 
-
 @dataclass
 class TemporalDeepMLPConfig:
     name : str = "TemporalDeepMLP"
@@ -9,6 +8,8 @@ class TemporalDeepMLPConfig:
     hidden_dim : int = 200
     activation : str = 'ReLU'
     num_layers : int = 2
+    ema_decay: float = 0.999
+
 
 @dataclass
 class TemporalDeepSetsConfig:
@@ -18,6 +19,7 @@ class TemporalDeepSetsConfig:
     pool : str = "sum"
     activation : str = 'ReLU'
     num_layers : int = 2
+    ema_decay: float = 0.999
 
 @dataclass
 class TemporalGraphConvNetConfig:
@@ -25,6 +27,7 @@ class TemporalGraphConvNetConfig:
     time_embed_dim : int = 39
     hidden_dim : int = 200
     activation : str = 'ReLU'
+    ema_decay: float = 0.999
 
 @dataclass
 class TemporalMLPConfig:
@@ -44,6 +47,7 @@ class ConvNetAutoencoderConfig:
 
     time_embed_dim : int = 128
     time_scale_factor :int = 1000
+    ema_decay :float = 0.9999  # 0.9999
 
 
 @dataclass
@@ -59,6 +63,8 @@ class DiffusersUnet2DConfig:
     skip_rescale: bool = True
     time_embed_dim: int = 128
     time_scale_factor: int = 1000
+    ema_decay :float = 0.9999  # 0.9999
+
 
 @dataclass
 class TemporalScoreNetworkAConfig:
@@ -76,3 +82,6 @@ class TemporalScoreNetworkAConfig:
 
     time_embed_dim: int = 128
     time_scale_factor: int = 1000
+
+    ema_decay :float = 0.9999  # 0.9999
+
