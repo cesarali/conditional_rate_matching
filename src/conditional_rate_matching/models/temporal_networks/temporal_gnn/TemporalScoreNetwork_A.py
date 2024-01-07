@@ -1,6 +1,4 @@
-import os
 import torch
-from torch.nn import Parameter
 import torch.nn.functional as F
 
 from typing import Union
@@ -9,7 +7,7 @@ from conditional_rate_matching.utils.graph_utils import mask_adjs, pow_tensor,ma
 from conditional_rate_matching.models.temporal_networks.temporal_gnn.temporal_attention import TemporalAttentionLayer
 from conditional_rate_matching.models.temporal_networks.temporal_gnn.temporal_layers import TemporalDenseGCNConv, MLP,TemporalMLP
 
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 from conditional_rate_matching.configs.config_oops import OopsConfig
 from conditional_rate_matching.utils.graph_utils import init_features

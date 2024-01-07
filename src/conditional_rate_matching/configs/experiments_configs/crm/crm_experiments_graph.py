@@ -1,8 +1,4 @@
-import os
-from pprint import pprint
-from dataclasses import asdict
-
-from conditional_rate_matching.configs.config_crm import CRMConfig,CRMTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,CRMTrainerConfig
 from conditional_rate_matching.data.graph_dataloaders_config import (
     EgoConfig,
     GridConfig,
@@ -15,6 +11,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_utils 
 
 """
 The following functions create config files for experiments with graph data
+
 """
 
 def experiment_ego(number_of_epochs=300,berlin=True,network="mlp"):
@@ -35,7 +32,7 @@ def experiment_ego(number_of_epochs=300,berlin=True,network="mlp"):
                                           metrics=[MetricsAvaliable.mse_histograms,
                                                    MetricsAvaliable.graphs_plot,
                                                    MetricsAvaliable.marginal_binary_histograms],
-                                          learning_rate=1e-4)
+                                          learning_rate=1e-2)
     return crm_config
 
 def experiment_comunity_small(number_of_epochs=300,berlin=True,network="mlp"):
@@ -56,7 +53,7 @@ def experiment_comunity_small(number_of_epochs=300,berlin=True,network="mlp"):
                                           metrics=[MetricsAvaliable.mse_histograms,
                                                    MetricsAvaliable.graphs_plot,
                                                    MetricsAvaliable.marginal_binary_histograms],
-                                          learning_rate=1e-4)
+                                          learning_rate=1e-2)
     return crm_config
 
 def experiment_grid(number_of_epochs=300,berlin=True,network="mlp"):
@@ -85,15 +82,19 @@ if __name__=="__main__":
     from dataclasses import asdict
     from pprint import pprint
 
-    config = experiment_comunity_small(number_of_epochs=15,network="gnn")
+    config = experiment_comunity_small(number_of_epochs=5,network="mlp")
     #config = experiment_grid(number_of_epochs=10)
     #config = experiment_ego(number_of_epochs=15,network="gnn")
-
     #config.optimal_transport.name = "uniform"
+
+    config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
+
+    config.trainer.orca_dir = None
     config.trainer.save_model_test_stopping = True
+    config.trainer.learning_rate = 1e-2
     config.data1.init = "deg"
 
-    config.pipeline.number_of_steps = 100
+    config.pipeline.number_of_steps = 10
 
     pprint(asdict(config))
     results,metrics = call_trainer(config,experiment_name="gnn_test")

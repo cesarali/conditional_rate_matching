@@ -1,4 +1,4 @@
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 from conditional_rate_matching.configs.config_dsb import DSBConfig
 from conditional_rate_matching.data.image_dataloaders import get_data

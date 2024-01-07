@@ -1,13 +1,8 @@
-import os
 from pprint import pprint
-from dataclasses import asdict
 
-from conditional_rate_matching.configs.config_crm import CRMConfig,CRMTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,CRMTrainerConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
-from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
-from conditional_rate_matching.configs.config_crm import BasicTrainerConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import ConvNetAutoencoderConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import AvailableGrayCodes
 

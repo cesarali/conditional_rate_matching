@@ -1,13 +1,11 @@
-import os
 from pprint import pprint
-from dataclasses import asdict
 
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
-from conditional_rate_matching.configs.config_crm import BasicTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import BasicTrainerConfig
 
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import ConvNetAutoencoderConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig

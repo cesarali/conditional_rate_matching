@@ -1,18 +1,11 @@
-import os
 import torch
-import pytest
 
 from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_graph import experiment_comunity_small
-from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_graph import experiment_grid
-from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_graph import experiment_ego
+
+
 def test_graph():
-    from conditional_rate_matching.configs.config_crm import CRMConfig
     from conditional_rate_matching.configs.config_files import ExperimentFiles
-    from conditional_rate_matching.data.graph_dataloaders_config import EgoConfig
-    from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
     from conditional_rate_matching.models.generative_models.crm import CRM
-    from conditional_rate_matching.models.temporal_networks.temporal_networks_config import ConvNetAutoencoderConfig
-    from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalGraphConvNetConfig
     from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalScoreNetworkAConfig
 
     experiment_files = ExperimentFiles(experiment_name="crm",

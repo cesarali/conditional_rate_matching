@@ -1,8 +1,7 @@
 import sys
 import json
 
-from typing import List,Union,Tuple,Optional,Dict
-from matplotlib import pyplot as plt
+from typing import List,Union,Tuple, Dict
 from dataclasses import dataclass
 from pathlib import Path
 import torch
@@ -15,7 +14,7 @@ import os
 from conditional_rate_matching import results_path
 
 from abc import ABC, abstractmethod
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 
 def get_git_revisions_hash():

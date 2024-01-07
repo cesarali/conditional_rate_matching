@@ -1,4 +1,4 @@
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 from conditional_rate_matching.models.temporal_networks.temporal_graphs import TemporalGraphConvNet
 from conditional_rate_matching.models.temporal_networks.temporal_convnet import ConvNetAutoencoder
@@ -8,7 +8,6 @@ from conditional_rate_matching.models.temporal_networks.temporal_mlp import Temp
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     ConvNetAutoencoderConfig,
-    TemporalDeepMLPConfig,
     TemporalDeepSetsConfig,
     TemporalGraphConvNetConfig
 )

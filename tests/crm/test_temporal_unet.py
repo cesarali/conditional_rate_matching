@@ -1,12 +1,10 @@
 import torch
-import pytest
 
 from pprint import pprint
 
 def test_unet():
-    from conditional_rate_matching.configs.config_crm import CRMConfig
+    from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
     from conditional_rate_matching.configs.config_files import ExperimentFiles
-    from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
     from conditional_rate_matching.models.generative_models.crm import CRM
     from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
 

@@ -1,10 +1,8 @@
-from typing import Union,List
+from typing import Union
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
-from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_ctdd import CTDDConfig
 from conditional_rate_matching.configs.config_oops import OopsConfig
 

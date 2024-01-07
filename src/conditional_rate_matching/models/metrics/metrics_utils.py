@@ -131,7 +131,7 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
     #FID's
     metric_string_name = "fid_nist"
     if metric_string_name in metrics_to_log:
-        #here calculates the fid score in the same device as the trainer
+        # Here calculates the fid score in the same device as the trainer
         fid_nist_metrics = fid_nist(generative_sample, test_sample,config.data1.dataset_name,config.trainer.device)
         all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=fid_nist_metrics,
                                     metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
@@ -145,10 +145,13 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
             metric_string_name = "graphs_metrics"
             if metric_string_name in metrics_to_log:
                 try:
-                    graph_metrics_ = eval_graph_list(test_graphs,generated_graphs,windows=config.trainer.berlin)
+                    graph_metrics_ = eval_graph_list(test_graphs,
+                                                     generated_graphs,
+                                                     windows=config.trainer.berlin,
+                                                     orca_dir=config.trainer.orca_dir)
                     all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=graph_metrics_, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
                 except:
-                    pass
+                    print("Problem with graph metrics")
 
             metric_string_name = "graphs_plot"
             if metric_string_name in metrics_to_log:

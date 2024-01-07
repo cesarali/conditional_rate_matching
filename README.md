@@ -74,6 +74,7 @@ In order to set up the necessary environment:
 │           ├── generative_models        <- Classes that aggreagets everything needed for a generative models
 │           ├── losses                   
 │           ├── metrics
+│               ├── orca
 │           ├── networks                 <- Neural Networks Architectures
 │           ├── pipelines
 │           ├── schedulers
@@ -83,6 +84,7 @@ In order to set up the necessary environment:
 ├── data
 │   ├── processed           <- The final, canonical data sets for modeling.
 │   └── raw                 <- The original, immutable data dump.
+├── results                 <- Here are the results located
 ├── docs                    <- Directory for Sphinx documentation in rst or md.
 ├── requirements.txt         <- The python environment file for reproducibility.
 ├── models                  <- Trained and serialized models, model predictions,

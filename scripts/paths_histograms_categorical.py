@@ -1,20 +1,7 @@
-import os
 import torch
-import unittest
-import numpy as np
-import os
-import unittest
-from matplotlib import pyplot as plt
-import pprint
-
-import torch
-from torch import nn
-
-import torch.nn.functional  as F
 
 # configs
-from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
-from conditional_rate_matching.configs.config_crm import NistConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as ConditionalRateMatchingConfig
 
 #data
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
@@ -23,10 +10,6 @@ from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 from conditional_rate_matching.models.generative_models.crm import (
     ConditionalBackwardRate,
     ClassificationForwardRate,
-    conditional_transition_rate,
-    telegram_bridge_probability,
-    conditional_probability,
-    sample_x,
     where_to_go_x,
     uniform_pair_x0_x1
 )
@@ -36,19 +19,13 @@ from conditional_rate_matching.models.pipelines.mc_samplers import TauLeaping
 
 #metrics
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
-from conditional_rate_matching.models.metrics.histograms import binary_histogram_dataloader
 
 #plots
-from conditional_rate_matching.utils.plots.histograms_plots import plot_marginals_binary_histograms
-from conditional_rate_matching.utils.plots.histograms_plots import plot_categorical_histograms
 from conditional_rate_matching.utils.plots.histograms_plots import plot_categorical_histogram_per_dimension
 from conditional_rate_matching.utils.plots.paths_plots import histogram_per_dimension_plot
 
 from conditional_rate_matching.models.metrics.crm_path_metrics import (
     telegram_bridge_probability_path,
-    conditional_transition_rate_path,
-    conditional_probability_path,
-    classification_path,
 )
 
 if __name__=="__main__":

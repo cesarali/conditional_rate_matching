@@ -1,21 +1,18 @@
 import torch
 import numpy as np
-from torch import nn
-from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as ConditionalRateMatchingConfig
 
 from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
-from torch.utils.data import DataLoader, TensorDataset
 
 from conditional_rate_matching.models.generative_models.crm import (
-    CRM,
-    ClassificationForwardRate
+    CRM
 )
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.config_files import get_experiment_dir
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 import pytest
 
 def test_training():
@@ -75,10 +72,6 @@ def test_conditional_probability():
 
 #@pytest.mark.skip(reason="No way of currently testing this")
 def test_load():
-    from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
-    from conditional_rate_matching.utils.plots.images_plots import mnist_grid
-
-
     experiment_dir = get_experiment_dir(experiment_name="ot_test",
                                         experiment_type="trainer_call",
                                         experiment_indentifier="1701864662")

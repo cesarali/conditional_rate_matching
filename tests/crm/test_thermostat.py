@@ -1,7 +1,5 @@
 import torch
-import pytest
-from matplotlib import pyplot as plt
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 
 from conditional_rate_matching.models.generative_models.crm import CRM

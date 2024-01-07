@@ -9,7 +9,7 @@ from conditional_rate_matching.models.generative_models.crm import (
 )
 
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 class CRMDataloder:
 
@@ -162,33 +162,6 @@ class CRMTrainer(Trainer):
 
         return loss
 
-
-if __name__=="__main__":
-    from conditional_rate_matching.configs.experiments_configs.old_experiments.testing_graphs import small_community
-    from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import LogThermostatConfig
-    from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
-
-    from dataclasses import asdict
-    from pprint import pprint
-
-    # Files to save the experiments_configs
-    experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="mnist",
-                                       experiment_indentifier="log_potsdam",
-                                       delete=True)
-    # Configuration
-    #config = experiment_nist(number_of_epochs=10,
-    #                         dataset_name="mnist",
-    #                         temporal_network_name="conv0")
-
-    config = small_community(number_of_epochs=10)
-
-    config.trainer.debug = True
-    config.trainer.max_test_size = 1000
-
-
-    crm_trainer = CRMTrainer(config,experiment_files)
-    results_,all_metrics = crm_trainer.train()
 
 
 

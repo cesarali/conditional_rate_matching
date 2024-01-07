@@ -1,9 +1,7 @@
-import os
 from pprint import pprint
-from dataclasses import asdict
 
-from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.configs.config_crm import CRMTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMTrainerConfig
 
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig

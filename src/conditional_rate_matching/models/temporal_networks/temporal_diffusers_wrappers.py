@@ -1,10 +1,7 @@
-import torch
 from torch import nn
 from diffusers import UNet2DModel
-from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
-from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig,DiscreteCIFAR10Config
 
 class DiffusersUnet2D(nn.Module):
 

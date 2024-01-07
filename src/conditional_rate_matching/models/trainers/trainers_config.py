@@ -1,6 +1,10 @@
 from typing import List
 from dataclasses import dataclass,field
 
+from conditional_rate_matching import project_path
+
+ORCA_DIR_STANDARD = project_path / "src" / "conditional_rate_matching" / "models" / "metrics" / "orca"
+
 @dataclass
 class BasicTrainerConfig:
     number_of_epochs:int = 300
@@ -22,6 +26,7 @@ class BasicTrainerConfig:
     berlin: bool = True
     distributed: bool = False
     debug:bool = False
+    orca_dir:str = ORCA_DIR_STANDARD
 
     metrics: List[str] = field(default_factory=lambda :["mse_histograms",
                                                         "kdmm",

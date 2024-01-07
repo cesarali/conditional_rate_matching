@@ -1,13 +1,10 @@
 import torch
-import torch.nn as nn
-import torch.distributions as dists
 from torch import nn, distributions as dists
 from tqdm import tqdm
 import igraph as ig
 import numpy as np
-import torch.nn.functional as F
 
-from conditional_rate_matching.configs.config_cd import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_cd import OopsConfig
 
 
 class BernoulliRBM(nn.Module):

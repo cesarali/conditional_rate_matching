@@ -1,5 +1,5 @@
 
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat import ConstantThermostat,LogThermostat
 
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import LogThermostatConfig

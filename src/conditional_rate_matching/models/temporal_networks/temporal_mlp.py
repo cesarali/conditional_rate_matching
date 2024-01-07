@@ -1,7 +1,7 @@
 import torch
-from torch import nn, nn as nn
+from torch import nn as nn
 
-from conditional_rate_matching.configs.config_crm import CRMConfig as CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as CRMConfig
 from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.utils.activations import get_activation_function
 
