@@ -1,6 +1,6 @@
 ## __EXPERIMENTS__
 
-We designed experiments for 3 main datasets:
+We designed experiments for 4 main datasets:
 
 + Graph Networks
 + MNIST Binarized
@@ -34,7 +34,9 @@ python ./experiments_configs/crm/crm_experiments_graphs.py
 For the graph experiments, if you want to include the graph metrics you have to have compiled the orca at:
 /src/conditional_rate_matching/metrics/orca
 
-### comment this line:
+### comment this line
+This is since other users locate the orca at different folders, by locating in /src/conditional_rate_matching/metrics/orca we expect linux
+
 config.trainer.orca_dir = None
 
 ### uncomment this line:
