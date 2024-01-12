@@ -8,8 +8,7 @@ import os
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.ctdd_trainer import CTDDTrainer
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
-# from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
+from conditional_rate_matching.configs.config_ctdd import CTDDConfig, BasicTrainerConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, ConvNetAutoencoderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
@@ -18,8 +17,6 @@ from conditional_rate_matching.data.states_dataloaders_config import StatesDatal
 def CTDD_single_run(dynamics="ctdd",
                     experiment_type="nist",
                     experiment_indentifier="run",
-                    thermostat=None,
-                    coupling_method = 'uniform',
                     model="convnet",
                     dataset0=None,
                     dataset1="mnist",
@@ -45,16 +42,16 @@ def CTDD_single_run(dynamics="ctdd",
                                        delete=True)
     #...configs:
 
-    crm_config = CRMConfig()
+    ctdd_config = CTDDConfig()
 
     if dataset0 is None:
-        crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
+        ctdd_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
 
     if model=="mlp":
         if dataset0 is not None:
-            crm_config.data0 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset0)
-        crm_config.data1 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
+            ctdd_config.data0 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset0)
+        ctdd_config.data1 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset1)
+        ctdd_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
                                                             time_embed_dim = time_embed_dim,
                                                             num_layers = num_layers,
                                                             activation = activation,
@@ -62,31 +59,26 @@ def CTDD_single_run(dynamics="ctdd",
         
     if model=="convnet":
         if dataset0 is not None:
-            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = ConvNetAutoencoderConfig(ema_decay = dropout,
+            ctdd_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
+        ctdd_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
+        ctdd_config.temporal_network = ConvNetAutoencoderConfig(ema_decay = dropout,
                                                                latent_dim = hidden_dim,
                                                                decoder_channels = num_layers,
                                                                time_embed_dim = time_embed_dim,
                                                                time_scale_factor = gamma)
 
-
-    if thermostat == "log":  crm_config.thermostat = LogThermostatConfig()
-    else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
-
-    crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
-                                        learning_rate=learning_rate,
-                                        device=device,
-                                        metrics=metrics,
-                                        loss_regularize_square=False,
-                                        loss_regularize=False)
+    ctdd_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
+                                             device=device,
+                                             metrics=metrics,
+                                             learning_rate=learning_rate)
     
-    crm_config.pipeline.number_of_steps = num_timesteps
-    crm_config.optimal_transport.name = coupling_method
+    
+    ctdd_config.pipeline.number_of_steps = num_timesteps
+
     #...train
 
-    crm = CTDDTrainer(crm_config, experiment_files)
-    _ , metrics = crm.train()
+    ctdd = CTDDTrainer(ctdd_config, experiment_files)
+    _ , metrics = ctdd.train()
 
     print('metrics=',metrics)
     return metrics
@@ -94,13 +86,11 @@ def CTDD_single_run(dynamics="ctdd",
 
 if __name__ == "__main__":
 
-    CTDD_single_run(dynamics="crm",
-                   experiment_type="mnist_LogThermostat_1",
+    CTDD_single_run(dynamics="ctdd",
+                   experiment_type="mnist_LogThermostat",
                    model="mlp",
                    epochs=2000,
-                   thermostat="log",
-                   coupling_method='uniform',
-                   dataset0="emnist",
+                   dataset0="mnist",
                    dataset1="mnist",
                    metrics = ["mse_histograms", 'fid_nist', "mnist_plot", "marginal_binary_histograms"],
                    batch_size=256,
@@ -111,4 +101,4 @@ if __name__ == "__main__":
                    num_layers=6,
                    dropout=0.087,
                    num_timesteps=1000,
-                   device="cuda:1")
+                   device="cuda:2")
