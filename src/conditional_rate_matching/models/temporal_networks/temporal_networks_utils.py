@@ -24,7 +24,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 def load_temporal_network(config:CRMConfig, device):
     if isinstance(config.temporal_network,TemporalMLPConfig):
         temporal_network = TemporalMLP(config,device)
-    if isinstance(config.temporal_network,TemporalDeepMLPConfig):
+    elif isinstance(config.temporal_network,TemporalDeepMLPConfig):
         temporal_network = TemporalDeepMLP(config,device)
     elif isinstance(config.temporal_network,UConvNISTNetConfig):
         temporal_network = UConvNISTNet(config)

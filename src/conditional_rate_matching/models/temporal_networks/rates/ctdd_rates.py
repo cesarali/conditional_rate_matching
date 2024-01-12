@@ -15,7 +15,7 @@ from abc import ABC,abstractmethod
 from diffusers.utils import BaseOutput
 from conditional_rate_matching.models.temporal_networks.ema import EMA
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
-
+from conditional_rate_matching.models.temporal_networks.temporal_convnet import UConvNISTNet
 @dataclass
 class BackwardRateOutput(BaseOutput):
     """
@@ -174,10 +174,11 @@ class ImageX0PredBase(BackwardRate):
 
 class BackRateMLP(EMA,BackwardRate,GaussianTargetRate):
 
-    def __init__(self,config,device,rank=None):
+    def __init__(self,config:CTDDConfig,device,rank=None):
         EMA.__init__(self,config)
         BackwardRate.__init__(self,config,device,rank)
 
+        self.device = device
         self.define_deep_models(device)
         self.init_ema()
         self.to(device)
@@ -197,9 +198,10 @@ class BackRateMLP(EMA,BackwardRate,GaussianTargetRate):
         if len(x.shape) == 4:
             B, C, H, W = x.shape
             x = x.view(B, C*H*W)
-
         x = self._center_data(x)
         batch_size = x.size(0)
+        if isinstance(self.net,UConvNISTNet):
+            x = x.view(-1,1,28,28)
         rate_logits = self.net(x,times)
         if self.net.expected_output_shape != [self.dimensions,self.vocab_size]:
             rate_logits = rate_logits.reshape(batch_size, -1)
