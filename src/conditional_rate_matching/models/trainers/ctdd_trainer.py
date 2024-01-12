@@ -1,19 +1,16 @@
 import torch
 import numpy as np
-from tqdm import tqdm
 from torch.optim import Adam
-from datetime import datetime
 
 from torch.utils.tensorboard import SummaryWriter
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.models.temporal_networks.ema import EMA
 from conditional_rate_matching.models.generative_models.ctdd import CTDD
 
-from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
-from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
+
 
 class CTDDTrainer(Trainer):
     """
@@ -132,8 +129,8 @@ class CTDDTrainer(Trainer):
         return self.generative_model.backward_rate
 
 if __name__=="__main__":
-    from conditional_rate_matching.configs.config_ctdd import CTDDConfig
-    from conditional_rate_matching.configs.experiments_configs.ctdd.testing_graphs import small_community, community
+    from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
+    from conditional_rate_matching.configs.experiments_configs.ctdd.testing_graphs import small_community
 
     # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="ctdd",

@@ -1,7 +1,7 @@
 import torch
 from torchtyping import TensorType
 from torch.distributions import Bernoulli
-from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 from conditional_rate_matching.utils.flips_utils import flip_and_copy_binary,bool_to_spins,spins_to_binary
 from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate
 

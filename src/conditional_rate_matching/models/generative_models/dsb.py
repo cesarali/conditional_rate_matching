@@ -3,16 +3,13 @@ import re
 import json
 import torch
 
-from torch import nn
 from typing import Union
 from pathlib import Path
 from dataclasses import asdict
 from dataclasses import dataclass
-from torchtyping import TensorType
 from torch.utils.data import DataLoader
-from torch.distributions import Bernoulli
 
-from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate
 from conditional_rate_matching.models.pipelines.pipeline_dsb import DSBPipeline
 from conditional_rate_matching.models.losses.dsb_losses import BackwardRatioSteinEstimator

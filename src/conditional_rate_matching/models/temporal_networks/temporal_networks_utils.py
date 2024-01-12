@@ -1,15 +1,17 @@
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 from conditional_rate_matching.models.temporal_networks.temporal_graphs import TemporalGraphConvNet
-from conditional_rate_matching.models.temporal_networks.temporal_convnet import ConvNetAutoencoder
+from conditional_rate_matching.models.temporal_networks.temporal_convnet import UConvNISTNet
 from conditional_rate_matching.models.temporal_networks.temporal_deep_set import TemporalDeepSets
 from conditional_rate_matching.models.temporal_networks.temporal_mlp import TemporalMLP
+from conditional_rate_matching.models.temporal_networks.temporal_mlp import TemporalDeepMLP
 
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
-    ConvNetAutoencoderConfig,
+    UConvNISTNetConfig,
     TemporalDeepSetsConfig,
-    TemporalGraphConvNetConfig
+    TemporalGraphConvNetConfig,
+    TemporalDeepMLPConfig
 )
 
 from conditional_rate_matching.models.temporal_networks.temporal_diffusers_wrappers import DiffusersUnet2D
@@ -22,8 +24,11 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 def load_temporal_network(config:CRMConfig, device):
     if isinstance(config.temporal_network,TemporalMLPConfig):
         temporal_network = TemporalMLP(config,device)
-    elif isinstance(config.temporal_network,ConvNetAutoencoderConfig):
-        temporal_network = ConvNetAutoencoder(config,device)
+    if isinstance(config.temporal_network,TemporalDeepMLPConfig):
+        temporal_network = TemporalDeepMLP(config,device)
+    elif isinstance(config.temporal_network,UConvNISTNetConfig):
+        temporal_network = UConvNISTNet(config)
+        temporal_network = temporal_network.to(device)
     elif isinstance(config.temporal_network,TemporalGraphConvNetConfig):
         temporal_network = TemporalGraphConvNet(config, device)
     elif isinstance(config.temporal_network,TemporalDeepSetsConfig):

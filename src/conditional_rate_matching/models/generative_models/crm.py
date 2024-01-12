@@ -63,6 +63,7 @@ class CRM:
     def load_from_experiment(self,experiment_dir,device=None):
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
         results_ = self.experiment_files.load_results()
+
         self.forward_rate = results_["model"]
 
         config_path_json = json.load(open(self.experiment_files.config_path, "r"))

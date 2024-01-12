@@ -1,14 +1,16 @@
 from typing import List
 from dataclasses import dataclass,asdict,field
 
+
 @dataclass
 class TemporalDeepMLPConfig:
     name : str = "TemporalDeepMLP"
-    time_embed_dim : int = 39
-    hidden_dim : int = 200
+    time_embed_dim : int = 50
+    hidden_dim : int = 250
     activation : str = 'ReLU'
-    num_layers : int = 2
+    num_layers : int = 4
     ema_decay: float = 0.999
+    dropout : float = 0.2
 
 
 @dataclass
@@ -49,6 +51,12 @@ class ConvNetAutoencoderConfig:
     time_scale_factor :int = 1000
     ema_decay :float = 0.9999  # 0.9999
 
+@dataclass
+class UConvNISTNetConfig:
+    name: str = "UConvNISTNet"
+    channels: List[int] = field(default_factory=lambda: [32, 64, 128, 256])
+    embed_dim: int = 256
+    ema_decay:float = 0.9999  # 0.9999
 
 @dataclass
 class DiffusersUnet2DConfig:

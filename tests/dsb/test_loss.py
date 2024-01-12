@@ -1,11 +1,5 @@
-import os
-import torch
-import pytest
-
-from pprint import pprint
-from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 from conditional_rate_matching.models.generative_models.dsb import DSB
-from conditional_rate_matching.utils.flips_utils import flip_and_copy_binary
 from conditional_rate_matching.models.generative_models.dsb import DSBExperimentsFiles
 from conditional_rate_matching.models.losses.dsb_losses_config import SteinSpinEstimatorConfig
 

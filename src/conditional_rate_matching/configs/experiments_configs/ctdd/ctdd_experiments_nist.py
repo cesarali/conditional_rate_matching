@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig

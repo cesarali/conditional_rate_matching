@@ -3,8 +3,8 @@ import numpy as np
 from tqdm import tqdm
 from typing import Union
 
-from conditional_rate_matching.configs.config_dsb import DSBConfig
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.models.temporal_networks.rates.crm_rates import ClassificationForwardRate
 from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate

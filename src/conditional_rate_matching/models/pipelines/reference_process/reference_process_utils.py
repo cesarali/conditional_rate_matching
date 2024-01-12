@@ -1,5 +1,5 @@
 
-from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 from .ctdd_reference import GaussianTargetRate
 from .glauber_reference import GlauberDynamics
 

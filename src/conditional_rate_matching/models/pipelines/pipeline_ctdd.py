@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline, ImagePipelineOutput
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 import torch.nn.functional as F
 from tqdm import tqdm
 

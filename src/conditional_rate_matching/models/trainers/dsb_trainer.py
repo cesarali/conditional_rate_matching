@@ -5,7 +5,6 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from torch.optim.adam import Adam
-from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
 
 from conditional_rate_matching.models.generative_models.dsb import (
     DSB,
@@ -15,7 +14,7 @@ from conditional_rate_matching.models.generative_models.dsb import (
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import ReferenceProcess
 from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer,TrainerState
-from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 from conditional_rate_matching.models.metrics.dsb_metrics_utils import log_dsb_metrics
 
 class DSBTrainer(Trainer):
@@ -208,8 +207,6 @@ class DSBTrainer(Trainer):
 
 if __name__ == "__main__":
     from conditional_rate_matching.configs.experiments_configs.dsb.dsb_experiments_graphs import experiment_comunity_small
-    from dataclasses import asdict
-    from pprint import pprint
 
     # Files to save the experiments_configs
     experiment_files = DSBExperimentsFiles(experiment_name="dsb",

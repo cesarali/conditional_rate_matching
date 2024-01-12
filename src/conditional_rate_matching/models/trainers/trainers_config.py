@@ -4,6 +4,7 @@ from dataclasses import dataclass,field
 from conditional_rate_matching import project_path
 
 ORCA_DIR_STANDARD = project_path / "src" / "conditional_rate_matching" / "models" / "metrics" / "orca"
+ORCA_DIR_STANDARD = str(ORCA_DIR_STANDARD)
 
 @dataclass
 class BasicTrainerConfig:

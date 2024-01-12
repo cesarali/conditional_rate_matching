@@ -3,11 +3,10 @@ from torch import nn
 import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 
 from typing import Union, Tuple
 from torchtyping import TensorType
-from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import GaussianTargetRate
 
 from functools import reduce

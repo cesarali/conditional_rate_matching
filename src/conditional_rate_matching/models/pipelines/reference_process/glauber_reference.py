@@ -1,12 +1,9 @@
-import os
-import math
 import torch
-import numpy as np
-from typing import Union,Tuple,List
+from typing import Tuple
 from .ctdd_reference import ReferenceProcess
 from torchtyping import TensorType
 
-from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 
 
 from conditional_rate_matching.models.generative_models.spin_glass.spin_glasses_parametrized import ParametrizedSpinGlassHamiltonian

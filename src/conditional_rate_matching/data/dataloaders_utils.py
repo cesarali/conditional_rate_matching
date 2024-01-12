@@ -1,6 +1,6 @@
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
-from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 from conditional_rate_matching.data.image_dataloaders import get_data
 from conditional_rate_matching.data.states_dataloaders import sample_categorical_from_dirichlet
 

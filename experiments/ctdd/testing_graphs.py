@@ -1,8 +1,4 @@
-
-from conditional_rate_matching.data.image_dataloaders import NISTLoader
-
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig,BasicTrainerConfig
-from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig,BasicTrainerConfig
 from conditional_rate_matching.data.graph_dataloaders_config import CommunityConfig, CommunitySmallConfig
 
 def small_community(number_of_epochs=300,berlin=True):

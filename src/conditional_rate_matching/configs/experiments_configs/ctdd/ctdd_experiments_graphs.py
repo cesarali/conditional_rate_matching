@@ -1,4 +1,4 @@
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.data.graph_dataloaders_config import EgoConfig,GridConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 

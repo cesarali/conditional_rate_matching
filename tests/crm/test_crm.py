@@ -72,10 +72,13 @@ def test_conditional_probability():
 
 #@pytest.mark.skip(reason="No way of currently testing this")
 def test_load():
-    experiment_dir = get_experiment_dir(experiment_name="ot_test",
-                                        experiment_type="trainer_call",
-                                        experiment_indentifier="1701864662")
+
+    #experiment_dir = get_experiment_dir(experiment_name="ot_test",
+    #                                    experiment_type="trainer_call",
+    #                                    experiment_indentifier="1701864662")
+    experiment_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/results/emnist_to_mnist"
 
     crm = CRM(experiment_dir=experiment_dir,device=torch.device("cpu"))
     generative_sample = crm.pipeline(32)
-    #mnist_grid(generative_sample)
+    print(generative_sample)
+

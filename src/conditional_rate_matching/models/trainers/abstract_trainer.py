@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import numpy as np
 from typing import Union,List
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.configs.config_oops import OopsConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 

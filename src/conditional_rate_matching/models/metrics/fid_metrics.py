@@ -7,18 +7,27 @@ from conditional_rate_matching import project_path
 from torch.utils.data.dataset import TensorDataset
 
 def fid_nist(generative_sample,test_sample,dataset_name="mnist",device="cpu"):
-    fid_models_dir = os.path.join(project_path, "src", "conditional_rate_matching", "models", "metrics","fid_nist","models")
+
+    fid_models_dir = os.path.join(project_path,
+                                  "src",
+                                  "conditional_rate_matching",
+                                  "models",
+                                  "metrics",
+                                  "fid_nist",
+                                  "models")
 
     device = torch.device(device)
-    model = LeNet5(num_classes=10)
     if dataset_name == "mnist":
+        model = LeNet5(num_classes=10)
         model_path = os.path.join(fid_models_dir,'LeNet5_BinaryMNIST.pth')
         model.load_state_dict(torch.load(model_path))
     elif dataset_name == "emnist":
-        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryMNIST.pth')
+        model = LeNet5(num_classes=26)
+        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryEMNIST_Letters.pth')
         model.load_state_dict(torch.load(model_path))
     elif dataset_name == "fashion":
-        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryMNIST.pth')
+        model = LeNet5(num_classes=10)
+        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryFashionMNIST.pth')
         model.load_state_dict(torch.load(model_path))
     else:
         raise Exception

@@ -3,7 +3,7 @@ from typing import Union
 import torch
 from torch import nn
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 class EMA():

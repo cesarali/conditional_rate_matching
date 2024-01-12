@@ -8,7 +8,7 @@ from conditional_rate_matching.data.image_dataloader_config import NISTLoaderCon
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import ConvNetAutoencoderConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import DiffusersUnet2DConfig
 
 def experiment_nist(number_of_epochs=300,
@@ -20,10 +20,10 @@ def experiment_nist(number_of_epochs=300,
         crm_config.data1 = NISTLoaderConfig(flatten=True,as_image=False,batch_size=128,dataset_name=dataset_name,max_test_size=None)
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128,max_test_size=None)
         crm_config.temporal_network = TemporalMLPConfig()
-    elif temporal_network_name == "conv0":
+    elif temporal_network_name == "unet_conv":
         crm_config.data1 = NISTLoaderConfig(flatten=False,as_image=True, batch_size=128,dataset_name=dataset_name)
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128)
-        crm_config.temporal_network = ConvNetAutoencoderConfig()
+        crm_config.temporal_network = UConvNISTNetConfig()
     elif temporal_network_name == "unet":
         crm_config.data1 = NISTLoaderConfig(flatten=False,as_image=True, batch_size=128,dataset_name=dataset_name,unet_resize=True)
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128)
@@ -34,7 +34,7 @@ def experiment_nist(number_of_epochs=300,
                                           berlin=berlin,
                                           metrics=[MetricsAvaliable.mse_histograms,
                                                    MetricsAvaliable.mnist_plot,
-                                                   MetricsAvaliable.fid_nist,
+                                                   #MetricsAvaliable.fid_nist,
                                                    MetricsAvaliable.marginal_binary_histograms],
                                           max_test_size=200,
                                           learning_rate=1e-4)
@@ -42,8 +42,9 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(10,"mnist",temporal_network_name="unet")
-    config.trainer.debug = True
+    config = experiment_nist(10,"mnist",temporal_network_name="unet_conv")
+    config.trainer.debug = False
     config.trainer.device = "cpu"
+
     pprint(config)
     call_trainer(config,experiment_name="nist_fid")

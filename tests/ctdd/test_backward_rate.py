@@ -1,8 +1,7 @@
 import unittest
 import torch.cuda
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
-from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_ctdd
 from conditional_rate_matching.models.temporal_networks.rates.ctdd_rates import BackRateMLP
 

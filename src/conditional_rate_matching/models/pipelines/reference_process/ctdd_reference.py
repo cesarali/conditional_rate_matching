@@ -4,8 +4,8 @@ import torch
 import numpy as np
 from typing import Tuple,Union
 from torchtyping import TensorType
-from torch.distributions import Exponential, Bernoulli
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from torch.distributions import Bernoulli
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.utils.flips_utils import binary_to_spins,spins_to_binary
 
 class ReferenceProcess:

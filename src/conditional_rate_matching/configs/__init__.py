@@ -5,7 +5,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     TemporalGraphConvNetConfig,
     TemporalDeepMLPConfig,
     TemporalScoreNetworkAConfig,
-    DiffusersUnet2DConfig
+    DiffusersUnet2DConfig,
+    UConvNISTNetConfig
 )
 
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import (
@@ -21,6 +22,7 @@ temporal_network_configs = {
     "TemporalGraphConvNet":TemporalGraphConvNetConfig,
     "TemporalScoreNetworkA":TemporalScoreNetworkAConfig,
     "DiffusersUnet2D":DiffusersUnet2DConfig,
+    "UConvNISTNet":UConvNISTNetConfig
 }
 
 thermostat_configs = {

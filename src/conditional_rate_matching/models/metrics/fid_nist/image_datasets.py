@@ -9,7 +9,7 @@ from conditional_rate_matching import data_path
 
 image_data_path = os.path.join(data_path,"raw")
 
-def load_nist_data(name='MNIST', train=True, distortion=None, level=None):
+def load_nist_data(name='MNIST', train=True, distortion=None, level=None,unet_resize=False):
     
     nist_datasets = ('MNIST', 'CIFAR10', 'CelebA', 'ImagNet', 'EMNIST Balanced', 'EMNIST Byclass', 'EMNIST Bymerge', 
                      'EMNIST Digits', 'EMNIST Letters', 'EMNIST mnist', 'QMNIST', 'KMNIST', 'FashionMNIST', 'USPS', 'SVHN', 'Omniglot',
@@ -69,7 +69,9 @@ def load_nist_data(name='MNIST', train=True, distortion=None, level=None):
         transformation_list.append(transforms.ToTensor())
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
-    
+
+    if unet_resize:
+        transformation_list.append(transforms.Resize((32, 32)))
     #...load dataset:
         
     if name == 'MNIST' or name == 'BinaryMNIST':

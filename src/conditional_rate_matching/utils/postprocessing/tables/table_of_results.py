@@ -15,7 +15,7 @@ from conditional_rate_matching import results_path
 
 from abc import ABC, abstractmethod
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 
 def get_git_revisions_hash():
     hashes = []

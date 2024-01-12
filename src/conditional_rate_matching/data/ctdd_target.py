@@ -3,8 +3,7 @@ import numpy as np
 
 from typing import Union
 from torchtyping import TensorType
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
-from conditional_rate_matching.data.transforms import BinaryTensorToSpinsTransform
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 
 
 class CTDDTargetData():

@@ -1,14 +1,12 @@
-import os
 import torch
 import unittest
 from conditional_rate_matching.models.generative_models.ctdd import CTDD
-from dataclasses import asdict
-from pprint import pprint
+
 
 class TestMLPNist(unittest.TestCase):
 
     def test_mlp_mnist(self):
-        from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+        from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
         from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
         ctdd_config = CTDDConfig()
