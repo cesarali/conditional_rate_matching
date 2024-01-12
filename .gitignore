@@ -64,6 +64,7 @@ data/*
 results/*
 general/*
 bitacora.txt
+src/conditional_rate_matching/models/metrics/fid_nist/models
 
 # PyTorch models
 *.pth

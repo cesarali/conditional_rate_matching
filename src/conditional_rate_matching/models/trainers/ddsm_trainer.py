@@ -25,8 +25,9 @@ from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 #python presample_noise.py -n  -c 2 -t 4000 --max_time 4 --out_path binary_mnist/
 
 max_test_size = 4000
-
 DEBUG = False
+device = "cpu"  # alternative option is "cpu"
+
 #=================================
 # PRESAMPLED NOISE VARIABLE
 #=================================
@@ -48,12 +49,10 @@ out_path = noise_dir
 
 # number of categories are 2 for binarized MNIST data
 C = 2
-
-num_epochs = 2
+num_epochs = 50
 lr = 5e-4
 
 # device, where code will be run
-device = "cpu"  # alternative option is "cpu"
 
 # setting speed_balanced does not have an effect for C=2
 # For >2 categories, setting speed_balanced flag affects the convergence speed of the forward diffusion.
