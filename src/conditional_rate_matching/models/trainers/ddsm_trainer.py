@@ -22,15 +22,21 @@ from torch.distributions import Bernoulli
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
 from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 
+#python presample_noise.py -n  -c 2 -t 4000 --max_time 4 --out_path binary_mnist/
+
 max_test_size = 4000
+
+#=================================
+# PRESAMPLE NOISE VARIABLE
+#=================================
 
 noise_dir = os.path.join(data_path,"raw")
 new_dl = True
-num_time_steps = 40
+num_time_steps = 4000
 num_cat = 2
 str_speed = ""
 max_time = 4.0
-num_samples = 100
+num_samples = 100000
 out_path = noise_dir
 
 # number of categories are 2 for binarized MNIST data
@@ -51,8 +57,6 @@ device = "cpu"  # alternative option is "cpu"
 filename = f'steps{num_time_steps}.cat{num_cat}{str_speed}.time{max_time}.' \
            f'samples{num_samples}'
 filepath = os.path.join(out_path, filename + ".pth")
-
-v_one, v_zero, v_one_loggrad, v_zero_loggrad, timepoints = torch.load(filepath)
 
 # We have two categories, so the beta parameters are
 alpha = torch.DoubleTensor([1.0])
@@ -281,6 +285,36 @@ def binary_to_onehot(x):
     return torch.cat(xonehot, -1)
 
 if __name__=="__main__":
+    if not os.path.exists(filepath):
+        print("Generating Noise")
+
+        #torch.set_default_dtype(torch.float64)
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        alpha = torch.ones(num_cat - 1).to(device)
+        beta = torch.arange(num_cat - 1, 0, -1).to(device)
+        v_one, v_zero, v_one_loggrad, v_zero_loggrad, timepoints = noise_factory(num_samples,
+                                                                                 num_time_steps,
+                                                                                 alpha,
+                                                                                 beta,
+                                                                                 total_time=max_time,
+                                                                                 order=1000,
+                                                                                 time_steps=200,
+                                                                                 logspace=None,
+                                                                                 speed_balanced=False,
+                                                                                 mode="path",
+                                                                                 device=device)
+        v_one = v_one.cpu().float()
+        v_zero = v_zero.cpu().float()
+        v_one_loggrad = v_one_loggrad.cpu().float()
+        v_zero_loggrad = v_zero_loggrad.cpu().float()
+        timepoints = torch.FloatTensor(timepoints)
+
+        torch.save((v_one, v_zero, v_one_loggrad, v_zero_loggrad, timepoints), filepath)
+    else:
+        v_one, v_zero, v_one_loggrad, v_zero_loggrad, timepoints = torch.load(filepath)
+
     if new_dl:
         from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
         from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig,TemporalDeepMLPConfig
@@ -307,7 +341,6 @@ if __name__=="__main__":
         #==================================
         # model
         # ==================================
-
         #configs.temporal_network = TemporalMLPConfig()
         configs.temporal_network = TemporalDeepMLPConfig(num_layers=1)
         score_model = ScoreNetMLP(configs)
@@ -344,8 +377,6 @@ if __name__=="__main__":
         s = torch.ones(C - 1, device=device)
 
     # Number of epochs for training
-
-
     sb = UnitStickBreakingTransform()
 
     n_time_steps = timepoints.shape[0]
@@ -410,7 +441,6 @@ if __name__=="__main__":
         return loss
 
     torch.set_default_dtype(torch.float32)
-
 
     # Defining optimizer
     optimizer = Adam(score_model.parameters(), lr=lr, weight_decay=1e-10)
@@ -525,7 +555,6 @@ if __name__=="__main__":
                       device=device)
 
     samples = samples.clamp(0.0, 1.0)
-
 
     pixel_probability = samples[:, :, :, 0]
     pixel_distribution = Bernoulli(pixel_probability)
