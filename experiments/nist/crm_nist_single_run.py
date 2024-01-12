@@ -8,7 +8,7 @@ import os
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from conditional_rate_matching.configs.config_crm import CRMConfig, CRMTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, ConvNetAutoencoderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
@@ -60,7 +60,7 @@ def CRM_single_run(dynamics="crm",
                                                             activation = activation,
                                                             dropout = dropout)
         
-    if model=="convnet":
+    if model=="unet-conv":
         if dataset0 is not None:
             crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)

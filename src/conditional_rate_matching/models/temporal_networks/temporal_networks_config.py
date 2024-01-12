@@ -1,18 +1,5 @@
-<<<<<<< HEAD
-from dataclasses import dataclass,asdict
-from multiprocessing import pool
-
-
-@dataclass
-class TemporalMLPConfig:
-    name:str = "TemporalMLP"
-    time_embed_dim :int = 100
-    hidden_dim :int = 100
-    ema_decay :float = 0.9999  # 0.9999
-=======
 from typing import List
 from dataclasses import dataclass,asdict,field
->>>>>>> origin/main
 
 
 @dataclass
@@ -21,24 +8,10 @@ class TemporalDeepMLPConfig:
     time_embed_dim : int = 50
     hidden_dim : int = 250
     activation : str = 'ReLU'
-<<<<<<< HEAD
-    num_layers : int = 2
-    dropout : float = 0.0
-
-@dataclass
-class TemporalDeepEBMConfig:
-    name : str = "TemporalDeepEBM"
-    time_embed_dim : int = 32
-    hidden_dim : int = 256
-    activation : str = 'ELU'
-    num_layers : int = 4
-    dropout : float = 0.0
-=======
     num_layers : int = 4
     ema_decay: float = 0.999
     dropout : float = 0.2
 
->>>>>>> origin/main
 
 @dataclass
 class TemporalDeepSetsConfig:
