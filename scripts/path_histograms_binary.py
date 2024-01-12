@@ -1,7 +1,7 @@
 import torch
 
 # configs
-from conditional_rate_matching.configs.config_crm import NistConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import NistConfig
 
 # data
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders

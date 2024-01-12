@@ -6,7 +6,7 @@ from typing import List
 from pprint import pprint
 from dataclasses import asdict,dataclass
 
-from conditional_rate_matching.configs.config_cd import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_cd import OopsConfig
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
 from conditional_rate_matching.models.generative_models.cd import OOPS
 from conditional_rate_matching.models.metrics.metrics_utils import log_metrics

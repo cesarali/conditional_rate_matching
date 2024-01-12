@@ -22,7 +22,7 @@ class GraphDataloaderConfig:
     full_adjacency: bool = True
     flatten: bool = True
     as_image: bool= True
-    init:str = None
+    init:str = None #ones,zeros,deg
 
     total_data_size:int = None
     training_size:int = None

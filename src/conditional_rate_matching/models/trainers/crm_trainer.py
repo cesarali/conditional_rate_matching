@@ -2,13 +2,14 @@ import torch
 import numpy as np
 from torch.optim.adam import Adam
 from conditional_rate_matching.configs.config_files import ExperimentFiles
+from conditional_rate_matching.models.temporal_networks.ema import EMA
 
 from conditional_rate_matching.models.generative_models.crm import (
     CRM
 )
 
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 class CRMDataloder:
 
@@ -46,12 +47,22 @@ class CRMTrainer(Trainer):
     def initialize(self):
         """
         Obtains initial loss to know when to save, restart the optimizer
-
         :return:
         """
+        if isinstance(self.generative_model.forward_rate,EMA) and self.config.trainer.do_ema:
+            self.do_ema = True
+
         self.generative_model.start_new_experiment()
         #DEFINE OPTIMIZERS
-        self.optimizer = Adam(self.generative_model.forward_rate.parameters(), lr=self.config.trainer.learning_rate)
+        self.optimizer = Adam(self.generative_model.forward_rate.parameters(),
+                              lr=self.config.trainer.learning_rate,
+                              weight_decay=self.config.trainer.weight_decay)
+
+        self.scheduler = None
+        if self.config.trainer.lr_decay:
+            self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer,
+                                                                    gamma=self.config.trainer.lr_decay)
+
         return np.inf
 
     def train_step(self,databatch, number_of_training_step,epoch):
@@ -95,7 +106,17 @@ class CRMTrainer(Trainer):
         # optimization
         self.optimizer.zero_grad()
         loss.backward()
+        if self.config.trainer.clip_grad:
+            torch.nn.utils.clip_grad_norm_(self.generative_model.forward_rate.parameters(), self.config.trainer.clip_max_norm)
+
         self.optimizer.step()
+
+        if self.do_ema:
+            self.generative_model.forward_rate.update_ema()
+
+        if self.config.trainer.lr_decay:
+            self.scheduler.step()
+
         self.writer.add_scalar('training loss', loss.item(), number_of_training_step)
         return loss
 
@@ -141,33 +162,6 @@ class CRMTrainer(Trainer):
 
         return loss
 
-
-if __name__=="__main__":
-    from conditional_rate_matching.configs.experiments_configs.old_experiments.testing_graphs import small_community
-    from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import LogThermostatConfig
-    from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
-
-    from dataclasses import asdict
-    from pprint import pprint
-
-    # Files to save the experiments_configs
-    experiment_files = ExperimentFiles(experiment_name="crm",
-                                       experiment_type="mnist",
-                                       experiment_indentifier="log_potsdam",
-                                       delete=True)
-    # Configuration
-    #config = experiment_nist(number_of_epochs=10,
-    #                         dataset_name="mnist",
-    #                         temporal_network_name="conv0")
-
-    config = small_community(number_of_epochs=10)
-
-    config.trainer.debug = True
-    config.trainer.max_test_size = 1000
-
-
-    crm_trainer = CRMTrainer(config,experiment_files)
-    results_,all_metrics = crm_trainer.train()
 
 
 

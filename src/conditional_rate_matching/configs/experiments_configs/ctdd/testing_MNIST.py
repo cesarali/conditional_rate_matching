@@ -1,14 +1,9 @@
-from pprint import pprint
-from dataclasses import asdict
-from conditional_rate_matching.configs.config_crm import CRMConfig,BasicTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,BasicTrainerConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
-from conditional_rate_matching.data.image_dataloaders import NISTLoader
-
 
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
-    ConvNetAutoencoderConfig,
-    TemporalMLPConfig
+    ConvNetAutoencoderConfig
 )
 
 def experiment_MNIST(max_training_size=60000,max_test_size=5000,berlin=True):

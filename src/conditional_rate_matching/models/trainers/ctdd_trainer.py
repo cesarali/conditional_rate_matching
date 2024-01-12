@@ -1,17 +1,16 @@
 import torch
 import numpy as np
-from tqdm import tqdm
 from torch.optim import Adam
-from datetime import datetime
 
 from torch.utils.tensorboard import SummaryWriter
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
+from conditional_rate_matching.models.temporal_networks.ema import EMA
 from conditional_rate_matching.models.generative_models.ctdd import CTDD
-from conditional_rate_matching.models.metrics.metrics_utils import log_metrics
-from conditional_rate_matching.models.trainers.abstract_trainer import TrainerState
+
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
+
 
 class CTDDTrainer(Trainer):
     """
@@ -64,7 +63,8 @@ class CTDDTrainer(Trainer):
         #initial_loss = self.train_step(self.ctdd.backward_rate, databatch, 0)
         #assert torch.isnan(initial_loss).any() == False
         #assert torch.isinf(initial_loss).any() == False
-
+        if isinstance(self.generative_model.backward_rate, EMA) and self.config.trainer.do_ema:
+            self.do_ema = True
         #SAVE INITIAL STUFF
         return np.inf
 
@@ -89,6 +89,9 @@ class CTDDTrainer(Trainer):
             loss_ = self.generative_model.loss(x_adj, x_tilde, qt0, rate, x_logits, reg_x, p0t_sig, p0t_reg, self.device)
             loss_.backward()
             self.optimizer.step()
+
+            if self.do_ema:
+                self.generative_model.backward_rate.update_ema()
 
             # SUMMARIES
             self.writer.add_scalar('training loss', loss_.item(), number_of_training_step)
@@ -126,8 +129,8 @@ class CTDDTrainer(Trainer):
         return self.generative_model.backward_rate
 
 if __name__=="__main__":
-    from conditional_rate_matching.configs.config_ctdd import CTDDConfig
-    from conditional_rate_matching.configs.experiments_configs.ctdd.testing_graphs import small_community, community
+    from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
+    from conditional_rate_matching.configs.experiments_configs.ctdd.testing_graphs import small_community
 
     # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="ctdd",

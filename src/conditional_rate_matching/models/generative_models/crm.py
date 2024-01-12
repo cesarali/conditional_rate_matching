@@ -3,16 +3,14 @@ import torch
 from torch import nn
 from dataclasses import dataclass
 from torch.utils.data import DataLoader
-from dataclasses import asdict
 
 from typing import Union
 from dataclasses import asdict
-from torch.distributions import Categorical
 
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 from conditional_rate_matching.models.temporal_networks.rates.crm_rates import(
     ClassificationForwardRate,
@@ -65,6 +63,7 @@ class CRM:
     def load_from_experiment(self,experiment_dir,device=None):
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
         results_ = self.experiment_files.load_results()
+
         self.forward_rate = results_["model"]
 
         config_path_json = json.load(open(self.experiment_files.config_path, "r"))

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from dataclasses import dataclass,asdict
 from multiprocessing import pool
 
@@ -8,14 +9,19 @@ class TemporalMLPConfig:
     time_embed_dim :int = 100
     hidden_dim :int = 100
     ema_decay :float = 0.9999  # 0.9999
+=======
+from typing import List
+from dataclasses import dataclass,asdict,field
+>>>>>>> origin/main
 
 
 @dataclass
 class TemporalDeepMLPConfig:
     name : str = "TemporalDeepMLP"
-    time_embed_dim : int = 39
-    hidden_dim : int = 200
+    time_embed_dim : int = 50
+    hidden_dim : int = 250
     activation : str = 'ReLU'
+<<<<<<< HEAD
     num_layers : int = 2
     dropout : float = 0.0
 
@@ -27,6 +33,12 @@ class TemporalDeepEBMConfig:
     activation : str = 'ELU'
     num_layers : int = 4
     dropout : float = 0.0
+=======
+    num_layers : int = 4
+    ema_decay: float = 0.999
+    dropout : float = 0.2
+
+>>>>>>> origin/main
 
 @dataclass
 class TemporalDeepSetsConfig:
@@ -36,6 +48,7 @@ class TemporalDeepSetsConfig:
     pool : str = "sum"
     activation : str = 'ReLU'
     num_layers : int = 2
+    ema_decay: float = 0.999
 
 @dataclass
 class TemporalGraphConvNetConfig:
@@ -43,10 +56,10 @@ class TemporalGraphConvNetConfig:
     time_embed_dim : int = 39
     hidden_dim : int = 200
     activation : str = 'ReLU'
+    ema_decay: float = 0.999
 
 @dataclass
 class ConvNetAutoencoderConfig:
-
     name: str = "ConvNetAutoencoder"
     ema_decay :float = 0.9999  # 0.9999
 
@@ -56,3 +69,47 @@ class ConvNetAutoencoderConfig:
 
     time_embed_dim : int = 128
     time_scale_factor :int = 1000
+    ema_decay :float = 0.9999  # 0.9999
+
+@dataclass
+class UConvNISTNetConfig:
+    name: str = "UConvNISTNet"
+    channels: List[int] = field(default_factory=lambda: [32, 64, 128, 256])
+    embed_dim: int = 256
+    ema_decay:float = 0.9999  # 0.9999
+
+@dataclass
+class DiffusersUnet2DConfig:
+    name: str = "DiffusersUnet2D"
+    num_res_blocks: int = 2
+    num_scales: int = 4
+    ch_mult: List[int] = field(default_factory=lambda: [1, 1, 1, 1])
+    input_channels: int = 1
+    scale_count_to_put_attn: int = 1
+    data_min_max: List[int] = field(default_factory=lambda: [0, 1])  # CHECK THIS for CIFAR 255
+    dropout: float = 0.1
+    skip_rescale: bool = True
+    time_embed_dim: int = 128
+    time_scale_factor: int = 1000
+    ema_decay :float = 0.9999  # 0.9999
+
+
+@dataclass
+class TemporalScoreNetworkAConfig:
+    name: "str" = "TemporalScoreNetworkA"
+    conv: str = "GCN" # MLP,GCN
+    num_heads:int = 4
+    depth: int = 3
+    adim: int = 32
+    nhid: int = 32
+    num_layers: int = 5
+    num_linears: int = 2
+    c_init: int = 2
+    c_hid: int = 8
+    c_final: int = 4
+
+    time_embed_dim: int = 128
+    time_scale_factor: int = 1000
+
+    ema_decay :float = 0.9999  # 0.9999
+

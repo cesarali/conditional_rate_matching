@@ -20,6 +20,8 @@ g++ -O2 -std=c++11 -o orca_berlin orca_berlin.cpp -static-libstdc++ -static-libg
 """
 from conditional_rate_matching import project_path
 project_path = Path(project_path)
+
+ORCA_DIR_STANDARD = project_path / "src" / "conditional_rate_matching" / "models" / "metrics" / "orca"
 ORCA_DIR_BERLIN = project_path / "src" / "conditional_rate_matching" / "models" / "metrics" / "orca_berlin"
 ORCA_DIR_NJ = project_path / "src" / "conditional_rate_matching" / "models" / "metrics" / "orca_new_jersey"
 
@@ -56,7 +58,11 @@ def add_tensor(x, y):
     return x + y
 
 
+<<<<<<< HEAD
 def degree_stats(graph_ref_list, graph_pred_list, windows=False, is_parallel=True):
+=======
+def degree_stats(graph_ref_list, graph_pred_list, windows=True,orca_dir=None,is_parallel=True):
+>>>>>>> origin/main
     ''' Compute the distance between the degree distributions of two unordered sets of graphs.
     Args:
       graph_ref_list, graph_target_list: two lists of networkx graphs to be evaluated
@@ -204,7 +210,7 @@ def clustering_stats(graph_ref_list, graph_pred_list, bins=100, windows=True,is_
     return mmd_dist
 """
 
-def clustering_stats(graph_ref_list, graph_pred_list, KERNEL=gaussian, bins=100, windows=True,is_parallel=True):
+def clustering_stats(graph_ref_list, graph_pred_list, KERNEL=gaussian, bins=100, windows=True,orca_dir=None,is_parallel=True):
     sample_ref = []
     sample_pred = []
     graph_pred_list_remove_empty = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
@@ -259,9 +265,20 @@ def edge_list_reindexed(G):
         edges.append((id2idx[str(u)], id2idx[str(v)]))
     return edges
 
+<<<<<<< HEAD
 def orca(graph,windows=False):
     if windows: ORCA_DIR = ORCA_DIR_BERLIN
     else: ORCA_DIR = ORCA_DIR_NJ
+=======
+def orca(graph,windows=True,orca_dir=None):
+    if orca_dir is None:
+        if windows:
+            ORCA_DIR = ORCA_DIR_BERLIN
+        else:
+            ORCA_DIR = ORCA_DIR_NJ
+    else:
+        ORCA_DIR = ORCA_DIR_STANDARD
+>>>>>>> origin/main
 
     tmp_input_path = ORCA_DIR / 'tmp.txt'
     f = open(tmp_input_path, 'w')
@@ -270,9 +287,12 @@ def orca(graph,windows=False):
         f.write(str(u) + ' ' + str(v) + '\n')
     f.close()
 
-    if windows:
-        command = 'orca.exe  4 ./tmp.txt tmp.out'
-        result = sp.run(command, shell=True, cwd=ORCA_DIR, stdout=sp.PIPE, stderr=sp.PIPE)
+    if orca_dir is None:
+        if windows:
+            command = 'orca.exe  4 ./tmp.txt tmp.out'
+            result = sp.run(command, shell=True, cwd=ORCA_DIR, stdout=sp.PIPE, stderr=sp.PIPE)
+        else:
+            result = sp.check_output([os.path.join(ORCA_DIR, 'orca'), 'node', '4', tmp_input_path, 'tmp.out'])
     else:
         result = sp.check_output([os.path.join(ORCA_DIR, 'orca'), '4', tmp_input_path, os.path.join(ORCA_DIR, 'tmp.out')])
 
@@ -288,7 +308,11 @@ def orca(graph,windows=False):
     return node_orbit_counts
 
 
+<<<<<<< HEAD
 def orbit_stats_all(graph_ref_list, graph_pred_list,windows=False):
+=======
+def orbit_stats_all(graph_ref_list, graph_pred_list,windows=True,orca_dir=None):
+>>>>>>> origin/main
     total_counts_ref = []
     total_counts_pred = []
 
@@ -296,7 +320,11 @@ def orbit_stats_all(graph_ref_list, graph_pred_list,windows=False):
 
     for G in graph_ref_list:
         try:
+<<<<<<< HEAD
             orbit_counts = orca(G, windows)
+=======
+            orbit_counts = orca(G,windows,orca_dir=orca_dir)
+>>>>>>> origin/main
         except Exception as e:
             print(e)
             continue
@@ -381,9 +409,9 @@ def is_lobster_graph(G):
 
 
 METHOD_NAME_TO_FUNC = {
+    'orbit': orbit_stats_all,
     'degree': degree_stats,
     'cluster': clustering_stats,
-    'orbit': orbit_stats_all,
     #'spectral': spectral_stats
 }
 
@@ -395,13 +423,17 @@ def eval_torch_batch(ref_batch, pred_batch, methods=None):
     return results
 
 
+<<<<<<< HEAD
 def eval_graph_list(graph_ref_list, grad_pred_list, methods=None, windows=False):
+=======
+def eval_graph_list(graph_ref_list, grad_pred_list, methods=None,windows=True,orca_dir=ORCA_DIR_STANDARD):
+>>>>>>> origin/main
     if methods is None:
         methods = ['degree', 'cluster', 'orbit']
     results = {}
     for method in methods:
         try:
-            results[method] = METHOD_NAME_TO_FUNC[method](graph_ref_list, grad_pred_list,windows)
+            results[method] = METHOD_NAME_TO_FUNC[method](graph_ref_list, grad_pred_list,windows,orca_dir)
         except Exception as e:
             print('>>> ', e)
             continue

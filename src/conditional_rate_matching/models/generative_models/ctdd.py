@@ -1,13 +1,9 @@
-import os
-import sys
-
 import json
 import torch
-from torch import nn
 from typing import Union
 from dataclasses import asdict
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 
 

@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Union, Tuple, Dict
 from conditional_rate_matching.utils.postprocessing.tables.table_of_results import TableOfResults
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.graph_dataloaders_config import (

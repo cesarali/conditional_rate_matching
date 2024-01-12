@@ -1,17 +1,10 @@
-import os
 import unittest
 
-import torch
-from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.configs.config_crm import NistConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import NistConfig
 
-from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
-from conditional_rate_matching.models.generative_models.crm import conditional_probability
-from conditional_rate_matching.models.generative_models.crm import telegram_bridge_probability
 from conditional_rate_matching.models.pipelines.mc_samplers import TauLeaping
 
-from torch.utils.data import DataLoader, TensorDataset
-from conditional_rate_matching.data.image_dataloaders import get_data
 
 class TestProcesses(unittest.TestCase):
     """
@@ -29,7 +22,6 @@ class TestProcesses(unittest.TestCase):
         dataloader_0,dataloader_1 = get_dataloaders(config)
 
         from conditional_rate_matching.utils.plots.images_plots import plot_sample
-        from conditional_rate_matching.models.generative_models.crm import constant_rate
         from conditional_rate_matching.models.generative_models.crm import conditional_transition_rate
 
         databatch_0,databatch_1 = next(zip(dataloader_0,dataloader_1).__iter__())
@@ -55,8 +47,6 @@ class TestProcesses(unittest.TestCase):
         # =====================================================
         dataloader_0,dataloader_1 = get_dataloaders(config)
 
-        from conditional_rate_matching.utils.plots.images_plots import plot_sample
-        from conditional_rate_matching.models.generative_models.crm import constant_rate
         from conditional_rate_matching.models.generative_models.crm import conditional_transition_rate
 
         databatch_0,databatch_1 = next(zip(dataloader_0,dataloader_1).__iter__())

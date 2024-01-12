@@ -1,12 +1,12 @@
 import torch
 from torch import nn
-from torch.nn.functional import softplus,softmax
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from torch.nn.functional import softmax
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 from conditional_rate_matching.models.pipelines.thermostat.thermostat_utils import load_thermostat
-from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
 from conditional_rate_matching.utils.integration import integrate_quad_tensor_vec
+from conditional_rate_matching.models.temporal_networks.ema import EMA
 
 from functools import reduce
 from torch.distributions import Categorical
@@ -17,11 +17,12 @@ def flip_rates(conditional_model,x_0,time):
     flip_rate = torch.gather(conditional_rate, 2, not_x_0.unsqueeze(2)).squeeze()
     return flip_rate
 
-class ClassificationForwardRate(nn.Module):
+class ClassificationForwardRate(EMA,nn.Module):
     """
     """
     def __init__(self, config:CRMConfig, device):
-        super().__init__()
+        EMA.__init__(self,config)
+        nn.Module.__init__(self)
 
         self.config = config
         self.vocab_size = config.data1.vocab_size
@@ -31,6 +32,7 @@ class ClassificationForwardRate(nn.Module):
         self.define_deep_models(config,device)
         self.define_thermostat(config)
         self.to(device)
+        self.init_ema()
 
     def define_deep_models(self,config,device):
         self.temporal_network = load_temporal_network(config,device=device)

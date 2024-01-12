@@ -1,8 +1,7 @@
 import optuna
-from conditional_rate_matching.configs.config_crm import CRMConfig
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from experiments.testing_graphs import small_community, community
+from experiments.testing_graphs import small_community
 
 
 def objective(trial):

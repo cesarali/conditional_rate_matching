@@ -3,14 +3,14 @@ import numpy as np
 from typing import Union
 
 
-from conditional_rate_matching.configs.config_dsb import DSBConfig
+from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 from conditional_rate_matching.utils.devices import check_model_devices
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers import TauLeaping
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
 
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import ReferenceProcess,GaussianTargetRate
 from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate
-from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import paths_iterators_train,paths_iterators
+
 
 class DSBPipeline:
     """

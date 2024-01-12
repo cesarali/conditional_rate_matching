@@ -1,9 +1,9 @@
 import torch
-from torch import nn, nn as nn
+from torch import nn as nn
 
-from conditional_rate_matching.configs.config_crm import CRMConfig as CRMConfig
-from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.utils.activations import get_activation_function
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as CRMConfig
+from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 
 class TemporalDeepMLP(nn.Module):
 
@@ -12,8 +12,8 @@ class TemporalDeepMLP(nn.Module):
                  device):
 
         super().__init__()
-        self.dimensions = config.data0.dimensions
-        self.vocab_size = config.data0.vocab_size
+        self.dimensions = config.data1.dimensions
+        self.vocab_size = config.data1.vocab_size
         self.define_deep_models(config)
         self.init_weights()
         self.to(device)
@@ -24,17 +24,30 @@ class TemporalDeepMLP(nn.Module):
         self.hidden_layer = config.temporal_network.hidden_dim
         self.num_layers = config.temporal_network.num_layers
         self.act_fn = get_activation_function(config.temporal_network.activation)
+<<<<<<< HEAD
         self.dropout_rate = config.temporal_network.dropout # Assuming dropout rate is specified in the config
 
         layers = [nn.Linear(self.dimensions + self.time_embed_dim, self.hidden_layer),
                   nn.BatchNorm1d(self.hidden_layer),   
                   self.act_fn]
         
+=======
+        self.dropout_rate = config.temporal_network.dropout  # Assuming dropout rate is specified in the config
+
+        layers = [nn.Linear(self.dimensions + self.time_embed_dim, self.hidden_layer),
+                  nn.BatchNorm1d(self.hidden_layer),
+                  self.act_fn]
+
+>>>>>>> origin/main
         if self.dropout_rate: layers.append(nn.Dropout(self.dropout_rate))  # Adding dropout if specified
 
         for _ in range(self.num_layers - 2):
             layers.extend([nn.Linear(self.hidden_layer, self.hidden_layer),
+<<<<<<< HEAD
                            nn.BatchNorm1d(self.hidden_layer),   
+=======
+                           nn.BatchNorm1d(self.hidden_layer),
+>>>>>>> origin/main
                            self.act_fn])
             if self.dropout_rate: layers.extend([nn.Dropout(self.dropout_rate)])  # Adding dropout
 
@@ -55,14 +68,13 @@ class TemporalDeepMLP(nn.Module):
             if isinstance(layer, nn.Linear):
                 nn.init.xavier_uniform_(layer.weight)
 
-
 class TemporalMLP(nn.Module):
     """
     """
     def __init__(self, config:CRMConfig, device):
         super().__init__()
-        self.dimensions = config.data0.dimensions
-        self.vocab_size = config.data0.vocab_size
+        self.dimensions = config.data1.dimensions
+        self.vocab_size = config.data1.vocab_size
         self.define_deep_models(config)
         self.init_weights()
         self.to(device)

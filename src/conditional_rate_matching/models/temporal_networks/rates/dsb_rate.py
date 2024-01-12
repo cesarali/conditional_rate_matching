@@ -1,15 +1,12 @@
 import torch
 from torch import nn
-from torch.nn.functional import softplus,softmax
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from torch.nn.functional import softplus
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
-from conditional_rate_matching.models.pipelines.thermostat.thermostat_utils import load_thermostat
-from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
-from conditional_rate_matching.utils.integration import integrate_quad_tensor_vec
 
 from functools import reduce
-from torch.distributions import Categorical
+
 
 def flip_rates(conditional_model,x_0,time):
     conditional_rate = conditional_model(x_0, time)

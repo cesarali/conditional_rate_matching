@@ -51,31 +51,12 @@ In order to set up the necessary environment:
     `data/preprocessed`
     look at project organization below
 
+7. For the evaluation of generic graph generation tasks, run the following command to compile the ORCA program (see http://www.biolab.si/supp/orca/orca.html):
 
-
-
-Optional and needed only once after `git clone`:
-
-1. install several [pre-commit] git hooks with:
-
-   ```bash
-   pre-commit install
-   # You might also want to run `pre-commit autoupdate`
-   ```
-
-   and checkout the configuration under `.pre-commit-config.yaml`.
-   The `-n, --no-verify` flag of `git commit` can be used to deactivate pre-commit hooks temporarily.
-
-2. install [nbstripout] git hooks to remove the output cells of committed notebooks with:
-
-   ```bash
-   nbstripout --install --attributes notebooks/.gitattributes
-   ```
-
-   This is useful to avoid large diffs due to plots in your notebooks.
-   A simple `nbstripout --uninstall` will revert these changes.
-
-Then take a look into the `scripts` and `notebooks` folders.
+    ```sh
+    cd evaluation/orca 
+    g++ -O2 -std=c++11 -o orca orca.cpp
+    ```
 
 ## __Project Organization__
 
@@ -83,15 +64,29 @@ Then take a look into the `scripts` and `notebooks` folders.
 ├── AUTHORS.md              <- List of developers and maintainers.
 ├── CHANGELOG.md            <- Changelog to keep track of new features and fixes.
 ├── CONTRIBUTING.md         <- Guidelines for contributing to this project.
-├── Dockerfile              <- Build a docker container with `docker build .`.
 ├── LICENSE.txt             <- License as chosen on the command-line.
 ├── README.md               <- The top-level README for developers.
-├── configs                 <- Directory for configurations of model & application.
+├── src
+│   └── conditional_rate_matching        <- Actual Python package where the main functionality goes.
+│       ├── configs
+│       ├── data
+│       ├── models
+│           ├── generative_models        <- Classes that aggreagets everything needed for a generative models
+│           ├── losses                   
+│           ├── metrics
+│               ├── orca
+│           ├── networks                 <- Neural Networks Architectures
+│           ├── pipelines
+│           ├── schedulers
+│           ├── temporal_networks        <- Neural Networks Architectures with Time for Diffusion
+│           └── trainers 
+│       └── utils
 ├── data
 │   ├── processed           <- The final, canonical data sets for modeling.
 │   └── raw                 <- The original, immutable data dump.
+├── results                 <- Here are the results located
 ├── docs                    <- Directory for Sphinx documentation in rst or md.
-├── requrements.txt         <- The python environment file for reproducibility.
+├── requirements.txt         <- The python environment file for reproducibility.
 ├── models                  <- Trained and serialized models, model predictions,
 │                              or model summaries.
 ├── notebooks               <- Jupyter notebooks. Naming convention is a number (for
@@ -106,8 +101,6 @@ Then take a look into the `scripts` and `notebooks` folders.
 │                              actual PYTHON_PKG, e.g. train_model.
 ├── setup.py                <- Use `python setup.py develop` to install for
 │                              development or `python setup.py bdist_wheel` to build.
-├── src
-│   └── kiwissenbase        <- Actual Python package where the main functionality goes.
 ├── tests                   <- Unit tests which can be run with `pytest`.
 ├── .coveragerc             <- Configuration for coverage reports of unit tests.
 ├── .isort.cfg              <- Configuration for git hook that sorts imports.
