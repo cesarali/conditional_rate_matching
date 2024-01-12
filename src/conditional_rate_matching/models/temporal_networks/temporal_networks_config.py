@@ -48,8 +48,9 @@ class ConvNetAutoencoderConfig:
 class UConvNISTNetConfig:
     name: str = "UConvNISTNet"
     channels: List[int] = field(default_factory=lambda: [32, 64, 128, 256])
-    embed_dim: int = 256
+    time_embed_dim: int = 256
     ema_decay:float = 0.9999  # 0.9999
+
 
 @dataclass
 class DiffusersUnet2DConfig:

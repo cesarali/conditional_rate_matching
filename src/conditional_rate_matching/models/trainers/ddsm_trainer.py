@@ -25,28 +25,34 @@ from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 #python presample_noise.py -n  -c 2 -t 4000 --max_time 4 --out_path binary_mnist/
 
 max_test_size = 4000
+DEBUG = False
+device = "cpu"  # alternative option is "cpu"
 
 #=================================
-# PRESAMPLE NOISE VARIABLE
+# PRESAMPLED NOISE VARIABLE
 #=================================
 
 noise_dir = os.path.join(data_path,"raw")
 new_dl = True
-num_time_steps = 4000
+if DEBUG:
+    num_time_steps = 40
+    num_samples = 100
+else:
+    num_time_steps = 4000
+    num_samples = 100000
+
 num_cat = 2
 str_speed = ""
 max_time = 4.0
-num_samples = 100000
+
 out_path = noise_dir
 
 # number of categories are 2 for binarized MNIST data
 C = 2
-
-num_epochs = 2
+num_epochs = 50
 lr = 5e-4
 
 # device, where code will be run
-device = "cpu"  # alternative option is "cpu"
 
 # setting speed_balanced does not have an effect for C=2
 # For >2 categories, setting speed_balanced flag affects the convergence speed of the forward diffusion.
@@ -317,7 +323,6 @@ if __name__=="__main__":
 
     if new_dl:
         from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
-        from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig,TemporalDeepMLPConfig
 
         experiment_files = ExperimentFiles(experiment_name="ddsm", experiment_type="test")
         experiment_files.create_directories()
@@ -341,11 +346,12 @@ if __name__=="__main__":
         #==================================
         # model
         # ==================================
-        #configs.temporal_network = TemporalMLPConfig()
-        configs.temporal_network = TemporalDeepMLPConfig(num_layers=1)
-        score_model = ScoreNetMLP(configs)
 
-        #score_model = load_temporal_network(configs,torch.device(device))
+        #configs.temporal_network = TemporalMLPConfig()
+        #configs.temporal_network = TemporalDeepMLPConfig(num_layers=1)
+        #score_model = ScoreNetMLP(configs)
+
+        score_model = load_temporal_network(configs,torch.device(device))
         score_model.to(device)
         score_model.train()
 
@@ -445,7 +451,8 @@ if __name__=="__main__":
     # Defining optimizer
     optimizer = Adam(score_model.parameters(), lr=lr, weight_decay=1e-10)
 
-    # timepoints = timepoints.cuda()
+    if device == "cuda":
+        timepoints = timepoints.cuda()
 
     # tqdm_epoch = tqdm.notebook.trange(num_epochs)
     tqdm_epoch = tqdm.tqdm(range(num_epochs))
@@ -494,8 +501,6 @@ if __name__=="__main__":
             avg_loss += loss.item() * x.shape[0]
             num_items += x.shape[0]
 
-            break
-
         # Print the averaged training loss so far.
         tqdm_epoch.set_description("Average Loss: {:5f}".format(avg_loss / num_items))
 
@@ -535,6 +540,7 @@ if __name__=="__main__":
                 valid_num_items += x.shape[0]
 
             print("Average Loss: {:5f}".format(valid_avg_loss / valid_num_items))
+        if DEBUG:
             break
 
     torch.save({"model":score_model}, experiment_files.best_model_path)

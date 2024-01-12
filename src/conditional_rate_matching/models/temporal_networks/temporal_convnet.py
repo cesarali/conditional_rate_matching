@@ -125,7 +125,7 @@ class UConvNISTNet(nn.Module):
         """
 
         channels = config.temporal_network.channels
-        embed_dim = config.temporal_network.embed_dim
+        embed_dim = config.temporal_network.time_embed_dim
         self.expected_output_shape = [28, 28,2]
 
         super().__init__()

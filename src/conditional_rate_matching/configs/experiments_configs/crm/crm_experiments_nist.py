@@ -38,7 +38,7 @@ def experiment_nist(number_of_epochs=300,
                                           berlin=berlin,
                                           metrics=[MetricsAvaliable.mse_histograms,
                                                    MetricsAvaliable.mnist_plot,
-                                                   #MetricsAvaliable.fid_nist,
+                                                   MetricsAvaliable.fid_nist,
                                                    MetricsAvaliable.marginal_binary_histograms],
                                           max_test_size=200,
                                           learning_rate=1e-4)

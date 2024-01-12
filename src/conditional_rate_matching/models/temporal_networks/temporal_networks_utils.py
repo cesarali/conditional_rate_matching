@@ -39,6 +39,7 @@ def load_temporal_network(config:CRMConfig, device):
     if isinstance(config.temporal_network,TemporalMLPConfig):
         temporal_network = TemporalMLP(config,device)
 <<<<<<< HEAD
+<<<<<<< HEAD
     elif isinstance(config.temporal_network,TemporalDeepMLPConfig):
         temporal_network = TemporalDeepMLP(config,device)
     elif isinstance(config.temporal_network,TemporalDeepEBMConfig):
@@ -51,6 +52,9 @@ def load_temporal_network(config:CRMConfig, device):
         temporal_network = ConvNetAutoencoder(config,device)
 =======
     if isinstance(config.temporal_network,TemporalDeepMLPConfig):
+=======
+    elif isinstance(config.temporal_network,TemporalDeepMLPConfig):
+>>>>>>> origin/main
         temporal_network = TemporalDeepMLP(config,device)
     elif isinstance(config.temporal_network,UConvNISTNetConfig):
         temporal_network = UConvNISTNet(config)
