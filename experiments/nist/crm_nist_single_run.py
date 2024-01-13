@@ -10,7 +10,7 @@ from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, ConvNetAutoencoderConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, ConvNetAutoencoderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -25,6 +25,7 @@ def CRM_single_run(dynamics="crm",
                     dataset1="mnist",
                     metrics=[MetricsAvaliable.mse_histograms,
                              MetricsAvaliable.mnist_plot,
+                             MetricsAvaliable.fid_nist,
                              MetricsAvaliable.marginal_binary_histograms],
                     device="cpu",
                     epochs=100,
@@ -64,11 +65,7 @@ def CRM_single_run(dynamics="crm",
         if dataset0 is not None:
             crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = ConvNetAutoencoderConfig(ema_decay = dropout,
-                                                               latent_dim = hidden_dim,
-                                                               decoder_channels = num_layers,
-                                                               time_embed_dim = time_embed_dim,
-                                                               time_scale_factor = gamma)
+        crm_config.temporal_network = UConvNISTNetConfig()
 
 
     if thermostat == "log":  crm_config.thermostat = LogThermostatConfig()
@@ -101,7 +98,7 @@ if __name__ == "__main__":
                    epochs=100,
                    thermostat="log",
                    coupling_method='uniform',
-                   dataset0="emnist",
+                #    dataset0="emnist",
                    dataset1="mnist",
                    metrics = ["mse_histograms", 'fid_nist', "mnist_plot", "marginal_binary_histograms"],
                    batch_size=256,
