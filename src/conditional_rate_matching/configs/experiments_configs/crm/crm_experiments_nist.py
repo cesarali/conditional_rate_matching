@@ -7,7 +7,7 @@ from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvalia
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
-# from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import DiffusersUnet2DConfig
 
@@ -19,7 +19,7 @@ def experiment_nist(number_of_epochs=300,
     if temporal_network_name == "mlp":
         crm_config.data1 = NISTLoaderConfig(flatten=True,as_image=False,batch_size=128,dataset_name=dataset_name,max_test_size=None)
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128,max_test_size=None)
-        # crm_config.temporal_network = TemporalMLPConfig()
+        crm_config.temporal_network = TemporalMLPConfig()
     elif temporal_network_name == "unet_conv":
         crm_config.data1 = NISTLoaderConfig(flatten=False,as_image=True, batch_size=128,dataset_name=dataset_name)
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128)
