@@ -8,6 +8,10 @@ from conditional_rate_matching import data_path
 # model config
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
+    TemporalDeepMLPConfig,
+    TemporalDeepEBMConfig,
+    TemporalDeepSetsConfig,
+    TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
     DiffusersUnet2DConfig,
     TemporalScoreNetworkAConfig
@@ -62,7 +66,7 @@ class CRMConfig:
     data0: StatesDataloaderConfig = StatesDataloaderConfig()
     data1: NISTLoaderConfig = NISTLoaderConfig()
     # process
-    thermostat : Union[ConstantThermostatConfig,LogThermostatConfig] = ConstantThermostatConfig()
+    thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal network
     temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig] = TemporalMLPConfig()
     # ot
