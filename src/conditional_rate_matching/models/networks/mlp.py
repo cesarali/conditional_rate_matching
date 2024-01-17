@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 
 
 class Swish(nn.Module):

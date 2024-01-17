@@ -13,7 +13,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 
 def experiment_nist(number_of_epochs=300,
                     dataset_name="emnist",
-                    temporal_network_name="unet",
+                    temporal_network_name="unet_conv",
                     berlin=True):
     crm_config = CRMConfig()
     if temporal_network_name == "mlp":
@@ -45,6 +45,7 @@ if __name__=="__main__":
     config = experiment_nist(10,"mnist",temporal_network_name="unet_conv")
     config.trainer.debug = False
     config.trainer.device = "cpu"
+
 
     pprint(config)
     call_trainer(config,experiment_name="nist_fid")

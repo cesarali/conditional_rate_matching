@@ -1,7 +1,6 @@
-import os
 import torch
 import numpy as np
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 from conditional_rate_matching.models.generative_models.oops import Oops
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer,TrainerState
@@ -96,9 +95,8 @@ class OopsTrainer(Trainer):
 
 
 if __name__=="__main__":
-    from conditional_rate_matching.configs.config_oops import OopsConfig
+    from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
     from conditional_rate_matching.data.image_dataloaders import NISTLoaderConfig
-    from conditional_rate_matching.data.graph_dataloaders_config import CommunityConfig,CommunitySmallConfig
 
     # Files to save the experiments_configs
     experiment_files = ExperimentFiles(experiment_name="oops",

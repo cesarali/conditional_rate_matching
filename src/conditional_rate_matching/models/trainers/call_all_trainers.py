@@ -4,7 +4,7 @@ from conditional_rate_matching.configs.config_files import ExperimentFiles
 
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 
 from conditional_rate_matching.models.trainers.ctdd_trainer import CTDDTrainer
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer

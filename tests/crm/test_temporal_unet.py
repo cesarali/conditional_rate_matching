@@ -13,7 +13,7 @@ def test_unet():
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
     config : CRMConfig
-    config = experiment_nist(temporal_network_name="unet")
+    config = experiment_nist(temporal_network_name="mlp",dataset_name="mnist")
     pprint(config)
     #config.data1 = NISTLoaderConfig(flatten=False,as_image=True)
     #config.data1 = NISTLoaderConfig(flatten=False,as_image=True)
@@ -24,7 +24,7 @@ def test_unet():
     t = torch.rand(x.size(0),).to(device)
 
     rate_ = generative_model.forward_rate(x,t)
-    print(rate_.shape)
+    print(rate_.mean())
 
 
 

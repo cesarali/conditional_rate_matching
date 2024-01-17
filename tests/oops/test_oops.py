@@ -2,7 +2,7 @@ from conditional_rate_matching.configs.config_files import ExperimentFiles
 import unittest
 
 import torch
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.models.generative_models.oops import Oops
 from conditional_rate_matching.models.metrics.metrics_utils import log_metrics

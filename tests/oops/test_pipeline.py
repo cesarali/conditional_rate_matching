@@ -2,7 +2,7 @@ import unittest
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 
 import torch
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 
 from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig
 
