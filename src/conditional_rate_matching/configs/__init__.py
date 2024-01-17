@@ -1,5 +1,5 @@
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
-    # TemporalMLPConfig,
+    TemporalMLPConfig,
     ConvNetAutoencoderConfig,
     TemporalDeepSetsConfig,
     TemporalGraphConvNetConfig,
@@ -15,7 +15,7 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
 )
 
 temporal_network_configs = {
-    # "TemporalMLP":TemporalMLPConfig,
+    "TemporalMLP":TemporalMLPConfig,
     "ConvNetAutoencoder":ConvNetAutoencoderConfig,
     "TemporalDeepMLP":TemporalDeepMLPConfig,
     "TemporalDeepSets":TemporalDeepSetsConfig,

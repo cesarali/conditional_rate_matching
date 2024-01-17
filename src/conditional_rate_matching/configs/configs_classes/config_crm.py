@@ -9,7 +9,6 @@ from conditional_rate_matching import data_path
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     TemporalDeepMLPConfig,
-    TemporalDeepEBMConfig,
     TemporalDeepSetsConfig,
     TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
@@ -27,11 +26,7 @@ from conditional_rate_matching.configs import temporal_network_configs
 from conditional_rate_matching.configs import thermostat_configs
 from conditional_rate_matching.models.pipelines.pipelines_config import BasicPipelineConfig
 
-<<<<<<< HEAD:src/conditional_rate_matching/configs/config_crm.py
-from  conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
-=======
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig,LogThermostatConfig
->>>>>>> origin/main:src/conditional_rate_matching/configs/configs_classes/config_crm.py
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
@@ -72,16 +67,7 @@ class CRMConfig:
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal network
-<<<<<<< HEAD:src/conditional_rate_matching/configs/config_crm.py
-    temporal_network: Union[TemporalMLPConfig, 
-                            TemporalDeepMLPConfig, 
-                            TemporalDeepEBMConfig, 
-                            TemporalDeepSetsConfig, 
-                            TemporalGraphConvNetConfig,
-                            ConvNetAutoencoderConfig] = TemporalMLPConfig()
-=======
     temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig] = TemporalMLPConfig()
->>>>>>> origin/main:src/conditional_rate_matching/configs/configs_classes/config_crm.py
     # ot
     optimal_transport:OptimalTransportSamplerConfig = OptimalTransportSamplerConfig()
     # training

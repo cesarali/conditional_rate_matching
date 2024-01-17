@@ -1,11 +1,3 @@
-from multiprocessing import pool
-from pprint import pprint
-from dataclasses import asdict
-import datetime
-from matplotlib.pyplot import gray
-import numpy as np
-import os
-
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
@@ -15,12 +7,15 @@ from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvalia
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
+""" Default configurations for training.
+"""
+
 def CRM_single_run(dynamics="crm",
                     experiment_type="nist",
                     experiment_indentifier="run",
                     thermostat=None,
                     coupling_method = 'uniform',
-                    model="convnet",
+                    model="unet_conv",
                     dataset0=None,
                     dataset1="mnist",
                     metrics=[MetricsAvaliable.mse_histograms,
@@ -37,8 +32,11 @@ def CRM_single_run(dynamics="crm",
                     num_layers=3,
                     activation="ReLU",
                     gamma=1.0,
+                    thermostat_time_exponential=3.,
+                    thermostat_time_base=1.0,
                     num_timesteps=1000,
-                   ):
+                    ema_decay=0.999
+                    ):
 
     experiment_files = ExperimentFiles(experiment_name=dynamics,
                                        experiment_type=experiment_type,
@@ -61,22 +59,21 @@ def CRM_single_run(dynamics="crm",
                                                             activation = activation,
                                                             dropout = dropout)
         
-    if model=="unet-conv":
+    if model=="unet_conv":
         if dataset0 is not None:
             crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = UConvNISTNetConfig()
+        crm_config.temporal_network = UConvNISTNetConfig() #(time_embed_dim=time_embed_dim, ema_decay=ema_decay)
 
-
-    if thermostat == "log":  crm_config.thermostat = LogThermostatConfig()
+    if thermostat == "log": crm_config.thermostat = LogThermostatConfig(time_exponential=thermostat_time_exponential, time_base=thermostat_time_base,)
     else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
 
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
-                                    learning_rate=learning_rate,
-                                    device=device,
-                                    metrics=metrics,
-                                    loss_regularize_square=False,
-                                    loss_regularize=False)
+                                          learning_rate=learning_rate,
+                                          device=device,
+                                          metrics=metrics,
+                                          loss_regularize_square=False,
+                                          loss_regularize=False)
     
     crm_config.pipeline.number_of_steps = num_timesteps
     crm_config.optimal_transport.name = coupling_method
@@ -92,21 +89,38 @@ def CRM_single_run(dynamics="crm",
 
 if __name__ == "__main__":
 
+    # CRM_single_run(dynamics="crm",
+    #                experiment_type="mnist_LogThermostat_mlp",
+    #                model="mlp",
+    #                epochs=5,
+    #                thermostat="log",
+    #                dataset0=None,
+    #                dataset1="mnist",
+    #                metrics = ["mse_histograms", 
+    #                           'fid_nist', 
+    #                           "mnist_plot", 
+    #                           "marginal_binary_histograms"],
+    #                batch_size=256,
+    #                learning_rate= 0.000186,
+    #                hidden_dim=234,
+    #                time_embed_dim=51,
+    #                activation="ReLU", 
+    #                num_layers=7,
+    #                dropout=0.21,
+    #                device="cuda:1")
+
     CRM_single_run(dynamics="crm",
-                   experiment_type="mnist_LogThermostat_3",
-                   model="mlp",
-                   epochs=100,
+                   experiment_type="mnist_LogThermostat_unet",
+                   model="unet_conv",
+                   epochs=5,
                    thermostat="log",
-                   coupling_method='uniform',
-                #    dataset0="emnist",
+                   dataset0=None,
                    dataset1="mnist",
-                   metrics = ["mse_histograms", 'fid_nist', "mnist_plot", "marginal_binary_histograms"],
+                   metrics = ["mse_histograms", 
+                              'fid_nist', 
+                              "mnist_plot", 
+                              "marginal_binary_histograms"],
                    batch_size=256,
                    learning_rate= 0.000186,
-                   hidden_dim=234,
                    time_embed_dim=51,
-                   activation="ReLU", 
-                   num_layers=7,
-                   dropout=0.21,
-                   num_timesteps=1000,
                    device="cuda:1")

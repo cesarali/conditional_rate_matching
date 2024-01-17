@@ -29,7 +29,7 @@ def experiment_nist(number_of_epochs=300,
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128)
         crm_config.temporal_network = DiffusersUnet2DConfig()
 
-    crm_config.pipeline.number_of_steps = 100
+    crm_config.pipeline.number_of_steps = 1000
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
                                           berlin=berlin,
                                           metrics=[MetricsAvaliable.mse_histograms,
@@ -42,8 +42,8 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(10,"mnist",temporal_network_name="unet_conv")
-    config.trainer.debug = True
+    config = experiment_nist(5,"mnist",temporal_network_name="unet_conv")
+    config.trainer.debug = False
     config.trainer.device = "cuda:1"
 
     pprint(config)

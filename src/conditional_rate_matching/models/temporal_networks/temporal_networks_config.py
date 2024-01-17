@@ -32,6 +32,13 @@ class TemporalGraphConvNetConfig:
     ema_decay: float = 0.999
 
 @dataclass
+class TemporalMLPConfig:
+    name:str = "TemporalMLP"
+    time_embed_dim :int = 100
+    hidden_dim :int = 100
+    ema_decay :float = 0.9999  # 0.9999
+
+@dataclass
 class ConvNetAutoencoderConfig:
     name: str = "ConvNetAutoencoder"
     ema_decay :float = 0.9999  # 0.9999
@@ -86,4 +93,3 @@ class TemporalScoreNetworkAConfig:
     time_scale_factor: int = 1000
 
     ema_decay :float = 0.9999  # 0.9999
-

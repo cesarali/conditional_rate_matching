@@ -10,9 +10,9 @@ from optuna.visualization import plot_optimization_history, plot_slice, plot_con
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from conditional_rate_matching.configs.config_crm import CRMConfig, CRMTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, ConvNetAutoencoderConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, ConvNetAutoencoderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -34,19 +34,21 @@ class CRM_Scan_Optuna:
                  epochs=500,
                  batch_size=(5, 50),
                  learning_rate=(1e-5, 1e-2), 
-                 hidden_dim=(16, 512), 
-                 num_layers=(1, 5),
-                 activation=("ReLU", "LeakyReLU"),
+                 ema_decay=None,
+                 hidden_dim=None, 
+                 num_layers=None,
+                 activation=None,
                  time_embed_dim=(8, 64), 
-                 dropout=(0.0, 0.5),
-                 gamma=(0.0, 2.0),
+                 dropout=None,
+                 gamma=None,
                  num_timesteps=100,
                  metrics=[MetricsAvaliable.mse_histograms,
-                         'fid_nist',
+                          MetricsAvaliable.fid_nist,
                           MetricsAvaliable.mnist_plot,
                           MetricsAvaliable.marginal_binary_histograms]):
 
         #...params
+
         self.dynamics = dynamics
         self.experiment_type = experiment_type + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
         self.experiment_indentifier = experiment_indentifier
@@ -62,14 +64,16 @@ class CRM_Scan_Optuna:
         self.learning_rate = learning_rate
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
-        self.activation = list(activation)
+        self.activation = activation
         self.time_embed_dim = time_embed_dim
         self.dropout = dropout
         self.gamma = gamma
+        self.ema_decay = ema_decay
         self.num_timesteps = num_timesteps
         self.metrics = metrics
 
         #...scan
+
         self.iteration, self.metric = 0, np.inf
         self.study = optuna.create_study(direction='minimize')
         self.study.optimize(self.objective, n_trials=n_trials)
@@ -99,14 +103,17 @@ class CRM_Scan_Optuna:
         exp_id = self.experiment_indentifier + "_" + str(self.iteration)
 
         #...scaning params:
+
         epochs = self.def_param(trial, 'epochs', self.epochs, type="int")
         batch_size = self.def_param(trial, 'bach_size', self.batch_size, type="int")
         learning_rate = self.def_param(trial, 'lr', self.learning_rate, type="float")
-        hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int")
-        num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int")
-        activation = self.def_param(trial, 'activation', self.activation, type="cat")
         time_embed_dim = self.def_param(trial, 'dim_t_emb', self.time_embed_dim, type="int")
-        dropout = self.def_param(trial, 'dropout', self.dropout, type="float")
+
+        hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int") if self.hidden_dim is not None else None
+        num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int") if self.num_layers is not None else None
+        activation = self.def_param(trial, 'activation', list(self.activation), type="cat") if self.activation is not None else None
+        dropout = self.def_param(trial, 'dropout', self.dropout, type="float") if self.dropout is not None else None
+        ema_decay = self.def_param(trial, 'ema_decay', self.ema_decay, type="float") if self.ema_decay is not None else None
         gamma = self.def_param(trial, 'gamma', self.gamma, type="float") if self.gamma is not None else None
 
         #...run single experiment:
@@ -115,7 +122,7 @@ class CRM_Scan_Optuna:
                                 experiment_type=self.experiment_type,
                                 experiment_indentifier=exp_id,
                                 model=self.model,
-                               thermostat=self.thermostat,
+                                thermostat=self.thermostat,
                                 coupling_method=self.coupling_method,
                                 dataset0=self.dataset0,
                                 dataset1=self.dataset1,
@@ -124,6 +131,7 @@ class CRM_Scan_Optuna:
                                 epochs=epochs,
                                 batch_size=batch_size,
                                 learning_rate=learning_rate, 
+                                ema_decay=ema_decay,
                                 hidden_dim=hidden_dim, 
                                 num_layers=num_layers,
                                 activation=activation,
@@ -136,11 +144,11 @@ class CRM_Scan_Optuna:
         print('all metric: ', metrics)
 
         mse_histograms = metrics["mse_marginal_histograms"]
-        fid_layer_1 = metrics["fid_nist_layer_1"]
-        fid_layer_2 = metrics["fid_nist_layer_2"]
-        fid_layer_3 = metrics["fid_nist_layer_3"]
+        fid_layer_1 = metrics["fid_1"]
+        fid_layer_2 = metrics["fid_2"]
+        fid_layer_3 = metrics["fid_3"]
 
-        self.nist_metric = (100000*mse_histograms + fid_layer_1 + fid_layer_2 + fid_layer_3) / 4.0
+        self.nist_metric = (100000 * mse_histograms + fid_layer_1 + fid_layer_2 + fid_layer_3) / 4.0
 
         if self.nist_metric < self.metric: self.metric = self.nist_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
@@ -152,26 +160,42 @@ class CRM_Scan_Optuna:
 if __name__ == "__main__":
 
 
+    # scan = CRM_Scan_Optuna(dynamics="crm",
+    #                        experiment_type="mnist_LogThermostat_new",
+    #                        experiment_indentifier="optuna_scan_trial",
+    #                        dataset0=None,
+    #                        dataset1="mnist",
+    #                        thermostat="log",
+    #                        model="mlp",
+    #                        metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
+    #                        n_trials=10,
+    #                        epochs=10,
+    #                        batch_size=256,
+    #                        learning_rate=(1e-6, 1e-2), 
+    #                        hidden_dim=(32, 256), 
+    #                        num_layers=(2, 8),
+    #                        activation=('ReLU', 'Sigmoid', 'SELU'),
+    #                        time_embed_dim=(32, 256), 
+    #                        dropout=(0.001, 0.5),
+    #                        gamma=None,
+    #                        device='cuda:3')
+
     scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="mnist_LogThermostat",
+                           experiment_type="mnist_LogThermostat_new",
                            experiment_indentifier="optuna_scan_trial",
-                        #    dataset0="emnist",
+                           dataset0=None,
                            dataset1="mnist",
                            thermostat="log",
-                           coupling_method='uniform',
-                           model="mlp",
+                           model="unet_conv",
                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-                           n_trials=200,
-                           epochs=50,
+                           n_trials=10,
+                           epochs=1000,
                            batch_size=256,
                            learning_rate=(1e-6, 1e-2), 
-                           hidden_dim=(32, 256), 
-                           num_layers=(2, 8),
-                           activation=('ReLU', 'Sigmoid', 'SELU'),
-                           time_embed_dim=(32, 256), 
-                           dropout=(0.001, 0.5),
-                           gamma=None,
-                           device='cuda:3')
+                           ema_decay=(0.999, 0.99999),
+                           num_timesteps=5000,
+                        #    time_embed_dim=(32, 256), 
+                           device='cuda:2')
     
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
@@ -184,7 +208,7 @@ if __name__ == "__main__":
     fig = plot_slice(scan.study)
     fig.write_image(scan.workdir + "/slice_plot.png")
 
-    # Save Contour Plot
+   # Save Contour Plot
     fig = plot_contour(scan.study)
     fig.write_image(scan.workdir + "/contour_plot.png")
 

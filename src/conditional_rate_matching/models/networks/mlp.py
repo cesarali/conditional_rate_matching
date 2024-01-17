@@ -3,7 +3,7 @@ import time
 import torch
 import torch.nn as nn
 from conditional_rate_matching.configs.config_oops import OopsConfig
-from conditional_rate_matching.configs.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 class Swish(nn.Module):
     def __init__(self):
