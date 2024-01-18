@@ -2,7 +2,7 @@ from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, ConvNetAutoencoderConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, ConvNetAutoencoderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -58,12 +58,24 @@ def CRM_single_run(dynamics="crm",
                                                             num_layers = num_layers,
                                                             activation = activation,
                                                             dropout = dropout)
-        
+
+    if model=="lenet5":
+        if dataset0 is not None:
+            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
+        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
+        crm_config.temporal_network = TemporalLeNet5Config(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim)
+
+    if model=="lenet5Autoencoder":
+        if dataset0 is not None:
+            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
+        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
+        crm_config.temporal_network = TemporalLeNet5AutoencoderConfig(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim)
+
     if model=="unet_conv":
         if dataset0 is not None:
             crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = UConvNISTNetConfig() #(time_embed_dim=time_embed_dim, ema_decay=ema_decay)
+        crm_config.temporal_network = UConvNISTNetConfig(ema_decay=ema_decay)
 
     if thermostat == "log": crm_config.thermostat = LogThermostatConfig(time_exponential=thermostat_time_exponential, time_base=thermostat_time_base,)
     else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
@@ -109,18 +121,53 @@ if __name__ == "__main__":
     #                dropout=0.21,
     #                device="cuda:1")
 
+    # CRM_single_run(dynamics="crm",
+    #                experiment_type="mnist_LogThermostat_unet",
+    #                model="unet_conv",
+    #                epochs=5,
+    #                thermostat="log",
+    #                dataset0=None,
+    #                dataset1="mnist",
+    #                metrics = ["mse_histograms", 
+    #                           'fid_nist', 
+    #                           "mnist_plot", 
+    #                           "marginal_binary_histograms"],
+    #                batch_size=256,
+    #                learning_rate= 0.000186,
+    #                time_embed_dim=51,
+    #                device="cuda:1")
+
+    # CRM_single_run(dynamics="crm",
+    #            experiment_type="mnist_LogThermostat_LeNet5_3",
+    #            model="lenet5Autencoder",
+    #            epochs=100,
+    #            thermostat=None,
+    #            dataset0=None,
+    #            dataset1="mnist",
+    #            metrics = ["mse_histograms", 
+    #                       'fid_nist', 
+    #                       "mnist_plot", 
+    #                       "marginal_binary_histograms"],
+    #            batch_size=256,
+    #            learning_rate= 0.0001,
+    #            hidden_dim=256,
+    #            time_embed_dim=128,
+    #            device="cuda:1")
+
+
     CRM_single_run(dynamics="crm",
-                   experiment_type="mnist_LogThermostat_unet",
-                   model="unet_conv",
-                   epochs=5,
-                   thermostat="log",
-                   dataset0=None,
-                   dataset1="mnist",
-                   metrics = ["mse_histograms", 
-                              'fid_nist', 
-                              "mnist_plot", 
-                              "marginal_binary_histograms"],
-                   batch_size=256,
-                   learning_rate= 0.000186,
-                   time_embed_dim=51,
-                   device="cuda:1")
+                experiment_type="mnist_LeNet5",
+                model="lenet5",
+                epochs=100,
+                thermostat=None,
+                dataset0=None,
+                dataset1="mnist",
+                metrics = ["mse_histograms", 
+                            'fid_nist', 
+                            "mnist_plot", 
+                            "marginal_binary_histograms"],
+                batch_size=256,
+                learning_rate= 0.0001,
+                hidden_dim=256,
+                time_embed_dim=128,
+                device="cuda:1")

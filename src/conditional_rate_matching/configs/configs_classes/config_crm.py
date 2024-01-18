@@ -9,7 +9,8 @@ from conditional_rate_matching import data_path
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     TemporalDeepMLPConfig,
-    TemporalDeepSetsConfig,
+    TemporalLeNet5Config,
+    TemporalLeNet5AutoencoderConfig,
     TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
     DiffusersUnet2DConfig,
@@ -67,7 +68,7 @@ class CRMConfig:
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal network
-    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig] = TemporalMLPConfig()
+    temporal_network: Union[TemporalMLPConfig,TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig] = TemporalMLPConfig()
     # ot
     optimal_transport:OptimalTransportSamplerConfig = OptimalTransportSamplerConfig()
     # training

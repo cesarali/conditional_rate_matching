@@ -8,7 +8,7 @@ import os
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.ctdd_trainer import CTDDTrainer
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig, BasicTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig, BasicTrainerConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, ConvNetAutoencoderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
@@ -20,9 +20,7 @@ def CTDD_single_run(dynamics="ctdd",
                     model="convnet",
                     dataset0=None,
                     dataset1="mnist",
-                    metrics=[MetricsAvaliable.mse_histograms,
-                             MetricsAvaliable.mnist_plot,
-                             MetricsAvaliable.marginal_binary_histograms],
+                    metrics=[MetricsAvaliable.mse_histograms, MetricsAvaliable.mnist_plot, MetricsAvaliable.marginal_binary_histograms],
                     device="cpu",
                     epochs=100,
                     batch_size=64,
@@ -44,12 +42,9 @@ def CTDD_single_run(dynamics="ctdd",
 
     ctdd_config = CTDDConfig()
 
-    if dataset0 is None:
-        ctdd_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
 
     if model=="mlp":
-        if dataset0 is not None:
-            ctdd_config.data0 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset0)
+        ctdd_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
         ctdd_config.data1 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset1)
         ctdd_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
                                                             time_embed_dim = time_embed_dim,
@@ -58,8 +53,7 @@ def CTDD_single_run(dynamics="ctdd",
                                                             dropout = dropout)
         
     if model=="convnet":
-        if dataset0 is not None:
-            ctdd_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
+        ctdd_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
         ctdd_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
         ctdd_config.temporal_network = ConvNetAutoencoderConfig(ema_decay = dropout,
                                                                latent_dim = hidden_dim,
@@ -89,16 +83,16 @@ if __name__ == "__main__":
     CTDD_single_run(dynamics="ctdd",
                    experiment_type="mnist_LogThermostat",
                    model="mlp",
-                   epochs=2000,
+                   epochs=3,
                    dataset0="mnist",
                    dataset1="mnist",
                    metrics = ["mse_histograms", 'fid_nist', "mnist_plot", "marginal_binary_histograms"],
                    batch_size=256,
-                   learning_rate= 0.0015496,
-                   hidden_dim=83,
-                   time_embed_dim=103,
+                   learning_rate= 0.001,
+                   hidden_dim=128,
+                   time_embed_dim=128,
                    activation="ReLU", 
                    num_layers=6,
-                   dropout=0.087,
+                   dropout=0.05,
                    num_timesteps=1000,
-                   device="cuda:2")
+                   device="cuda:1")

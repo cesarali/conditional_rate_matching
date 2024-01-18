@@ -26,11 +26,12 @@ from conditional_rate_matching.utils.plots.histograms_plots import plot_marginal
 #mnist
 from conditional_rate_matching.utils.plots.images_plots import mnist_grid
 from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
+from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
 #graph
 from conditional_rate_matching.models.metrics.graphs_metrics import eval_graph_list
 from conditional_rate_matching.utils.plots.graph_plots import plot_graphs_list2
-
+from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.utils.plots.gray_code_plots import plot_samples
 
 key_in_dict = lambda dictionary, key: dictionary is not None and key in dictionary
@@ -132,10 +133,14 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
     metric_string_name = "fid_nist"
     if metric_string_name in metrics_to_log:
         # Here calculates the fid score in the same device as the trainer
-        fid_nist_metrics = fid_nist(generative_sample, test_sample,config.data1.dataset_name,config.trainer.device)
+        if isinstance(config.data1, NISTLoaderConfig):
+            mnist_config = config.data1
+        else:
+            mnist_config = config.data0
+        fid_nist_metrics = fid_nist(generative_sample, test_sample,mnist_config.dataset_name,config.trainer.device)
         all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=fid_nist_metrics,
                                     metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
-
+        
     # GRAPHS
     if "graphs_metrics" in metrics_to_log or "graphs_plot" in metrics_to_log:
         if isinstance(data_dataloader,GraphDataloaders):
