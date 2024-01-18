@@ -9,13 +9,8 @@ from conditional_rate_matching import data_path
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     TemporalDeepMLPConfig,
-<<<<<<< HEAD
     TemporalLeNet5Config,
     TemporalLeNet5AutoencoderConfig,
-=======
-    TemporalDeepEBMConfig,
-    TemporalDeepSetsConfig,
->>>>>>> main
     TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
     DiffusersUnet2DConfig,

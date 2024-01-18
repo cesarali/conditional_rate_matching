@@ -58,7 +58,6 @@ class TemporalDeepMLP(nn.Module):
                 nn.init.xavier_uniform_(layer.weight)
 
 
-<<<<<<< HEAD
 class TemporalLeNet5(nn.Module):
 
     def __init__(self,
@@ -199,8 +198,6 @@ class TemporalLeNet5Autoencoder(nn.Module):
 
 
 
-=======
->>>>>>> main
 class TemporalMLP(nn.Module):
     """
     """

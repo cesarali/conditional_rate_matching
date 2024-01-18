@@ -134,19 +134,11 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
     metric_string_name = "fid_nist"
     if metric_string_name in metrics_to_log:
         # Here calculates the fid score in the same device as the trainer
-<<<<<<< HEAD
-        if isinstance(config.data1, NISTLoaderConfig):
-            mnist_config = config.data1
-        else:
-            mnist_config = config.data0
-        fid_nist_metrics = fid_nist(generative_sample, test_sample,mnist_config.dataset_name,config.trainer.device)
-=======
         if hasattr(config,'data1'):
             config_data = config.data1
         else:
             config_data = config.data0
         fid_nist_metrics = fid_nist(generative_sample, test_sample,config_data.dataset_name,config.trainer.device)
->>>>>>> main
         all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=fid_nist_metrics,
                                     metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
         
