@@ -4,7 +4,7 @@ import torch
 from tqdm import tqdm
 from pathlib import Path
 from typing import Optional,Union,Tuple
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig

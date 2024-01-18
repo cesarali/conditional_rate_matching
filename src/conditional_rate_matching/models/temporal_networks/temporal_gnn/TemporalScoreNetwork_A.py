@@ -9,7 +9,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_gnn.temporal_la
 
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 from conditional_rate_matching.utils.graph_utils import init_features
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 

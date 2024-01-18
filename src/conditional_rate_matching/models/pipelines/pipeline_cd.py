@@ -1,8 +1,6 @@
 import torch
-from tqdm import tqdm
-from dataclasses import dataclass
 from typing import Optional,Union,Tuple
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 from graph_bridges.models.networks_arquitectures.rbf import RBM
 
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig

@@ -1,4 +1,4 @@
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 from conditional_rate_matching.models.networks.mlp import ResNetEBM
 from conditional_rate_matching.models.networks.mlp import MLP_EBM
 from conditional_rate_matching.models.networks.mlp_config import ResNetEBMConfig

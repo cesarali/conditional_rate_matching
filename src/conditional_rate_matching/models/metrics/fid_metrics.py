@@ -16,13 +16,13 @@ def fid_nist(generative_sample,test_sample,dataset_name="mnist",device="cpu"):
                                   "fid_nist",
                                   "models")
 
-    device = torch.device(device)
+    device = torch.device(device if torch.cuda.is_available() else "cpu")
     if dataset_name == "mnist":
         model = LeNet5(num_classes=10)
         model_path = os.path.join(fid_models_dir,'LeNet5_BinaryMNIST.pth')
         model.load_state_dict(torch.load(model_path))
     elif dataset_name == "emnist":
-        model = LeNet5(num_classes=26)
+        model = LeNet5(num_classes=27)
         model_path = os.path.join(fid_models_dir,'LeNet5_BinaryEMNIST_Letters.pth')
         model.load_state_dict(torch.load(model_path))
     elif dataset_name == "fashion":

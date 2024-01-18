@@ -58,6 +58,7 @@ class TemporalDeepMLP(nn.Module):
                 nn.init.xavier_uniform_(layer.weight)
 
 
+<<<<<<< HEAD
 class TemporalLeNet5(nn.Module):
 
     def __init__(self,
@@ -198,13 +199,21 @@ class TemporalLeNet5Autoencoder(nn.Module):
 
 
 
+=======
+>>>>>>> main
 class TemporalMLP(nn.Module):
     """
     """
     def __init__(self, config:CRMConfig, device):
         super().__init__()
-        self.dimensions = config.data1.dimensions
-        self.vocab_size = config.data1.vocab_size
+        if hasattr(config,'data1'):
+            config_data = config.data1
+        else:
+            config_data = config.data0
+
+        self.dimensions = config_data.dimensions
+        self.vocab_size = config_data.vocab_size
+
         self.define_deep_models(config)
         self.init_weights()
         self.to(device)

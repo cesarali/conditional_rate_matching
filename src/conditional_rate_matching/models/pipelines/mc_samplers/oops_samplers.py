@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.distributions as dists
 import numpy as np
-from conditional_rate_matching.configs.config_oops import OopsConfig
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
 import conditional_rate_matching.models.networks.mlp_diff_utils as utils
 
 # Gibbs-With-Gradients for binary data
