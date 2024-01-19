@@ -14,8 +14,8 @@ class TemporalDeepMLP(nn.Module):
                  device):
 
         super().__init__()
-        self.dimensions = config.data1.dimensions
-        self.vocab_size = config.data1.vocab_size
+        self.dimensions = config.data0.dimensions
+        self.vocab_size = config.data0.vocab_size
         self.define_deep_models(config)
         self.init_weights()
         self.to(device)
@@ -65,8 +65,8 @@ class TemporalLeNet5(nn.Module):
                  device):
 
         super().__init__()
-        self.dimensions = config.data1.dimensions
-        self.vocab_size = config.data1.vocab_size
+        self.dimensions = config.data0.dimensions
+        self.vocab_size = config.data0.vocab_size
         self.time_embed_dim = config.temporal_network.time_embed_dim
         self.hidden_layer = config.temporal_network.hidden_dim
         self.define_deep_models()
@@ -117,8 +117,8 @@ class TemporalLeNet5Autoencoder(nn.Module):
                  device):
 
         super().__init__()
-        self.dimensions = config.data1.dimensions
-        self.vocab_size = config.data1.vocab_size
+        self.dimensions = config.data0.dimensions
+        self.vocab_size = config.data0.vocab_size
         self.time_embed_dim = config.temporal_network.time_embed_dim
         self.hidden_layer = config.temporal_network.hidden_dim
         self.Encoder()

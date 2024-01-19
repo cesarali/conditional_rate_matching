@@ -24,9 +24,9 @@ from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 
 #python presample_noise.py -n  -c 2 -t 4000 --max_time 4 --out_path binary_mnist/
 
-max_test_size = 4000
-DEBUG = False
-device = "cpu"  # alternative option is "cpu"
+max_test_size = 1000 #4000
+DEBUG = True #False
+device = "cuda:1" #"cpu"  # alternative option is "cpu"
 
 #=================================
 # PRESAMPLED NOISE VARIABLE
@@ -451,7 +451,7 @@ if __name__=="__main__":
     # Defining optimizer
     optimizer = Adam(score_model.parameters(), lr=lr, weight_decay=1e-10)
 
-    if device == "cuda":
+    if device == "cuda:1":
         timepoints = timepoints.cuda()
 
     # tqdm_epoch = tqdm.notebook.trange(num_epochs)

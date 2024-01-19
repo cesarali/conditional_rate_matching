@@ -42,10 +42,11 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(5,"mnist",temporal_network_name="unet_conv")
+    config = experiment_nist(10,"mnist",temporal_network_name="mlp")
     config.trainer.debug = False
     config.trainer.device = "cuda:1"
-
+    pprint(config)
+    config.pipeline.number_of_steps = 1000
 
     pprint(config)
     call_trainer(config,experiment_name="nist_fid")
