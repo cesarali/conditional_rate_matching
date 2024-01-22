@@ -97,23 +97,23 @@ if __name__=="__main__":
 
     #config = experiment_comunity_small(number_of_epochs=500,network="mlp")
     #config = experiment_grid(number_of_epochs=10)
-    config = experiment_ego(number_of_epochs=1000,network="mlp")
+    config = experiment_ego(number_of_epochs=500,network="mlp")
 
 
     config.trainer.orca_dir = None
     config.trainer.save_model_test_stopping = True
     config.data1.init = "deg"
-    config.temporal_network = TemporalMLPConfig(time_embed_dim=200,
-                                                hidden_dim=200)
+    config.temporal_network = TemporalMLPConfig(time_embed_dim=250,
+                                                hidden_dim=250)
 
-    config.thermostat.gamma = 0.9
-    config.trainer.learning_rate = 1e-4
-    config.pipeline.number_of_steps = 1000
+    config.thermostat.gamma = 1.
+    config.trainer.learning_rate = 1e-3
+    config.pipeline.number_of_steps = 50
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
     config.trainer.loss_regularize_variance = False
 
     results,metrics = call_trainer(config,
-                                   experiment_name="harz_experiment",
+                                   experiment_name="westend_experiment",
                                    experiment_type="crm",
-                                   experiment_indentifier="loss_variance_times_gnn")
+                                   experiment_indentifier=None)
     print(metrics)

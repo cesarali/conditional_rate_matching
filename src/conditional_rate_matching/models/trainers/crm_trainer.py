@@ -92,11 +92,11 @@ class CRMTrainer(Trainer):
         sampled_x = self.generative_model.forward_rate.sample_x(x_1, x_0, time)
 
         # loss
-        model_classification = self.generative_model.forward_rate.classify(x_1, time)
+        model_classification = self.generative_model.forward_rate.classify(sampled_x.float(), time)
         model_classification_ = model_classification.view(-1, self.config.data1.vocab_size)
-        sampled_x = sampled_x.view(-1)
+        x_1 = x_1.view(-1)
 
-        loss = self.generative_model.loss(model_classification_,sampled_x)
+        loss = self.generative_model.loss(model_classification_,x_1.long())
 
         if self.config.trainer.loss_regularize_variance:
             variance = self.generative_model.forward_rate.compute_variance_torch(time,x_1,x_0)
@@ -157,10 +157,10 @@ class CRMTrainer(Trainer):
             sampled_x = self.generative_model.forward_rate.sample_x(x_1, x_0, time)
 
             #LOSS
-            model_classification = self.generative_model.forward_rate.classify(x_1, time)
+            model_classification = self.generative_model.forward_rate.classify(sampled_x.float(), time)
             model_classification_ = model_classification.view(-1, self.config.data1.vocab_size)
-            sampled_x = sampled_x.view(-1)
-            loss = self.generative_model.loss(model_classification_,sampled_x)
+            x_1 = x_1.view(-1)
+            loss = self.generative_model.loss(model_classification_,x_1.long())
             if self.config.trainer.loss_regularize:
                 if self.config.trainer.loss_regularize_square:
                     rate_regularizer = self.generative_model.forward_rate.thermostat(time)
