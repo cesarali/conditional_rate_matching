@@ -27,6 +27,13 @@ class TemporalLeNet5AutoencoderConfig:
     ema_decay: float = 0.999
 
 @dataclass
+class TemporalUNetConfig:
+    name : str = "TemporalUNet"
+    time_embed_dim : int = 128
+    hidden_dim : int = 256
+    ema_decay: float = 0.999
+
+@dataclass
 class TemporalGraphConvNetConfig:
     name : str = "TemporalGraphConvNet"
     time_embed_dim : int = 39

@@ -183,18 +183,18 @@ if __name__ == "__main__":
                            dataset0=None,
                            dataset1="mnist",
                            thermostat=None,
-                           model="lenet5Autenconder",
+                           model="lenet5",
                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-                           n_trials=250,
-                           epochs=50,
+                           n_trials=100,
+                           epochs=100,
                            batch_size=256,
                            learning_rate=(1e-6, 1e-2), 
                            ema_decay=(0.999, 0.99999),
                            num_timesteps=1000,
                            hidden_dim=(32, 256),
                            time_embed_dim=(32, 256), 
-                           gamma=(0.1, 2.0),
-                           device='cuda:1')
+                           gamma=(0.001, 1.0),
+                           device='cuda:2')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)

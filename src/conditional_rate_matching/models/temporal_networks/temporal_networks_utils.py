@@ -3,12 +3,13 @@ from conditional_rate_matching.configs.configs_classes.config_crm import CRMConf
 from conditional_rate_matching.models.temporal_networks.temporal_graphs import TemporalGraphConvNet
 from conditional_rate_matching.models.temporal_networks.temporal_convnet import UConvNISTNet
 from conditional_rate_matching.models.temporal_networks.temporal_mlp import TemporalMLP
-from conditional_rate_matching.models.temporal_networks.temporal_mlp import TemporalDeepMLP, TemporalLeNet5, TemporalLeNet5Autoencoder
+from conditional_rate_matching.models.temporal_networks.temporal_mlp import TemporalDeepMLP, TemporalLeNet5, TemporalUNet, TemporalLeNet5Autoencoder
 
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     TemporalLeNet5Config,
     TemporalLeNet5AutoencoderConfig,
+    TemporalUNetConfig,
     UConvNISTNetConfig,
     TemporalGraphConvNetConfig,
     TemporalDeepMLPConfig
@@ -30,6 +31,8 @@ def load_temporal_network(config:CRMConfig, device):
         temporal_network = TemporalLeNet5(config,device)
     elif isinstance(config.temporal_network,TemporalLeNet5AutoencoderConfig):
         temporal_network = TemporalLeNet5Autoencoder(config,device)
+    elif isinstance(config.temporal_network,TemporalUNetConfig):
+        temporal_network = TemporalUNet(config,device)
     elif isinstance(config.temporal_network,UConvNISTNetConfig):
         temporal_network = UConvNISTNet(config)
         temporal_network = temporal_network.to(device)

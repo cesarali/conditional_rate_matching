@@ -113,12 +113,12 @@ class CTDD_Scan_Optuna:
         
         print('all metric: ', metrics)
 
-        mse_histograms = metrics["mse_marginal_histograms"]
+        # mse_histograms = metrics["mse_marginal_histograms"]
         fid_layer_1 = metrics["fid_1"]
         fid_layer_2 = metrics["fid_2"]
         fid_layer_3 = metrics["fid_3"]
 
-        self.nist_metric = (100000 * mse_histograms + fid_layer_1 + fid_layer_2 + fid_layer_3) / 4.0
+        self.nist_metric = (fid_layer_1 + fid_layer_2 + fid_layer_3) / 3.0
         if self.nist_metric < self.metric: self.metric = self.nist_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         
@@ -128,11 +128,32 @@ class CTDD_Scan_Optuna:
 
 if __name__ == "__main__":
 
+    scan = CTDD_Scan_Optuna(dynamics="ctdd",
+                           experiment_type="mnist",
+                           experiment_indentifier="optuna_scan_trial",
+                           dataset0="mnist",
+                           model="mlp",
+                           metrics=["fid_nist", 
+                                    "mse_histograms",  
+                                    "mnist_plot", 
+                                    "marginal_binary_histograms"],
+                           n_trials=250,
+                           epochs=100,
+                           batch_size=256,
+                           learning_rate=(1e-6, 1e-2), 
+                           num_timesteps=1000,
+                           hidden_dim=(32, 256),
+                           time_embed_dim=(32, 256), 
+                           num_layers=(2, 8),
+                           dropout=(0.01, 0.5),
+                           activation=["ReLU", "GELU"],
+                           device='cuda:2')
+
     # scan = CTDD_Scan_Optuna(dynamics="ctdd",
     #                        experiment_type="mnist",
     #                        experiment_indentifier="optuna_scan_trial",
     #                        dataset0="mnist",
-    #                        model="mlp",
+    #                        model="lenet5",
     #                        metrics=["fid_nist", 
     #                                 "mse_histograms",  
     #                                 "mnist_plot", 
@@ -144,28 +165,7 @@ if __name__ == "__main__":
     #                        num_timesteps=1000,
     #                        hidden_dim=(32, 256),
     #                        time_embed_dim=(32, 256), 
-    #                        num_layers=(2, 8),
-    #                        dropout=(0.01, 0.5),
-    #                        activation=["ReLU", "GELU"],
     #                        device='cuda:1')
-
-    scan = CTDD_Scan_Optuna(dynamics="ctdd",
-                           experiment_type="mnist",
-                           experiment_indentifier="optuna_scan_trial",
-                           dataset0="mnist",
-                           model="lenet5",
-                           metrics=["fid_nist", 
-                                    "mse_histograms",  
-                                    "mnist_plot", 
-                                    "marginal_binary_histograms"],
-                           n_trials=3,
-                           epochs=5,
-                           batch_size=256,
-                           learning_rate=(1e-6, 1e-2), 
-                           num_timesteps=1000,
-                           hidden_dim=(32, 256),
-                           time_embed_dim=(32, 256), 
-                           device='cuda:1')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
