@@ -3,10 +3,11 @@ from pathlib import Path
 
 import numpy as np
 from torch.utils.data import Dataset
-
+from PIL import Image
 from torchvision import transforms,datasets
 from conditional_rate_matching.data.transforms import SqueezeTransform
 from conditional_rate_matching.data.transforms import FlattenTransform
+from conditional_rate_matching.data.transforms import CorrectEMNISTOrientation
 from conditional_rate_matching.data.transforms import BinaryTensorToSpinsTransform
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from torch.utils.data import Subset
@@ -18,8 +19,13 @@ def get_data(config:NISTLoaderConfig):
     threshold = config.pepper_threshold
     dataloader_data_dir = config.data_dir
 
-    transform = [transforms.ToTensor(),
-                 transforms.Lambda(lambda x: (x > threshold).float())]
+    if data_ == "emnist":
+        transform = [CorrectEMNISTOrientation(),
+                     transforms.ToTensor(),
+                     transforms.Lambda(lambda x: (x > threshold).float())]
+    else:
+        transform = [transforms.ToTensor(),
+                     transforms.Lambda(lambda x: (x > threshold).float())]
 
     if config.flatten:
         transform.append(FlattenTransform)

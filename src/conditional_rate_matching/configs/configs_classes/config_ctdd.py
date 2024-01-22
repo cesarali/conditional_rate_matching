@@ -69,7 +69,7 @@ class CTDDConfig:
     # training
     trainer: BasicTrainerConfig = BasicTrainerConfig()
     #pipeline
-    pipeline = BasicPipelineConfig = BasicPipelineConfig()
+    pipeline : BasicPipelineConfig = BasicPipelineConfig()
 
     def __post_init__(self):
         if isinstance(self.data0,dict):

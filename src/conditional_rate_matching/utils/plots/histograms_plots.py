@@ -114,7 +114,6 @@ def plot_categorical_histogram_per_dimension(states_histogram_at_0,
         else:
             plt.savefig(save_path)
 
-
 def plot_marginals_binary_histograms(marginal_histograms:Tuple[torch.Tensor], plots_path=None):
     """
 

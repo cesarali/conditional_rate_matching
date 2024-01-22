@@ -11,7 +11,9 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import (
     ConstantThermostatConfig,
-    LogThermostatConfig
+    LogThermostatConfig,
+    ExponentialThermostatConfig,
+    InvertedExponentialThermostatConfig
 )
 
 temporal_network_configs = {
@@ -27,5 +29,7 @@ temporal_network_configs = {
 
 thermostat_configs = {
     "LogThermostat":LogThermostatConfig,
-    "ConstantThermostat":ConstantThermostatConfig
+    "ConstantThermostat":ConstantThermostatConfig,
+    "ExponentialThermostat":ExponentialThermostatConfig,
+    "InvertedExponentialThermostat":InvertedExponentialThermostatConfig
 }

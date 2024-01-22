@@ -43,8 +43,11 @@ if __name__=="__main__":
 
     #config = experiment_comunity_small(number_of_epochs=500)
     #config = experiment_grid(number_of_epochs=10)
-    config = experiment_ego(number_of_epochs=10)
+    config = experiment_ego(number_of_epochs=250)
 
-    pprint(asdict(config))
-    results,metrics = call_trainer(config)
+    pprint(config)
+    results,metrics = call_trainer(config,
+                                   experiment_name="harz_experiment",
+                                   experiment_type="ctdd",
+                                   experiment_indentifier=None)
     print(metrics)

@@ -9,7 +9,6 @@ from conditional_rate_matching import data_path
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     TemporalDeepMLPConfig,
-    TemporalDeepEBMConfig,
     TemporalDeepSetsConfig,
     TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
@@ -39,8 +38,9 @@ image_data_path = os.path.join(data_path,"raw")
 @dataclass
 class CRMTrainerConfig(BasicTrainerConfig):
     name:str = "CRMTrainer"
+    loss_regularize_variance:bool = False
     loss_regularize:bool = False
-    loss_regularize_square:bool = True
+    loss_regularize_square:bool = False
 
 @dataclass
 class OptimalTransportSamplerConfig:
@@ -74,7 +74,7 @@ class CRMConfig:
     # training
     trainer: CRMTrainerConfig = CRMTrainerConfig()
     #pipeline
-    pipeline = BasicPipelineConfig = BasicPipelineConfig()
+    pipeline : BasicPipelineConfig = BasicPipelineConfig()
 
     def __post_init__(self):
         if isinstance(self.data0,dict):

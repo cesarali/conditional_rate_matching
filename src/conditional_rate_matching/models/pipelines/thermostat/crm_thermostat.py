@@ -3,6 +3,8 @@ import torch
 from torchtyping import TensorType
 
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import LogThermostatConfig
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ExponentialThermostatConfig
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import InvertedExponentialThermostatConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig
 
 
@@ -38,3 +40,32 @@ class LogThermostat:
         return thermostat.to(device)
 
 
+class ExponentialThermostat:
+
+    def __init__(self,config:ExponentialThermostatConfig):
+        self.max = config.max
+        self.gamma = config.gamma
+
+    def _integral_rate_scalar(self, t):
+        raise Exception
+
+    def __call__(self, t):
+        device = t.device
+        thermostat = torch.exp(-self.gamma*torch.abs(t-0.5))*self.max
+        return thermostat.to(device)
+
+class InvertedExponentialThermostat:
+
+    def __init__(self,config:InvertedExponentialThermostatConfig):
+        self.max = config.max
+        self.gamma = config.gamma
+
+    def _integral_rate_scalar(self, t):
+        raise Exception
+
+    def __call__(self, t):
+        device = t.device
+        thermostat = torch.exp(-self.gamma*(t-0.5)) + torch.exp(self.gamma*(t-0.5))
+        thermostat = thermostat/torch.exp(-self.gamma*(-torch.Tensor([0.5]))) + torch.exp(self.gamma*(-torch.Tensor([0.5])))
+        thermostat = thermostat*self.max
+        return thermostat.to(device)
