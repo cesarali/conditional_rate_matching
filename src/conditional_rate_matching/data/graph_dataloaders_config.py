@@ -49,7 +49,7 @@ class EgoConfig(GraphDataloaderConfig):
     max_node_num: int = 18
     max_feat_num: int = 17
     total_data_size:int = 200
-    init: str = "deg"
+    init: str = "ones"
 
 @dataclass
 class CommunitySmallConfig(GraphDataloaderConfig):
@@ -59,7 +59,7 @@ class CommunitySmallConfig(GraphDataloaderConfig):
     max_node_num: int = 20
     max_feat_num: int = 10
     total_data_size:int = 200
-    init: str = 'deg'
+    init: str = 'ones'
 
 @dataclass
 class CommunityConfig(GraphDataloaderConfig):
@@ -69,7 +69,7 @@ class CommunityConfig(GraphDataloaderConfig):
     max_node_num: int = 11
     max_feat_num: int = 10
     total_data_size:int = 1000
-    init: str = 'deg'
+    init: str = 'ones'
 
 @dataclass
 class GridConfig(GraphDataloaderConfig):
@@ -79,4 +79,4 @@ class GridConfig(GraphDataloaderConfig):
     max_node_num: int = 361
     max_feat_num: int = 5
     total_data_size:int = 200
-    init: str = 'deg'
+    init: str = 'ones'

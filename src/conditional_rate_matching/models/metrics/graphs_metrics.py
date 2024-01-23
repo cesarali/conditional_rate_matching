@@ -206,7 +206,7 @@ def clustering_stats(graph_ref_list, graph_pred_list, bins=100, windows=True,is_
     return mmd_dist
 """
 
-def clustering_stats(graph_ref_list, graph_pred_list, KERNEL=gaussian, bins=100, windows=True,orca_dir=None,is_parallel=True):
+def clustering_stats(graph_ref_list, graph_pred_list,windows=True,orca_dir=None,KERNEL=gaussian, bins=100, is_parallel=True):
     sample_ref = []
     sample_pred = []
     graph_pred_list_remove_empty = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
@@ -268,7 +268,7 @@ def orca(graph,windows=True,orca_dir=None):
         else:
             ORCA_DIR = ORCA_DIR_NJ
     else:
-        ORCA_DIR = ORCA_DIR_STANDARD
+        ORCA_DIR = Path(orca_dir)
 
     tmp_input_path = ORCA_DIR / 'tmp.txt'
     f = open(tmp_input_path, 'w')
@@ -277,14 +277,12 @@ def orca(graph,windows=True,orca_dir=None):
         f.write(str(u) + ' ' + str(v) + '\n')
     f.close()
 
-    if orca_dir is None:
-        if windows:
-            command = 'orca.exe  4 ./tmp.txt tmp.out'
-            result = sp.run(command, shell=True, cwd=ORCA_DIR, stdout=sp.PIPE, stderr=sp.PIPE)
-        else:
-            result = sp.check_output([os.path.join(ORCA_DIR, 'orca'), 'node', '4', tmp_input_path, 'tmp.out'])
+    if windows:
+        command = 'orca.exe  4 ./tmp.txt tmp.out'
+        result = sp.run(command, shell=True, cwd=ORCA_DIR, stdout=sp.PIPE, stderr=sp.PIPE)
     else:
         result = sp.check_output([os.path.join(ORCA_DIR, 'orca'), 'node', '4', tmp_input_path, 'tmp.out'])
+
 
     tmp_output_file = ORCA_DIR / "tmp.out"
     node_orbit_counts = read_orbit_counts(tmp_output_file)
@@ -407,6 +405,7 @@ def eval_torch_batch(ref_batch, pred_batch, methods=None):
 
 def eval_graph_list(graph_ref_list, grad_pred_list, methods=None,windows=True,orca_dir=ORCA_DIR_STANDARD):
     if methods is None:
+        #methods = ['orbit']
         methods = ['degree', 'cluster', 'orbit']
     results = {}
     for method in methods:
@@ -427,7 +426,8 @@ if __name__=="__main__":
     graph_list_1 = [nx.barabasi_albert_graph(100,3) for i in range(20)]
     graph_list_2 = [nx.barabasi_albert_graph(100,3) for i in range(20)]
 
+    orca_dir = ORCA_DIR_BERLIN
     node_orbit_counts = orca(graph_list_1[0])
-    results_ = eval_graph_list(graph_list_1, graph_list_2,methods=["cluster"],windows=True)
+    results_ = eval_graph_list(graph_list_1, graph_list_2,methods=None,windows=True,orca_dir=ORCA_DIR_BERLIN)
     print(results_)
 

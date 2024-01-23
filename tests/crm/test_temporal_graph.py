@@ -1,7 +1,5 @@
 import torch
-
 from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_graph import experiment_comunity_small
-
 
 def test_graph():
     from conditional_rate_matching.configs.config_files import ExperimentFiles

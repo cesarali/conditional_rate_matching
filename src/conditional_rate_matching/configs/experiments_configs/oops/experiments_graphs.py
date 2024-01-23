@@ -14,7 +14,7 @@ def experiment_ego(gibbs=True,berlin=True):
         oops_config.sampler = PerDimGibbsSamplerConfig()
     else:
         oops_config.sampler = DiffSamplerConfig()
-    oops_config.trainer.berlin = berlin
+    oops_config.trainer.windows = berlin
     return oops_config
 
 def experiment_comunity_small(gibbs=True,berlin=True):
@@ -25,7 +25,7 @@ def experiment_comunity_small(gibbs=True,berlin=True):
         oops_config.sampler = PerDimGibbsSamplerConfig()
     else:
         oops_config.sampler = DiffSamplerConfig()
-    oops_config.trainer.berlin = berlin
+    oops_config.trainer.windows = berlin
     return oops_config
 
 def experiment_grid(gibbs=True,berlin=True):
@@ -36,7 +36,7 @@ def experiment_grid(gibbs=True,berlin=True):
         oops_config.sampler = PerDimGibbsSamplerConfig()
     else:
         oops_config.sampler = DiffSamplerConfig()
-    oops_config.trainer.berlin = berlin
+    oops_config.trainer.windows = berlin
     return oops_config
 
 

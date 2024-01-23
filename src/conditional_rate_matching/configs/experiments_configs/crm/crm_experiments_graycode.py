@@ -20,12 +20,12 @@ def experiment_graycode(number_of_epochs=300,
     crm_config.pipeline.number_of_steps = 100
     crm_config.optimal_transport.name = "uniform"
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
-                                            berlin=berlin,
-                                            metrics=[MetricsAvaliable.kdmm,
+                                          windows=berlin,
+                                          metrics=[MetricsAvaliable.kdmm,
                                                      MetricsAvaliable.marginal_binary_histograms,
                                                      MetricsAvaliable.grayscale_plot],
-                                            max_test_size=4000,#size of test sample for measuring distance
-                                            learning_rate=1e-4)
+                                          max_test_size=4000,  #size of test sample for measuring distance
+                                          learning_rate=1e-4)
     return crm_config
 
 if __name__=="__main__":

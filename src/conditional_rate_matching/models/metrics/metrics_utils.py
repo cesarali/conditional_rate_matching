@@ -154,7 +154,7 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
                 try:
                     graph_metrics_ = eval_graph_list(test_graphs,
                                                      generated_graphs,
-                                                     windows=config.trainer.berlin,
+                                                     windows=config.trainer.windows,
                                                      orca_dir=config.trainer.orca_dir)
                     all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=graph_metrics_, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
                 except:

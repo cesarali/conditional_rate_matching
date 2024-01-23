@@ -14,7 +14,7 @@ def experiment_MNIST(max_training_size=60000,max_test_size=5000,berlin=True):
     crm_config = CRMConfig()
     crm_config.trainer = BasicTrainerConfig(metrics=["mse_histograms","binary_paths_histograms",
                                                      "marginal_binary_histograms","mnist_plot"],
-                                            number_of_epochs=10,berlin=berlin)
+                                            number_of_epochs=10, windows=berlin)
 
     crm_config.data1 = NISTLoaderConfig(batch_size=128,
                                         max_training_size=max_training_size,
@@ -41,7 +41,7 @@ def experiment_MNIST_Convnet(max_training_size=60000,max_test_size=5000,berlin=T
                                                      "marginal_binary_histograms","mnist_plot"],
                                             number_of_epochs=4,
                                             learning_rate=1e-4,
-                                            berlin=berlin)
+                                            windows=berlin)
 
     crm_config.data1 = NISTLoaderConfig(batch_size=128,
                                         max_training_size=max_training_size,
