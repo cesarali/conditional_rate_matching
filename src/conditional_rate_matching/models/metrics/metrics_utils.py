@@ -50,6 +50,8 @@ class MetricsAvaliable:
     fid_nist: str = "fid_nist"
     grayscale_plot: str = "grayscale_plot"
 
+    loss_variance_times:str = "loss_variance_times"
+
 def store_metrics(experiment_files,all_metrics,new_metrics,metric_string_name,epoch,where_to_log=None):
     if key_in_dict(where_to_log, metric_string_name):
         mse_metric_path = where_to_log[metric_string_name]
@@ -169,6 +171,24 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
     #=======================================================
     #                          PLOTS
     #=======================================================
+    #LOSS VARIANCE
+    metric_string_name = "loss_variance_times"
+    if metric_string_name in metrics_to_log:
+        loss_variance_times_ = {"loss_mean_times":all_metrics["loss_mean_times"]}
+        all_metrics = store_metrics(generative_model.experiment_files,
+                                    all_metrics,
+                                    new_metrics=loss_variance_times_,
+                                    metric_string_name="loss_mean_times",
+                                    epoch=epoch,
+                                    where_to_log=where_to_log)
+
+        loss_variance_times_ = {"loss_variance_times":all_metrics["loss_variance_times"]}
+        all_metrics = store_metrics(generative_model.experiment_files,
+                                    all_metrics,
+                                    new_metrics=loss_variance_times_,
+                                    metric_string_name="loss_variance_times",
+                                    epoch=epoch,
+                                    where_to_log=where_to_log)
 
     # HISTOGRAMS PLOTS
     metric_string_name = "categorical_histograms"
@@ -195,7 +215,7 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
                 plot_path = where_to_log[metric_string_name]
             else:
                 plot_path = generative_model.experiment_files.plot_path.format("binary_path_histograms_{0}".format(epoch))
-            rate_logits = classification_path(generative_model.forward_rate, test_sample, ts, )
+            rate_logits = classification_path(generative_model.forward_rate, test_sample, ts,)
             rate_probabilities = F.softmax(rate_logits, dim=2)[:,:,1]
             histograms_per_time_step(histograms_generative,rate_probabilities,ts,save_path=plot_path)
 

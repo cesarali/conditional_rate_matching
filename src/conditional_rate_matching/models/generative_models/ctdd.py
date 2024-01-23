@@ -102,6 +102,8 @@ class CTDD:
         #save config
         config_as_dict = asdict(self.config)
         with open(self.experiment_files.config_path, "w") as file:
+            from pprint import pprint
+            pprint(config_as_dict)
             json.dump(config_as_dict, file)
 
     def align_configs(self):

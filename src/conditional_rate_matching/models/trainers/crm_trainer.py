@@ -59,6 +59,12 @@ class CRMTrainer(Trainer):
                               weight_decay=self.config.trainer.weight_decay)
 
         self.scheduler = None
+
+        self.loss_stats = {}
+        self.loss_stats_variance = {}
+
+        self.loss_variance_times = torch.linspace(0.001,1.,20)
+
         if self.config.trainer.lr_decay:
             self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer,
                                                                     gamma=self.config.trainer.lr_decay)
@@ -86,17 +92,23 @@ class CRMTrainer(Trainer):
         sampled_x = self.generative_model.forward_rate.sample_x(x_1, x_0, time)
 
         # loss
-        model_classification = self.generative_model.forward_rate.classify(x_1, time)
+        model_classification = self.generative_model.forward_rate.classify(sampled_x.float(), time)
         model_classification_ = model_classification.view(-1, self.config.data1.vocab_size)
-        sampled_x = sampled_x.view(-1)
+        x_1 = x_1.view(-1)
 
-        loss = self.generative_model.loss(model_classification_,sampled_x)
+        loss = self.generative_model.loss(model_classification_,x_1.long())
+
+        if self.config.trainer.loss_regularize_variance:
+            variance = self.generative_model.forward_rate.compute_variance_torch(time,x_1,x_0)
+            variance = variance.view(-1)
+            loss = (1./variance)*loss
 
         if self.config.trainer.loss_regularize:
             if self.config.trainer.loss_regularize_square:
                 rate_regularizer = self.generative_model.forward_rate.thermostat(time)
             else:
                 rate_regularizer = self.generative_model.forward_rate.thermostat(time)**2.
+
             rate_regularizer = rate_regularizer[:,None]
             rate_regularizer = rate_regularizer.repeat((1,self.config.data1.dimensions)).view(-1)
             loss = rate_regularizer*loss
@@ -145,10 +157,10 @@ class CRMTrainer(Trainer):
             sampled_x = self.generative_model.forward_rate.sample_x(x_1, x_0, time)
 
             #LOSS
-            model_classification = self.generative_model.forward_rate.classify(x_1, time)
+            model_classification = self.generative_model.forward_rate.classify(sampled_x.float(), time)
             model_classification_ = model_classification.view(-1, self.config.data1.vocab_size)
-            sampled_x = sampled_x.view(-1)
-            loss = self.generative_model.loss(model_classification_,sampled_x)
+            x_1 = x_1.view(-1)
+            loss = self.generative_model.loss(model_classification_,x_1.long())
             if self.config.trainer.loss_regularize:
                 if self.config.trainer.loss_regularize_square:
                     rate_regularizer = self.generative_model.forward_rate.thermostat(time)
@@ -162,7 +174,59 @@ class CRMTrainer(Trainer):
 
         return loss
 
+    def global_test(self,training_state,all_metrics,epoch):
+        if "loss_variance_times" in self.config.trainer.metrics:
+            with torch.no_grad():
+                loss_mean_per_time = []
+                loss_variance_per_time = []
+                for time_ in self.loss_variance_times:
+                    # =================================
+                    # LOSS PER TIME
+                    # =================================
+                    loss_batch = []
+                    # VALIDATION
+                    for step, databatch in enumerate(self.dataloader.test()):
+                        databatch = self.preprocess_data(databatch)
+                        batch_0, batch_1 = databatch
+                        # data pair and time sample
+                        x_1, x_0 = self.generative_model.sample_pair(batch_1, batch_0, self.device)
 
+                        x_0 = x_0.float().to(self.device)
+                        x_1 = x_1.float().to(self.device)
 
+                        if len(x_0.shape) > 2:
+                            batch_size = x_0.size(0)
+                            x_0 = x_0.reshape(batch_size, -1)
 
+                        if len(x_1.shape) > 2:
+                            batch_size = x_1.size(0)
+                            x_1 = x_1.reshape(batch_size, -1)
+
+                        # time selection
+                        batch_size = x_0.size(0)
+
+                        time = torch.ones(batch_size).to(self.device)
+                        time = time*time_
+                        # sample x from z
+                        sampled_x = self.generative_model.forward_rate.sample_x(x_1, x_0, time)
+
+                        # LOSS
+                        model_classification = self.generative_model.forward_rate.classify(x_1, time)
+                        model_classification_ = model_classification.view(-1, self.config.data1.vocab_size)
+                        sampled_x = sampled_x.view(-1)
+                        loss = self.generative_model.loss(model_classification_, sampled_x)
+                        loss_batch.extend(loss.detach().numpy().tolist())
+                        if self.config.trainer.debug:
+                            break
+
+                    loss_batch_mean = np.asarray(loss_batch).mean()
+                    loss_batch_variance = np.asarray(loss_batch).std()
+                    loss_mean_per_time.append(loss_batch_mean)
+                    loss_variance_per_time.append(loss_batch_variance)
+                self.loss_stats[epoch] = loss_mean_per_time
+                self.loss_stats_variance[epoch] = loss_variance_per_time
+
+                all_metrics["loss_mean_times"] = self.loss_stats
+                all_metrics["loss_variance_times"] = self.loss_stats_variance
+        return {},all_metrics
 

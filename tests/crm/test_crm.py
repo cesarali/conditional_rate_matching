@@ -15,6 +15,11 @@ from conditional_rate_matching.configs.config_files import get_experiment_dir
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 import pytest
 
+from conditional_rate_matching.utils.plots.images_plots import plot_sample
+from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers import TauLeaping
+
+
 def test_training():
     experiment_files = ExperimentFiles(experiment_name="crm",experiment_type="trainer_call")
     config = CRMConfig()
@@ -50,6 +55,40 @@ def test_optimal_trasnport():
     assert torch.equal(new_x0, sampled_x0)
     assert torch.equal(new_x1, sampled_x1)
 
+def test_bridge_rate():
+    config : CRMConfig
+    config = experiment_nist(dataset_name="mnist",temporal_network_name="mlp")
+    crm = CRM(config)
+
+    databatch_0 = next(crm.dataloader_0.train().__iter__())
+    x_0 = databatch_0[0]
+
+    databatch_1 = next(crm.dataloader_1.train().__iter__())
+    x_1 = databatch_1[0]
+
+    # rate_model = lambda x, t: constant_rate(config, x, t)
+    rate_model = lambda x, t: crm.forward_rate.conditional_transition_rate(x, x_1, t)
+    x_f, x_hist, x0_hist, ts = TauLeaping(config, rate_model, x_0, forward=True)
+    print(x_hist.shape)
+
+def test_bridge_rate():
+    config : CRMConfig
+    config = experiment_nist(dataset_name="mnist",temporal_network_name="mlp")
+    crm = CRM(config)
+
+    databatch_0 = next(crm.dataloader_0.train().__iter__())
+    x_0 = databatch_0[0]
+
+    databatch_1 = next(crm.dataloader_1.train().__iter__())
+    x_1 = databatch_1[0]
+
+    # rate_model = lambda x, t: constant_rate(config, x, t)
+    rate_model = lambda x, t: crm.forward_rate.conditional_transition_rate(x, x_1, t)
+    x_f, x_hist, x0_hist, ts = TauLeaping(config, rate_model, x_0, forward=True)
+    print(x_hist.shape)
+
+
+@pytest.mark.skip
 def test_conditional_probability():
     config = ConditionalRateMatchingConfig()
     dataloader_0,dataloader_1 = get_dataloaders_crm(config)
@@ -70,13 +109,11 @@ def test_conditional_probability():
     print(probs.sum(axis=-1))
     print(probs_transition.sum(axis=-1))
 
-#@pytest.mark.skip(reason="No way of currently testing this")
+@pytest.mark.skip(reason="Contingent on experiment being ready")
 def test_load():
-
-    #experiment_dir = get_experiment_dir(experiment_name="ot_test",
-    #                                    experiment_type="trainer_call",
-    #                                    experiment_indentifier="1701864662")
-    experiment_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/results/emnist_to_mnist"
+    experiment_dir = get_experiment_dir(experiment_name="harz_experiment",
+                                        experiment_type="crm",
+                                        experiment_indentifier="loss_variance_times")
 
     crm = CRM(experiment_dir=experiment_dir,device=torch.device("cpu"))
     generative_sample = crm.pipeline(32)

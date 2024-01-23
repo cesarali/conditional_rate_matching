@@ -6,7 +6,10 @@ from conditional_rate_matching.data.graph_dataloaders_config import (
 )
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
-from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import TemporalScoreNetworkAConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import (
+    TemporalScoreNetworkAConfig,
+    TemporalMLPConfig
+)
 
 
 """
@@ -18,7 +21,6 @@ def experiment_ego(number_of_epochs=300,berlin=True,network="mlp"):
     crm_config = CRMConfig()
     crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.,batch_size=20)
     crm_config.pipeline.number_of_steps = 100
-
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
                                           berlin=berlin,
                                           metrics=[MetricsAvaliable.mse_histograms,
@@ -93,17 +95,25 @@ if __name__=="__main__":
     from dataclasses import asdict
     from pprint import pprint
 
-    config = experiment_comunity_small(number_of_epochs=500,network="mlp")
+    #config = experiment_comunity_small(number_of_epochs=500,network="mlp")
     #config = experiment_grid(number_of_epochs=10)
-    #config = experiment_ego(number_of_epochs=15,network="gnn")
-    #config.optimal_transport.name = "uniform"
+    config = experiment_ego(number_of_epochs=500,network="mlp")
 
-    #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
 
     config.trainer.orca_dir = None
     config.trainer.save_model_test_stopping = True
     config.data1.init = "deg"
+    config.temporal_network = TemporalMLPConfig(time_embed_dim=250,
+                                                hidden_dim=250)
 
-    pprint(asdict(config))
-    results,metrics = call_trainer(config,experiment_name="gnn_test")
+    config.thermostat.gamma = 1.
+    config.trainer.learning_rate = 1e-3
+    config.pipeline.number_of_steps = 50
+    #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
+    config.trainer.loss_regularize_variance = False
+
+    results,metrics = call_trainer(config,
+                                   experiment_name="westend_experiment",
+                                   experiment_type="crm",
+                                   experiment_indentifier=None)
     print(metrics)
