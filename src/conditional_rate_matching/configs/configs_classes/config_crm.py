@@ -51,8 +51,6 @@ class OptimalTransportSamplerConfig:
     normalize_cost: bool = False
     warn: bool = True
 
-
-
 @dataclass
 class BasicPipelineConfig:
     name:str="BasicPipeline"
@@ -61,12 +59,13 @@ class BasicPipelineConfig:
 
 @dataclass
 class CRMConfig:
-
     # data
     data0: StatesDataloaderConfig = StatesDataloaderConfig()
     data1: NISTLoaderConfig = NISTLoaderConfig()
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
+    # temporal_to_rate
+    temporal_network_to_rate : Union[int,float] = None
     # temporal network
     temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig] = TemporalMLPConfig()
     # ot
@@ -75,6 +74,8 @@ class CRMConfig:
     trainer: CRMTrainerConfig = CRMTrainerConfig()
     #pipeline
     pipeline : BasicPipelineConfig = BasicPipelineConfig()
+
+
 
     def __post_init__(self):
         if isinstance(self.data0,dict):

@@ -27,7 +27,7 @@ class ClassificationForwardRate(EMA,nn.Module):
         self.config = config
         self.vocab_size = config.data1.vocab_size
         self.dimensions = config.data1.dimensions
-
+        self.temporal_network_to_rate = config.temporal_network_to_rate
         self.expected_data_shape = config.data1.temporal_net_expected_shape
         self.define_deep_models(config,device)
         self.define_thermostat(config)
@@ -39,7 +39,20 @@ class ClassificationForwardRate(EMA,nn.Module):
         self.expected_temporal_output_shape = self.temporal_network.expected_output_shape
         if self.expected_temporal_output_shape != [self.dimensions,self.vocab_size]:
             temporal_output_total = reduce(lambda x, y: x * y, self.expected_temporal_output_shape)
-            self.temporal_to_rate = nn.Linear(temporal_output_total,self.dimensions*self.vocab_size)
+            print("temporal_output_total")
+            print(temporal_output_total)
+            if self.temporal_network_to_rate is None:
+                self.temporal_to_rate = nn.Linear(temporal_output_total,self.dimensions*self.vocab_size)
+            else:
+                if isinstance(self.temporal_network_to_rate,float):
+                    assert self.temporal_network_to_rate < 1.
+                    intermediate_to_rate = int(self.dimensions * self.vocab_size * self.temporal_network_to_rate)
+                else:
+                    intermediate_to_rate =  self.temporal_network_to_rate
+                self.temporal_network_to_rate = nn.Sequential(
+                    nn.Linear(temporal_output_total, intermediate_to_rate),
+                    nn.Linear(intermediate_to_rate, self.dimensions * self.vocab_size)
+                )
 
     def define_thermostat(self,config):
         self.thermostat = load_thermostat(config)

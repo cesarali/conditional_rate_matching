@@ -68,8 +68,6 @@ def experiment_comunity_small(number_of_epochs=300,berlin=True,network="mlp"):
 
 def experiment_grid(number_of_epochs=300,berlin=True,network="mlp"):
     crm_config = CRMConfig()
-    crm_config.temporal_network_to_rate = 0.1
-
     crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.,batch_size=20)
 
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,

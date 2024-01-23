@@ -313,7 +313,7 @@ def orbit_stats_all(graph_ref_list, graph_pred_list,windows=True,orca_dir=None):
 
     for G in graph_pred_list:
         try:
-            orbit_counts = orca(G)
+            orbit_counts = orca(G,windows,orca_dir=orca_dir)
         except:
             continue
         orbit_counts_graph = np.sum(orbit_counts, axis=0) / G.number_of_nodes()
@@ -422,12 +422,12 @@ if __name__=="__main__":
     import subprocess
     from pprint import pprint
 
-    graph = nx.barabasi_albert_graph(100, 3)
-    graph_list_1 = [nx.barabasi_albert_graph(100,3) for i in range(20)]
-    graph_list_2 = [nx.barabasi_albert_graph(100,3) for i in range(20)]
+    graph = nx.barabasi_albert_graph(200, 3)
+    graph_list_1 = [nx.barabasi_albert_graph(200,3) for i in range(2)]
+    graph_list_2 = [nx.barabasi_albert_graph(200,3) for i in range(2)]
 
     orca_dir = ORCA_DIR_BERLIN
-    node_orbit_counts = orca(graph_list_1[0])
-    results_ = eval_graph_list(graph_list_1, graph_list_2,methods=None,windows=True,orca_dir=ORCA_DIR_BERLIN)
+    #node_orbit_counts = orca(graph_list_1[0])
+    results_ = eval_graph_list(graph_list_1, graph_list_2,methods=['orbit'],windows=True,orca_dir=ORCA_DIR_BERLIN)
     print(results_)
 
