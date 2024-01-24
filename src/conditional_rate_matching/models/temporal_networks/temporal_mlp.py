@@ -1,6 +1,8 @@
 import torch
+import numpy as np
 from torch import nn as nn
 
+import torch.nn.functional as F
 from conditional_rate_matching.utils.activations import get_activation_function
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as CRMConfig
 from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
@@ -54,6 +56,58 @@ class TemporalDeepMLP(nn.Module):
         for layer in self.model:
             if isinstance(layer, nn.Linear):
                 nn.init.xavier_uniform_(layer.weight)
+
+
+class TemporalLeNet5(nn.Module):
+
+    def __init__(self,
+                 config,
+                 device):
+        super().__init__()
+        self.dimensions = config.data0.dimensions
+        self.vocab_size = config.data0.vocab_size
+        self.time_embed_dim = config.temporal_network.time_embed_dim
+        self.hidden_layer = config.temporal_network.hidden_dim
+        self.define_deep_models()
+        self.init_weights()
+        self.to(device)
+        self.expected_output_shape = [28, 28, self.vocab_size]
+
+    def define_deep_models(self):
+        self.conv1 = nn.Conv2d(1, 6, 5)
+        self.bn2d1 = nn.BatchNorm2d(6)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.bn2d2 = nn.BatchNorm2d(16)
+        self.fc1 = nn.Linear(16 * 4 * 4 + self.time_embed_dim, self.hidden_layer)
+        self.bn1 = nn.BatchNorm1d(self.hidden_layer)
+        self.fc2 = nn.Linear(self.hidden_layer + self.time_embed_dim, self.hidden_layer)
+        self.bn2 = nn.BatchNorm1d(self.hidden_layer)
+        self.fc3 = nn.Linear(self.hidden_layer + self.time_embed_dim, 28 * 28 * 2)
+
+    def forward(self, x, times):
+        time_embeddings = transformer_timestep_embedding(times, embedding_dim=self.time_embed_dim)
+
+        x = F.max_pool2d(F.relu(self.bn2d1(self.conv1(x))), (2, 2))
+        x = F.max_pool2d(F.relu(self.bn2d2(self.conv2(x))), (2, 2))
+        x = x.view(-1, np.prod(x.size()[1:]))
+
+        x = torch.concat([x, time_embeddings], dim=1)
+        x = F.relu(self.bn1(self.fc1(x)))
+
+        x = torch.concat([x, time_embeddings], dim=1)
+        x = F.relu(self.bn2(self.fc2(x)))
+
+        x = torch.concat([x, time_embeddings], dim=1)
+        x = self.fc3(x)
+
+        return x.view(-1, 28, 28, 2)
+
+    def init_weights(self):
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.xavier_uniform_(self.fc2.weight)
+        nn.init.xavier_uniform_(self.fc3.weight)
+
+
 
 
 class TemporalMLP(nn.Module):

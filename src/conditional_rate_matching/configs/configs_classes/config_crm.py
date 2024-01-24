@@ -77,7 +77,6 @@ class CRMConfig:
     pipeline : BasicPipelineConfig = BasicPipelineConfig()
 
 
-
     def __post_init__(self):
         if isinstance(self.data0,dict):
             self.data0 = data_configs[self.data0["name"]](**self.data0)

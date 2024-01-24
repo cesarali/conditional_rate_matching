@@ -26,12 +26,10 @@ def mnist_grid(sample,save_path=None):
         plt.imsave(save_path,npimg)
 
 def mnist_noise_bridge(x_hist,ts,steps_of_noise_to_see,number_of_images,save_path=None):
-    grid_cols = steps_of_noise_to_see
-    grid_rows = number_of_images
-    fig, axs = plt.subplots(grid_rows, grid_cols, figsize=(grid_cols, grid_rows))
-    for j in range(grid_cols):
+    fig, axs = plt.subplots(number_of_images, steps_of_noise_to_see, figsize=(steps_of_noise_to_see, number_of_images))
+    for j in range(steps_of_noise_to_see):
         images_at_noise_level = x_hist[:,j,:]
-        for i in range(grid_rows):
+        for i in range(number_of_images):
             img_noisy = images_at_noise_level[i].view(1,28,28).detach().numpy()
             axs[i, j].imshow(img_noisy.squeeze(), cmap='gray')
             if i == 0:
