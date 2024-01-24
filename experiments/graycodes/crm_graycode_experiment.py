@@ -11,9 +11,9 @@ from optuna.visualization import plot_optimization_history, plot_slice, plot_con
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from conditional_rate_matching.configs.config_crm import CRMConfig, CRMTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig,  TemporalDeepEBMConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -41,8 +41,8 @@ def CRM_single_run(dynamics="crm",
                     dropout=0.1,
                     gamma=1.0,
                     num_timesteps=1000,
-                    training_size=60000,
-                    test_size=1200):
+                    training_size=10000,
+                    test_size=1000):
 
     experiment_files = ExperimentFiles(experiment_name=dynamics,
                                        experiment_type=experiment_type,
@@ -222,28 +222,29 @@ if __name__ == "__main__":
     '''
 
     # scan = CRM_Scan_Optuna(dynamics="crm",
-    #                        experiment_type="graycode_LogThermostat",
+    #                        experiment_type="graycode_uniform",
     #                        experiment_indentifier="optuna_scan_trial",
     #                        dataset0=None, 
     #                        dataset1=AvailableGrayCodes.swissroll,
     #                        metrics=[MetricsAvaliable.mse_histograms,
-    #                                     MetricsAvaliable.marginal_binary_histograms,
-    #                                     MetricsAvaliable.kdmm,
-    #                                     MetricsAvaliable.grayscale_plot],
-    #                        thermostat="log",
+    #                                 MetricsAvaliable.marginal_binary_histograms,
+    #                                 MetricsAvaliable.kdmm,
+    #                                 MetricsAvaliable.grayscale_plot],
+    #                        thermostat=None,
     #                        coupling_method='uniform',
     #                        model="mlp",
-    #                        n_trials=300,
-    #                        epochs=1000,
+    #                        n_trials=100,
+    #                        epochs=100,
     #                        batch_size=128,
     #                        learning_rate=(1e-6, 1e-2), 
-    #                        hidden_dim=(32, 256), 
-    #                        num_layers=3,
-    #                        activation=('ReLU', 'Sigmoid', 'ELU', 'SELU'),
-    #                        time_embed_dim=(32, 256), 
+    #                        hidden_dim=(32, 512), 
+    #                        time_embed_dim=(32, 512), 
+    #                        num_layers=(2,8),
+    #                        activation=('ReLU', 'Sigmoid', 'GELU'),
     #                        dropout=(0.01, 0.5),
-    #                        gamma=None,
-    #                        device='cuda:1')
+    #                        gamma=(0.001, 1),
+    #                        num_timesteps=1000,
+    #                        device='cuda:2')
     
     # df = scan.study.trials_dataframe()
     # df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
@@ -270,22 +271,25 @@ if __name__ == "__main__":
 
 
 
-    # CRM_single_run( dataset0=AvailableGrayCodes.swissroll, 
-    #                 dataset1=AvailableGrayCodes.checkerboard,
-    #                 metrics=[MetricsAvaliable.mse_histograms,
-    #                          MetricsAvaliable.marginal_binary_histograms,
-    #                          MetricsAvaliable.kdmm,
-    #                          MetricsAvaliable.grayscale_plot],
-    #                thermostat="log",
-    #                coupling_method='uniform',
-    #                model="mlp",
-    #                epochs=2000,
-    #                batch_size=128,
-    #                learning_rate=1e-3, 
-    #                hidden_dim=256, 
-    #                num_layers=3,
-    #                activation="ELU",
-    #                time_embed_dim=32,
-    #                dropout=0.1,
-    #                device="cuda:1",
-    #                num_timesteps=1000)
+    CRM_single_run( dynamics="crm",
+                    experiment_type="graycode_OTPlanSampler",
+                    dataset0=AvailableGrayCodes.swissroll, 
+                    dataset1=AvailableGrayCodes.checkerboard,
+                    metrics=[MetricsAvaliable.mse_histograms,
+                             MetricsAvaliable.marginal_binary_histograms,
+                             MetricsAvaliable.kdmm,
+                             MetricsAvaliable.grayscale_plot],
+                   thermostat=None,
+                   coupling_method='OTPlanSampler',
+                   model="mlp",
+                   epochs=100,
+                   batch_size=256,
+                   learning_rate=1e-4, 
+                   hidden_dim=512, 
+                   num_layers=6,
+                   activation="GELU",
+                   time_embed_dim=512,
+                   dropout=0.1,
+                   device="cuda:1",
+                   gamma=0.1,
+                   num_timesteps=1000)

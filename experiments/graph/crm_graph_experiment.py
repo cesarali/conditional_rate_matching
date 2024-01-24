@@ -8,10 +8,10 @@ import optuna
 
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
-from conditional_rate_matching.configs.config_crm import CRMConfig, CRMTrainerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (TemporalDeepMLPConfig, 
-                                                                                         TemporalDeepSetsConfig, 
+                                                                                        #  TemporalDeepSetsConfig, 
                                                                                          TemporalGraphConvNetConfig)
 
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -241,18 +241,18 @@ if __name__ == "__main__":
     #                        experiment_indentifier="optuna_scan_trial",
     #                        model="mlp",
     #                        full_adjacency=False,
-    #                        thermostat="log",
+    #                        thermostat=None,
     #                        flatten=True,
     #                        n_trials=100,
-    #                        epochs=1000,
+    #                        epochs=100,
     #                        batch_size=(16, 100),
     #                        learning_rate=(1e-7, 1e-2), 
     #                        hidden_dim=(32, 256), 
     #                        num_layers=(2, 6),
-    #                        activation=['SELU'],
+    #                        activation=["ReLU", "GELU"],
     #                        time_embed_dim=(32, 256), 
     #                        dropout=(0.001, 0.6),
-    #                        gamma=None,
+    #                        gamma=(0.001, 1),
     #                        device='cuda:2')
     
     # df = scan.study.trials_dataframe()
@@ -281,9 +281,10 @@ if __name__ == "__main__":
     # fig.write_image(scan.workdir + "/param_importances.png")
 
 
-    CRM_single_run(experiment_type="graph_LogThermostat",
-                   experiment_indentifier="run_1",
-                   thermostat="log",
+    CRM_single_run(dynamics="crm",
+                   experiment_type="graph_ConstantThermostat_UniformCoupling",
+                   experiment_indentifier="run",
+                   thermostat=None,
                    coupling_method="uniform",
                    model="mlp",
                    full_adjacency=False,
@@ -294,14 +295,14 @@ if __name__ == "__main__":
                              "marginal_binary_histograms", 
                              "graphs_metrics", 
                              "graphs_plot"],
-                   device="cuda:1",
-                   epochs=5000,
+                   device="cuda:2",
+                   epochs=500,
                    batch_size=128,
                    learning_rate=1e-4,
-                   weight_decay=0, 
                    dropout=0.25,
                    activation="ReLU",
                    num_layers=5,
-                   hidden_dim=128,                
-                   time_embed_dim=64,
-                   num_timesteps=500)
+                   hidden_dim=256,                
+                   time_embed_dim=128,
+                   gamma=0.01,
+                   num_timesteps=1000)
