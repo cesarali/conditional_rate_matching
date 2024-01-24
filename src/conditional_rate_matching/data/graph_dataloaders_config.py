@@ -46,7 +46,7 @@ class EgoConfig(GraphDataloaderConfig):
     dataset_name: str = "ego_small"
     batch_size: int = 20
     test_split: float = 0.2
-    max_node_num: int = 18
+    max_node_num: int = 17
     max_feat_num: int = 17
     total_data_size:int = 200
     init: str = "ones"
@@ -80,3 +80,10 @@ class GridConfig(GraphDataloaderConfig):
     max_feat_num: int = 5
     total_data_size:int = 200
     init: str = 'ones'
+
+
+@dataclass
+class BridgeConfig:
+    name:str = "BridgeConfig"
+    dataset_name:str = 'power_law' #erdos
+

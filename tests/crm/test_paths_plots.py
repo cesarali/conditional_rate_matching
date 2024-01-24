@@ -1,10 +1,9 @@
 import os
 import torch
 from conditional_rate_matching.models.generative_models.crm import CRM
-
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
-from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers import TauLeaping
+from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
 
 
 def test_bridge_rate():

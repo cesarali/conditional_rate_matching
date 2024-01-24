@@ -25,11 +25,12 @@ from conditional_rate_matching.models.trainers.trainers_config import BasicTrain
 from conditional_rate_matching.configs import temporal_network_configs
 from conditional_rate_matching.configs import thermostat_configs
 from conditional_rate_matching.models.pipelines.pipelines_config import BasicPipelineConfig
-
+from conditional_rate_matching.data.graph_dataloaders_config import BridgeConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig,LogThermostatConfig
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
+                "BridgeConfig":BridgeConfig,
                 "StatesDataloader":StatesDataloaderConfig,
                 "GrayCodesDataloader":GrayCodesDataloaderConfig}
 

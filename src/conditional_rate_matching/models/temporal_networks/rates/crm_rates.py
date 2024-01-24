@@ -39,8 +39,6 @@ class ClassificationForwardRate(EMA,nn.Module):
         self.expected_temporal_output_shape = self.temporal_network.expected_output_shape
         if self.expected_temporal_output_shape != [self.dimensions,self.vocab_size]:
             temporal_output_total = reduce(lambda x, y: x * y, self.expected_temporal_output_shape)
-            print("temporal_output_total")
-            print(temporal_output_total)
             if self.temporal_network_to_rate is None:
                 self.temporal_to_rate = nn.Linear(temporal_output_total,self.dimensions*self.vocab_size)
             else:

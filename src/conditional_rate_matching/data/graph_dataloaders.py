@@ -19,6 +19,7 @@ from conditional_rate_matching.data.transforms import (
     FromUpperDiagonalTransform,
     ToUpperDiagonalIndicesTransform
 )
+from conditional_rate_matching.data.utils.bridge_data import obtain_power_law_graph
 
 def from_networkx_to_spins(graph_,upper_diagonal_indices,full_adjacency=False):
     adjacency_ = nx.to_numpy_array(graph_)
@@ -69,7 +70,7 @@ class GraphDataloaders:
     graph_data_config : GraphDataloaderConfig
     name:str = "GraphDataloaders"
 
-    def __init__(self,graph_data_config):
+    def __init__(self,graph_data_config,bridge_data=None):
         """
 
         :param config:
@@ -82,8 +83,7 @@ class GraphDataloaders:
         self.composed_transform = transforms.Compose(transform_list)
         self.transform_to_graph = transforms.Compose(inverse_transform_list)
 
-        train_graph_list, test_graph_list = self.read_graph_lists()
-
+        train_graph_list, test_graph_list,max_node_num,min_number_of_nodes = self.read_graph_lists(bridge_data)
         if graph_data_config.max_training_size is not None:
             train_graph_list = [train_graph_list[i] for i in range(min(graph_data_config.max_training_size,len(train_graph_list)))]
 
@@ -102,11 +102,11 @@ class GraphDataloaders:
 
         train_adjs_tensor,train_x_tensor = self.graph_to_tensor_and_features(train_graph_list,
                                                                              self.graph_data_config.init,
-                                                                             self.graph_data_config.max_node_num,
+                                                                             max_node_num,
                                                                              self.graph_data_config.max_feat_num)
         test_adjs_tensor, test_x_tensor = self.graph_to_tensor_and_features(test_graph_list,
                                                                             self.graph_data_config.init,
-                                                                            self.graph_data_config.max_node_num,
+                                                                            max_node_num,
                                                                             self.graph_data_config.max_feat_num)
 
 
@@ -201,7 +201,7 @@ class GraphDataloaders:
         x_tensor = init_features(init,adjs_tensor,max_feat_num)
         return adjs_tensor,x_tensor
 
-    def read_graph_lists(self)->Tuple[List[nx.Graph]]:
+    def read_graph_lists(self,bridge_data=None)->Tuple[List[nx.Graph]]:
         """
 
         :return: train_graph_list, test_graph_list
@@ -220,5 +220,12 @@ class GraphDataloaders:
         min_number_of_nodes = min(all_node_numbers)
 
         train_graph_list, test_graph_list = graph_list[test_size:], graph_list[:test_size]
+        if bridge_data is None:
+            return train_graph_list, test_graph_list,max_number_of_nodes,min_number_of_nodes
+        else:
+            train_graph_list = [obtain_power_law_graph(networkx_graph)[0] for networkx_graph in train_graph_list]
+            test_graph_list = [obtain_power_law_graph(networkx_graph)[0] for networkx_graph in train_graph_list]
+            return train_graph_list, test_graph_list,max_number_of_nodes,min_number_of_nodes
 
-        return train_graph_list, test_graph_list
+
+

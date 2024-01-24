@@ -7,7 +7,7 @@ import os
 import torch
 import numpy as np
 import networkx as nx
-from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
+
 def estimate_alpha(degrees, xmin):
     """
     Estimate the alpha parameter of a power-law distribution using MLE.
@@ -61,23 +61,22 @@ def obtain_power_law_graph(networkx_graph):
     return new_graph, alpha
 
 def obtain_graph_dataset(dataloader,obtain_graph_equivalent=obtain_power_law_graph):
-    if isinstance(dataloader,GraphDataloaders):
-        print("Creating Power Law Data Set For Bridge")
+    print("Creating Power Law Data Set For Bridge")
 
-        train_graphs = []
-        for databatch in dataloader.train():
-            networkx_batch = dataloader.sample_to_graph(databatch[0])
-            for networkx_graph in networkx_batch:
-                new_graph, alpha = obtain_graph_equivalent(networkx_graph)
-                train_graphs.append(new_graph)
+    train_graphs = []
+    for databatch in dataloader.train():
+        networkx_batch = dataloader.sample_to_graph(databatch[0])
+        for networkx_graph in networkx_batch:
+            new_graph, alpha = obtain_graph_equivalent(networkx_graph)
+            train_graphs.append(new_graph)
 
-        test_graphs = []
-        for databatch in dataloader.test():
-            networkx_batch = dataloader.sample_to_graph(databatch[0])
-            for networkx_graph in networkx_batch:
-                new_graph, alpha = obtain_graph_equivalent(networkx_graph)
-                test_graphs.append(new_graph)
+    test_graphs = []
+    for databatch in dataloader.test():
+        networkx_batch = dataloader.sample_to_graph(databatch[0])
+        for networkx_graph in networkx_batch:
+            new_graph, alpha = obtain_graph_equivalent(networkx_graph)
+            test_graphs.append(new_graph)
 
-        return train_graphs,test_graphs
+    return train_graphs,test_graphs
 
 

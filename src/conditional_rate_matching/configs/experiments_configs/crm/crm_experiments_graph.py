@@ -52,8 +52,8 @@ def experiment_comunity_small(number_of_epochs=300, berlin=True, network="mlp"):
         crm_config.trainer.learning_rate = 1e-2
     else:
         crm_config.data1 = CommunitySmallConfig(flatten=True, as_image=False, full_adjacency=False, batch_size=20)
-        crm_config.temporal_network.hidden_dim = 100
-        crm_config.temporal_network.time_embed_dim = 100
+        crm_config.temporal_network.hidden_dim = 200
+        crm_config.temporal_network.time_embed_dim = 200
         crm_config.trainer.learning_rate = 1e-4
 
     return crm_config
@@ -89,23 +89,24 @@ def experiment_grid(number_of_epochs=300, berlin=True, network="mlp"):
 if __name__ == "__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-    config = experiment_comunity_small(number_of_epochs=10, network="mlp")
+    config = experiment_comunity_small(number_of_epochs=200, network="mlp")
     # config = experiment_grid(number_of_epochs=10)
     # config = experiment_ego(number_of_epochs=10,network="gnn")
 
-    # config.trainer.orca_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_berlin_2/"
-    config.trainer.orca_dir = "/home/cvejoski/Projects/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca"
-    config.trainer.windows = False
+    #config.trainer.orca_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_berlin_2/"
+    #config.trainer.orca_dir = "/home/cvejoski/Projects/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca"
+    #config.trainer.windows = True
 
     config.trainer.save_model_test_stopping = True
-    config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
-    config.data1.init = "deg"
+    #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
 
-    config.thermostat.gamma = 1.0
+    config.thermostat.gamma = 0.01
     config.trainer.learning_rate = 1e-3
-    config.pipeline.number_of_steps = 10
+    config.pipeline.number_of_steps = 1000
     config.trainer.loss_regularize_variance = False
-    config.trainer.device = "cuda:0"
+    config.trainer.device = "cpu"
 
-    results, metrics = call_trainer(config, experiment_name="prenzlauer_experiment", experiment_type="crm", experiment_indentifier=None)
-    print(metrics)
+    results, metrics = call_trainer(config,
+                                    experiment_name="prenzlauer_experiment",
+                                    experiment_type="crm",
+                                    experiment_indentifier="bridge_plot_mlp_mu_001")

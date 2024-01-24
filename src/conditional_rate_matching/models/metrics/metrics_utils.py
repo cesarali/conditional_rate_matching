@@ -36,6 +36,9 @@ from conditional_rate_matching.data.image_dataloader_config import NISTLoaderCon
 
 key_in_dict = lambda dictionary, key: dictionary is not None and key in dictionary
 
+from conditional_rate_matching.models.metrics.crm_path_metrics import conditional_bridge_marginal_probabilities_and_rates_path,conditional_bridge_images
+
+
 @dataclass
 class MetricsAvaliable:
     mse_histograms: str = "mse_histograms"

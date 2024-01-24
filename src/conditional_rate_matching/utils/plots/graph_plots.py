@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -7,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from matplotlib import cm
 import warnings
+from conditional_rate_matching import plots_path
 
 #warnings.filterwarnings("ignore", category=matplotlib.cbook.MatplotlibDeprecationWarning)
 
@@ -64,3 +66,23 @@ def plot_graphs_list2(graphs,
         figure.savefig(save_dir)
     else:
         plt.show()
+
+def plot_graph_noise_path(crm,number_of_images, steps_of_noise_to_see,save_path=None):
+    crm.config.pipeline.num_intermediates = steps_of_noise_to_see
+    x_f, x_hist, ts = crm.pipeline(32, return_intermediaries=True, train=False)
+
+    fig, axs = plt.subplots(number_of_images, steps_of_noise_to_see, figsize=(steps_of_noise_to_see, number_of_images))
+    for noise_index in range(steps_of_noise_to_see):
+        graphs_at_time = crm.dataloader_1.sample_to_graph(x_hist[:,noise_index,:])
+        for graph_index in range(number_of_images):
+            one_graph = graphs_at_time[graph_index]
+            #img_noisy = images_at_noise_level[i].view(1,28,28).detach().numpy()
+            nx.draw(one_graph, ax=axs[graph_index, noise_index],with_labels=False, **options)
+            if graph_index == 0:
+                axs[graph_index, noise_index].set_title(r'$\tau = {0}$'.format(round(ts[noise_index].item(),2)))
+            axs[graph_index, noise_index].axis('off')
+    plt.tight_layout()
+    if save_path is None:
+        plt.show()
+    else:
+        plt.savefig(save_path)
