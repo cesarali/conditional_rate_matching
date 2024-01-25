@@ -34,7 +34,8 @@ class TrainerState:
     number_of_training_steps:int = 0
 
     def set_average_test_loss(self):
-        self.average_test_loss = np.asarray(self.test_loss).mean()
+        if len(self.test_loss) > 0:
+            self.average_test_loss = np.asarray(self.test_loss).mean()
 
     def set_average_train_loss(self):
         self.average_train_loss = np.asarray(self.train_loss).mean()
@@ -192,6 +193,7 @@ class Trainer(ABC):
             else:
                 if all_metrics[self.config.trainer.metric_to_save] < self.best_metric:
                     results_ = self.save_results(training_state, epoch + 1, checkpoint=False)
+                    self.best_metric = all_metrics[self.config.trainer.metric_to_save]
             training_state.finish_epoch()
         #=====================================================
         # BEST MODEL IS READ AND METRICS ARE STORED
