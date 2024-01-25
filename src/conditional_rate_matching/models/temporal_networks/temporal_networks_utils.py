@@ -43,6 +43,8 @@ def load_temporal_network(config:CRMConfig, device):
     elif isinstance(config.temporal_network,TemporalScoreNetworkAConfig):
         temporal_network = TemporalScoreNetworkA(config)
         temporal_network = temporal_network.to(device)
+    elif isinstance(config.temporal_network, TemporalLeNet5Config):
+        temporal_network = TemporalLeNet5(config, device)
     else:
         raise Exception("Temporal Network not Defined")
     return temporal_network

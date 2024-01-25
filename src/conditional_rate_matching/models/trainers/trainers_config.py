@@ -24,7 +24,12 @@ class BasicTrainerConfig:
     lr_decay:float =  0.999
 
     device:str = "cuda:0"
+<<<<<<< HEAD
     berlin: bool = False
+=======
+    windows: bool = True
+    berlin: bool = True
+>>>>>>> origin/main
     distributed: bool = False
     debug:bool = False
     orca_dir:str = ORCA_DIR_STANDARD
@@ -33,5 +38,6 @@ class BasicTrainerConfig:
                                                         "kdmm",
                                                         "categorical_histograms"])
     def __post_init__(self):
+        self.berlin = self.windows
         self.save_model_epochs = int(.5*self.number_of_epochs)
         self.save_metric_epochs = self.number_of_epochs - 1

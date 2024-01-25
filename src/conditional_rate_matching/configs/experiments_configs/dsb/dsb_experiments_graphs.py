@@ -23,7 +23,7 @@ def experiment_comunity_small(number_of_epochs=300,berlin=True):
     crm_config.flip_estimator = SteinSpinEstimatorConfig()
 
     crm_config.trainer = DSBTrainerConfig(number_of_epochs=number_of_epochs,
-                                          berlin=berlin,
+                                          windows=berlin,
                                           metrics=[],
                                           learning_rate=1e-5,
                                           do_ema=False)

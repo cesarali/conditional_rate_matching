@@ -31,7 +31,7 @@ def experiment_nist(number_of_epochs=300,
 
     crm_config.pipeline.number_of_steps = 1000
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
-                                          berlin=berlin,
+                                          windows=berlin,
                                           metrics=[MetricsAvaliable.mse_histograms,
                                                    MetricsAvaliable.mnist_plot,
                                                    MetricsAvaliable.fid_nist,
@@ -51,6 +51,6 @@ if __name__=="__main__":
 
     pprint(config)
     call_trainer(config,
-                 experiment_name="westend_experiment",
+                 experiment_name="pren_experiment",
                  experiment_type="crm",
                  experiment_indentifier=None)

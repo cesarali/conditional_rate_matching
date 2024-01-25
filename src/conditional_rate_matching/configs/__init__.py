@@ -20,6 +20,7 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
 
 temporal_network_configs = {
     "TemporalMLP":TemporalMLPConfig,
+    "TemporalLeNet5":TemporalLeNet5Config,
     "ConvNetAutoencoder":ConvNetAutoencoderConfig,
     "TemporalDeepMLP":TemporalDeepMLPConfig,
     "TemporalLeNet5":TemporalLeNet5Config,

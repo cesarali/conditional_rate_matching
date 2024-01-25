@@ -1,12 +1,10 @@
-from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,CRMTrainerConfig
+import os
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
-from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
-from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import AvailableGrayCodes
-
-#sAvailableGrayCodes.checkerboard
-
+from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
+from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,CRMTrainerConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig
 
 def experiment_graycode(number_of_epochs=300,
                     dataset_name="checkerboard",
@@ -20,12 +18,12 @@ def experiment_graycode(number_of_epochs=300,
     crm_config.pipeline.number_of_steps = 100
     crm_config.optimal_transport.name = "uniform"
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
-                                            berlin=berlin,
-                                            metrics=[MetricsAvaliable.kdmm,
+                                          windows=berlin,
+                                          metrics=[MetricsAvaliable.kdmm,
                                                      MetricsAvaliable.marginal_binary_histograms,
                                                      MetricsAvaliable.grayscale_plot],
-                                            max_test_size=4000,#size of test sample for measuring distance
-                                            learning_rate=1e-4)
+                                          max_test_size=4000,  #size of test sample for measuring distance
+                                          learning_rate=1e-4)
     return crm_config
 
 if __name__=="__main__":

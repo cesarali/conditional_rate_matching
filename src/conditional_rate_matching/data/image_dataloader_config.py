@@ -6,6 +6,8 @@ from conditional_rate_matching import data_path
 
 image_data_path = os.path.join(data_path,"raw")
 
+NUMBER_OF_LABELS = {"mnist":10,"fashion":10,"emnist":27}
+
 @dataclass
 class DiscreteCIFAR10Config:
     data: str = "Cifar10"
@@ -68,6 +70,8 @@ class NISTLoaderConfig:
     def __post_init__(self):
         self.dimensions, self.temporal_net_expected_shape = self.expected_shape(self.as_image,self.flatten,self.unet_resize)
         self.number_of_nodes = self.max_node_num
+        self.number_of_labels = NUMBER_OF_LABELS[self.dataset_name]
+
 
     def expected_shape(self,as_image,flatten,unet=False):
         if as_image:

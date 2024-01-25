@@ -21,7 +21,7 @@ def experiment_nist(number_of_epochs=300,
 
     crm_config.pipeline.number_of_steps = 100
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
-                                          berlin=berlin,
+                                          windows=berlin,
                                           metrics=[MetricsAvaliable.mse_histograms,
                                                    MetricsAvaliable.marginal_binary_histograms,
                                                    MetricsAvaliable.grayscale_plot],

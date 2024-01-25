@@ -1,8 +1,10 @@
 import torch
+import numpy as np
 from torch import nn as nn
 import torch.nn.functional as F
 import numpy as np
 
+import torch.nn.functional as F
 from conditional_rate_matching.utils.activations import get_activation_function
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as CRMConfig
 from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
@@ -63,7 +65,10 @@ class TemporalLeNet5(nn.Module):
     def __init__(self,
                  config,
                  device):
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
         super().__init__()
         self.dimensions = config.data0.dimensions
         self.vocab_size = config.data0.vocab_size
@@ -85,14 +90,21 @@ class TemporalLeNet5(nn.Module):
         self.bn2 = nn.BatchNorm1d(self.hidden_layer)
         self.fc3 = nn.Linear(self.hidden_layer + self.time_embed_dim, 28 * 28 * 2)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
     def forward(self, x, times):
         time_embeddings = transformer_timestep_embedding(times, embedding_dim=self.time_embed_dim)
 
         x = F.max_pool2d(F.relu(self.bn2d1(self.conv1(x))), (2, 2))
         x = F.max_pool2d(F.relu(self.bn2d2(self.conv2(x))), (2, 2))
         x = x.view(-1, np.prod(x.size()[1:]))
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> origin/main
         x = torch.concat([x, time_embeddings], dim=1)
         x = F.relu(self.bn1(self.fc1(x)))
 
@@ -102,7 +114,11 @@ class TemporalLeNet5(nn.Module):
         x = torch.concat([x, time_embeddings], dim=1)
         x = self.fc3(x)
 
+<<<<<<< HEAD
         return x.view(-1, 28, 28, 2) 
+=======
+        return x.view(-1, 28, 28, 2)
+>>>>>>> origin/main
 
     def init_weights(self):
         nn.init.xavier_uniform_(self.fc1.weight)
@@ -110,6 +126,7 @@ class TemporalLeNet5(nn.Module):
         nn.init.xavier_uniform_(self.fc3.weight)
 
 
+<<<<<<< HEAD
 class TemporalLeNet5Autoencoder(nn.Module):
 
     def __init__(self,
@@ -323,6 +340,9 @@ class EmbedFC(nn.Module):
     def forward(self, x):
         x = x.view(-1, self.input_dim)
         return self.model(x)
+=======
+
+>>>>>>> origin/main
 
 class TemporalMLP(nn.Module):
     """

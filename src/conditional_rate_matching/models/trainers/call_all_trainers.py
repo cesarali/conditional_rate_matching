@@ -1,5 +1,4 @@
 from typing import Union
-
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig

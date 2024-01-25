@@ -28,11 +28,12 @@ from conditional_rate_matching.models.trainers.trainers_config import BasicTrain
 from conditional_rate_matching.configs import temporal_network_configs
 from conditional_rate_matching.configs import thermostat_configs
 from conditional_rate_matching.models.pipelines.pipelines_config import BasicPipelineConfig
-
+from conditional_rate_matching.data.graph_dataloaders_config import BridgeConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig,LogThermostatConfig
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "GraphDataloader":GraphDataloaderConfig,
+                "BridgeConfig":BridgeConfig,
                 "StatesDataloader":StatesDataloaderConfig,
                 "GrayCodesDataloader":GrayCodesDataloaderConfig}
 
@@ -54,8 +55,6 @@ class OptimalTransportSamplerConfig:
     normalize_cost: bool = False
     warn: bool = True
 
-
-
 @dataclass
 class BasicPipelineConfig:
     name:str="BasicPipeline"
@@ -64,12 +63,13 @@ class BasicPipelineConfig:
 
 @dataclass
 class CRMConfig:
-
     # data
     data0: StatesDataloaderConfig = StatesDataloaderConfig()
     data1: NISTLoaderConfig = NISTLoaderConfig()
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
+    # temporal_to_rate
+    temporal_network_to_rate : Union[int,float] = None
     # temporal network
     temporal_network: Union[TemporalMLPConfig, 
                             TemporalDeepMLPConfig, 
@@ -85,6 +85,7 @@ class CRMConfig:
     trainer: CRMTrainerConfig = CRMTrainerConfig()
     #pipeline
     pipeline : BasicPipelineConfig = BasicPipelineConfig()
+
 
     def __post_init__(self):
         if isinstance(self.data0,dict):

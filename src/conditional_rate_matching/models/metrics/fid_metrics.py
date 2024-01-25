@@ -6,15 +6,35 @@ from conditional_rate_matching.models.metrics.fid_nist.architectures import LeNe
 from conditional_rate_matching import project_path
 from torch.utils.data.dataset import TensorDataset
 
+fid_models_dir = os.path.join(project_path,
+                              "src",
+                              "conditional_rate_matching",
+                              "models",
+                              "metrics",
+                              "fid_nist",
+                              "models")
+def load_classifier(dataset_name,device,fid_models_dir=fid_models_dir):
+    device = torch.device(device if torch.cuda.is_available() else "cpu")
+    if dataset_name == "mnist":
+        model = LeNet5(num_classes=10)
+        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryMNIST.pth')
+        model.load_state_dict(torch.load(model_path))
+    elif dataset_name == "emnist":
+        model = LeNet5(num_classes=27)
+        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryEMNIST_Letters.pth')
+        model.load_state_dict(torch.load(model_path))
+    elif dataset_name == "fashion":
+        model = LeNet5(num_classes=10)
+        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryFashionMNIST.pth')
+        model.load_state_dict(torch.load(model_path))
+    else:
+        raise Exception
+    model.eval()
+    return model
+
 def fid_nist(generative_sample,test_sample,dataset_name="mnist",device="cpu"):
 
-    fid_models_dir = os.path.join(project_path,
-                                  "src",
-                                  "conditional_rate_matching",
-                                  "models",
-                                  "metrics",
-                                  "fid_nist",
-                                  "models")
+
 
     device = torch.device(device if torch.cuda.is_available() else "cpu")
     if dataset_name == "mnist":

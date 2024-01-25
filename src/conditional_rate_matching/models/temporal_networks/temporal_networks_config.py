@@ -1,6 +1,12 @@
 from typing import List
 from dataclasses import dataclass,asdict,field
 
+@dataclass
+class TemporalLeNet5Config:
+    name : str = "TemporalLeNet5"
+    time_embed_dim : int = 50
+    hidden_dim : int = 84
+    ema_decay: float = 0.999
 
 @dataclass
 class TemporalDeepMLPConfig:

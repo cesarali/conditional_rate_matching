@@ -26,7 +26,7 @@ def experiment_nist(number_of_epochs=300,
 
     ctdd_config.pipeline.number_of_steps = 100
     ctdd_config.trainer = BasicTrainerConfig(number_of_epochs=number_of_epochs,
-                                             berlin=berlin,
+                                             windows=berlin,
                                              metrics=[MetricsAvaliable.mse_histograms,
                                                       MetricsAvaliable.mnist_plot,
                                                       MetricsAvaliable.fid_nist,
