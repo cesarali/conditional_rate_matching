@@ -96,8 +96,8 @@ def CRM_single_run(dynamics="crm",
                                           learning_rate=learning_rate,
                                           device=device,
                                           metrics=metrics,
-                                          save_model_metrics_stopping=True,
-                                          metric_to_save='fid_1',
+                                          save_model_metrics_stopping=False,
+                                        #   metric_to_save='fid_1',
                                           loss_regularize_square=False,
                                           loss_regularize=False)
     
@@ -160,9 +160,9 @@ if __name__ == "__main__":
     #                device="cuda:1")
 
     CRM_single_run(dynamics="crm",
-               experiment_type="mnist_LeNet5_fid_metric",
-               model="lenet5",
-               epochs=10,
+               experiment_type="mnist_unetconv",
+               model="unet_conv",
+               epochs=100,
                thermostat=None,
                coupling_method="uniform", #"OTPlanSampler",
                dataset0=None,
@@ -176,7 +176,7 @@ if __name__ == "__main__":
                hidden_dim=256,
                time_embed_dim=256,
                gamma=0.15,
-               device="cuda:1")
+               device="cuda:3")
     
 
         # CRM_single_run(dynamics="crm",
