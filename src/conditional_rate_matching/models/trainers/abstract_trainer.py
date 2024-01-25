@@ -172,7 +172,8 @@ class Trainer(ABC):
 
             # EVALUATES METRICS
             if self.config.trainer.save_model_metrics_stopping:
-                all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best",writer=self.writer)
+                if epoch > self.config.trainer.save_model_metrics_warming:
+                    all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best",writer=self.writer)
 
             training_state.set_average_test_loss()
             results_,all_metrics = self.global_test(training_state,all_metrics,epoch)

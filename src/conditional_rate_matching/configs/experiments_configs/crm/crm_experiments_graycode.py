@@ -24,6 +24,7 @@ def experiment_graycode(number_of_epochs=300,
                                                      MetricsAvaliable.grayscale_plot],
                                           save_model_metrics_stopping=True,
                                           metric_to_save="kdmm",
+                                          save_model_metrics_warming=int(.75*number_of_epochs),
                                           max_test_size=4000,  #size of test sample for measuring distance
                                           learning_rate=1e-4)
     return crm_config
@@ -31,7 +32,7 @@ def experiment_graycode(number_of_epochs=300,
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     config = experiment_graycode(50,AvailableGrayCodes.checkerboard)
-    config.trainer.debug = False
+    config.trainer.debug = True
 
     call_trainer(config,
                  experiment_name="prenzlauer_experiment",
