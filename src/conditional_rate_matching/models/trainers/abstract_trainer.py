@@ -192,9 +192,10 @@ class Trainer(ABC):
 
             #SAVE RESULTS IF IT INCREASES METRICS
             else:
-                if all_metrics[self.config.trainer.metric_to_save] < self.best_metric:
-                    results_ = self.save_results(training_state, epoch + 1, checkpoint=False)
-                    self.best_metric = all_metrics[self.config.trainer.metric_to_save]
+                if epoch > self.config.trainer.save_model_metrics_warming:
+                    if all_metrics[self.config.trainer.metric_to_save] < self.best_metric:
+                        results_ = self.save_results(training_state, epoch + 1, checkpoint=False)
+                        self.best_metric = all_metrics[self.config.trainer.metric_to_save]
             training_state.finish_epoch()
         #=====================================================
         # BEST MODEL IS READ AND METRICS ARE STORED

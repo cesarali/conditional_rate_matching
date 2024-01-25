@@ -31,10 +31,10 @@ def experiment_graycode(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_graycode(50,AvailableGrayCodes.checkerboard)
-    config.trainer.debug = True
+    config = experiment_graycode(100,AvailableGrayCodes.checkerboard)
+    config.trainer.debug = False
 
     call_trainer(config,
                  experiment_name="prenzlauer_experiment",
                  experiment_type="crm_gray",
-                 experiment_indentifier="dario_metric_stop3")
+                 experiment_indentifier="dario_metric_stop6")
