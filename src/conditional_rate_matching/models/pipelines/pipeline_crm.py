@@ -21,21 +21,30 @@ class CRMPipeline:
         else:
             dataloder_iterator = self.dataloder_0
         x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
-        #assert x_0.size(0) == sample_size
+
         return x_0
 
-    def __call__(self, sample_size, train=True, return_path=False, return_intermediaries=False, batch_size=128,x_0=None):
+    def __call__(self,
+                 sample_size=100,
+                 train=True,
+                 return_path=False,
+                 return_intermediaries=False,
+                 batch_size=128,
+                 x_0=None):
         """
         For Conditional Rate Matching We Move Forward in Time
 
         :param sample_size:
-        :param train:
-        :param return_path:
-        :param return_intermediaries:
-        :param batch_size: Maximum size of the batch to process in one go.
-        :return:
-        """
+        :param train:   If True sample initial points from  train dataloader
+        :param return_path:   Return full path batch_size,number_of_time_steps,
+        :param return_intermediaries:  Return path only at intermediate points
+        :param batch_size: Maximum size of the batch to create process
+        :param x_0:  If given, uses this point as start of generative procedure
 
+        :return: x_f, last sampled point
+                 x_path, full diffusion path
+                 t_path, time steps in temporal path
+        """
         if return_intermediaries:
             return_path = False
 

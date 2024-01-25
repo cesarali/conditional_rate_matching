@@ -22,13 +22,18 @@ def experiment_graycode(number_of_epochs=300,
                                           metrics=[MetricsAvaliable.kdmm,
                                                      MetricsAvaliable.marginal_binary_histograms,
                                                      MetricsAvaliable.grayscale_plot],
+                                          save_model_metrics_stopping=True,
+                                          metric_to_save="kdmm",
                                           max_test_size=4000,  #size of test sample for measuring distance
                                           learning_rate=1e-4)
     return crm_config
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_graycode(50,AvailableGrayCodes.checkerboard)
-    config.trainer.debug = False
+    config = experiment_graycode(5,AvailableGrayCodes.checkerboard)
+    config.trainer.debug = True
 
-    call_trainer(config)
+    call_trainer(config,
+                 experiment_name="prenzlauer_experiment",
+                 experiment_type="crm",
+                 experiment_indentifier=None)
