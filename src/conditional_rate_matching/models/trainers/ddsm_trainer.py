@@ -25,8 +25,8 @@ from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 #python presample_noise.py -n  -c 2 -t 4000 --max_time 4 --out_path binary_mnist/
 
 max_test_size = 1000 #4000
-DEBUG = True #False
-device = "cuda:1" #"cpu"  # alternative option is "cpu"
+DEBUG = False
+device = "cuda:3"  # alternative option is "cpu"
 
 #=================================
 # PRESAMPLED NOISE VARIABLE
@@ -34,6 +34,7 @@ device = "cuda:1" #"cpu"  # alternative option is "cpu"
 
 noise_dir = os.path.join(data_path,"raw")
 new_dl = True
+
 if DEBUG:
     num_time_steps = 40
     num_samples = 100
@@ -296,7 +297,7 @@ if __name__=="__main__":
 
         #torch.set_default_dtype(torch.float64)
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = "cuda:3" # "cuda:1"  # torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         alpha = torch.ones(num_cat - 1).to(device)
         beta = torch.arange(num_cat - 1, 0, -1).to(device)
@@ -450,12 +451,10 @@ if __name__=="__main__":
 
     # Defining optimizer
     optimizer = Adam(score_model.parameters(), lr=lr, weight_decay=1e-10)
-
-    if device == "cuda:1":
-        timepoints = timepoints.cuda()
+    timepoints = timepoints.to(device) #############################<-------------------HERE
 
     # tqdm_epoch = tqdm.notebook.trange(num_epochs)
-    tqdm_epoch = tqdm.tqdm(range(num_epochs))
+    tqdm_epoch = tqdm.tqdm(range(num_epochs))   
     for epoch in tqdm_epoch:
         avg_loss = 0.0
         num_items = 0
@@ -566,6 +565,6 @@ if __name__=="__main__":
     pixel_distribution = Bernoulli(pixel_probability)
     generative_sample = pixel_distribution.sample().unsqueeze(1)
     mse_metric_path = experiment_files.metrics_file.format("fid_nist" + "_{0}_".format("best"))
-    fid_nist_metrics = fid_nist(generative_sample,test_sample,dataset_name="mnist",device="cpu")
+    fid_nist_metrics = fid_nist(generative_sample,test_sample,dataset_name="mnist",device=device)
     with open(mse_metric_path, "w") as f:
         json.dump(fid_nist_metrics, f)

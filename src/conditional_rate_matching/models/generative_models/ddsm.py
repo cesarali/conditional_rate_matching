@@ -321,6 +321,14 @@ def diffusion_factory(
     by sampling from noise factory for k-1 Jacobi diffusion processes.
     """
     time_ind = time_ind[(...,) + (None,) * (x.ndim - 2)].expand(x.shape[:-1])
+    time_ind = time_ind.to(device) #############################<-------------------HERE
+    
+    noise_factory_zero = noise_factory_zero.to(device) #############################<-------------------HERE
+    noise_factory_zero_loggrad = noise_factory_zero_loggrad.to(device) #############################<-------------------HERE
+
+    noise_factory_one = noise_factory_one.to(device) #############################<-------------------HERE
+    noise_factory_one_loggrad = noise_factory_one_loggrad.to(device) #############################<-------------------HERE
+
     K = x.shape[-1]
     if alpha is None:
         alpha = torch.ones(K - 1)
@@ -330,7 +338,8 @@ def diffusion_factory(
     noise_factory_size = noise_factory_one.shape[0]
     sb = UnitStickBreakingTransform()
 
-    sample_inds = torch.randint(0, noise_factory_size, size=x.size()[:-1])
+    sample_inds = torch.randint(0, noise_factory_size, size=x.size()[:-1], device=device) #############################<-------------------HERE
+        
     v_samples = noise_factory_zero[sample_inds, time_ind, :].to(device).float()
     v_samples_grad = (
         noise_factory_zero_loggrad[sample_inds, time_ind, :].to(device).float()

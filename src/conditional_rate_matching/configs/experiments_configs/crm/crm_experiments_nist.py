@@ -42,20 +42,12 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-<<<<<<< HEAD
-    config = experiment_nist(10,"mnist",temporal_network_name="mlp")
-    config.trainer.debug = False
-    config.trainer.device = "cuda:1"
-    pprint(config)
-    config.pipeline.number_of_steps = 1000
-=======
     config = experiment_nist(10,"emnist",temporal_network_name="mlp")
     config.temporal_network = TemporalMLPConfig(time_embed_dim=350,
                                                 hidden_dim=350)
     config.trainer.debug = False
     config.trainer.device = "cpu"
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
->>>>>>> origin/main
 
     pprint(config)
     call_trainer(config,
