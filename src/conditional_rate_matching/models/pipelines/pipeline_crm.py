@@ -42,6 +42,9 @@ class CRMPipeline:
         # Get the initial sample
         if x_0 is None:
             x_0 = self.get_x0_sample(sample_size=sample_size, train=train).to(self.device)
+        else:
+            batch_size = x_0.size(0)
+            x_0 = x_0.view(batch_size,-1)
 
         # If batch_size is not set or sample_size is within the batch limit, process normally
         if batch_size is None or sample_size <= batch_size:
