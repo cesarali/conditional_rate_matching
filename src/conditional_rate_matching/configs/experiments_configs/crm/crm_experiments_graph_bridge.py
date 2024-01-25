@@ -118,6 +118,6 @@ if __name__=="__main__":
 
     results,metrics = call_trainer(config,
                                    experiment_name="prenzlauer_experiment",
-                                   experiment_type="crm",
-                                   experiment_indentifier=None)
+                                   experiment_type="crm_best",
+                                   experiment_indentifier="dario3")
     print(metrics)

@@ -10,9 +10,10 @@ ORCA_DIR_STANDARD = str(ORCA_DIR_STANDARD)
 class BasicTrainerConfig:
     number_of_epochs:int = 300
     log_loss:int = 100
-    warm_up_best_model_epoch = 1e6
+    warm_up_best_model_epoch:int = 0
     save_model_test_stopping:bool = True
     save_model_metrics_stopping:bool = False
+    save_model_metrics_warming:int = 10
     metric_to_save:str=None
 
     save_model_epochs:int = 1e6

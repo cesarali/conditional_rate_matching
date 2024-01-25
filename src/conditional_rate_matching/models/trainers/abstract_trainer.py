@@ -34,7 +34,8 @@ class TrainerState:
     number_of_training_steps:int = 0
 
     def set_average_test_loss(self):
-        self.average_test_loss = np.asarray(self.test_loss).mean()
+        if len(self.test_loss) > 0:
+            self.average_test_loss = np.asarray(self.test_loss).mean()
 
     def set_average_train_loss(self):
         self.average_train_loss = np.asarray(self.train_loss).mean()
@@ -171,7 +172,8 @@ class Trainer(ABC):
 
             # EVALUATES METRICS
             if self.config.trainer.save_model_metrics_stopping:
-                all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best",writer=self.writer)
+                if epoch > self.config.trainer.save_model_metrics_warming:
+                    all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best",writer=self.writer)
 
             training_state.set_average_test_loss()
             results_,all_metrics = self.global_test(training_state,all_metrics,epoch)
@@ -190,8 +192,10 @@ class Trainer(ABC):
 
             #SAVE RESULTS IF IT INCREASES METRICS
             else:
-                if all_metrics[self.config.trainer.metric_to_save] < self.best_metric:
-                    results_ = self.save_results(training_state, epoch + 1, checkpoint=False)
+                if epoch > self.config.trainer.save_model_metrics_warming:
+                    if all_metrics[self.config.trainer.metric_to_save] < self.best_metric:
+                        results_ = self.save_results(training_state, epoch + 1, checkpoint=False)
+                        self.best_metric = all_metrics[self.config.trainer.metric_to_save]
             training_state.finish_epoch()
         #=====================================================
         # BEST MODEL IS READ AND METRICS ARE STORED
