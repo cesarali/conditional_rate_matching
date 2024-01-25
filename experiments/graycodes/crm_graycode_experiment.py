@@ -63,12 +63,12 @@ def CRM_single_run(dynamics="crm",
                                                             activation = activation,
                                                             dropout = dropout)
         
-    if model=="deepEBM":
-        crm_config.temporal_network = TemporalDeepEBMConfig(hidden_dim = hidden_dim,
-                                                            time_embed_dim = time_embed_dim,
-                                                            num_layers = num_layers,
-                                                            activation = activation,
-                                                            dropout = dropout)
+    # if model=="deepEBM":
+    #     crm_config.temporal_network = TemporalDeepEBMConfig(hidden_dim = hidden_dim,
+    #                                                         time_embed_dim = time_embed_dim,
+    #                                                         num_layers = num_layers,
+    #                                                         activation = activation,
+    #                                                         dropout = dropout)
 
     if thermostat == "log":  crm_config.thermostat = LogThermostatConfig()
     else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
@@ -77,6 +77,8 @@ def CRM_single_run(dynamics="crm",
                                           learning_rate=learning_rate,
                                           device=device,
                                           metrics=metrics,
+                                          save_model_metrics_stopping=True,
+                                          metric_to_save='kdmm',
                                           loss_regularize_square=False,
                                           loss_regularize=False)
 

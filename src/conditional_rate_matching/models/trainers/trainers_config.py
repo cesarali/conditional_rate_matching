@@ -27,12 +27,8 @@ class BasicTrainerConfig:
     lr_decay:float =  0.999
 
     device:str = "cuda:0"
-<<<<<<< HEAD
-    berlin: bool = False
-=======
     windows: bool = True
     berlin: bool = True
->>>>>>> origin/main
     distributed: bool = False
     debug:bool = False
     orca_dir:str = ORCA_DIR_STANDARD
