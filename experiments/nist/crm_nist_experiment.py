@@ -65,7 +65,7 @@ class CRM_Scan_Optuna:
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.activation = activation
-        self.time_embed_dim = time_embed_dim
+        self.time_embed_dim = None if model=="unet" else time_embed_dim
         self.dropout = dropout
         self.gamma = gamma
         self.ema_decay = ema_decay
@@ -106,9 +106,8 @@ class CRM_Scan_Optuna:
         epochs = self.def_param(trial, 'epochs', self.epochs, type="int")
         batch_size = self.def_param(trial, 'bach_size', self.batch_size, type="int")
         learning_rate = self.def_param(trial, 'lr', self.learning_rate, type="float")
-        time_embed_dim = self.def_param(trial, 'dim_t_emb', self.time_embed_dim, type="int")
-
         hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int") if self.hidden_dim is not None else None
+        time_embed_dim = self.def_param(trial, 'dim_t_emb', self.time_embed_dim, type="int") if self.time_embed_dim is not None else hidden_dim
         num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int") if self.num_layers is not None else None
         activation = self.def_param(trial, 'activation', list(self.activation), type="cat") if self.activation is not None else None
         dropout = self.def_param(trial, 'dropout', self.dropout, type="float") if self.dropout is not None else None
@@ -179,42 +178,70 @@ if __name__ == "__main__":
 
 
 
+#     scan = CRM_Scan_Optuna(dynamics="crm",
+#                            experiment_type="fashion_to_mnist",
+#                            experiment_indentifier="optuna_scan_trial",
+#                            model="lenet5",
+#                            dataset0="fashion",
+#                            dataset1="mnist",
+#                            thermostat=None,
+#                            coupling_method="uniform",
+#                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
+#                            n_trials=30,
+#                            epochs=100,
+#                            batch_size=256,
+#                            hidden_dim=(32, 512),
+#                            time_embed_dim=(32, 512),
+#                            learning_rate=(1e-6, 1e-2), 
+#                            ema_decay=(0.999, 0.9999),
+#                            num_timesteps=1000,
+#                            gamma=(0.0001, 1.0),
+#                            device='cuda:2')
+
+
+
+#     df = scan.study.trials_dataframe()
+#     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+
+#     # Save Optimization History
+#     fig = plot_optimization_history(scan.study)
+#     fig.write_image(scan.workdir + "/optimization_history.png")
+
+#     # Save Slice Plot
+#     fig = plot_slice(scan.study)
+#     fig.write_image(scan.workdir + "/slice_plot.png")
+
+#    # Save Contour Plot
+#     fig = plot_contour(scan.study)
+#     fig.write_image(scan.workdir + "/contour_plot.png")
+
+#     # Save Parallel Coordinate Plot
+#     fig = plot_parallel_coordinate(scan.study)
+#     fig.write_image(scan.workdir + "/parallel_coordinate.png")
+
+#     # Save Parameter Importances
+#     fig = plot_param_importances(scan.study)
+#     fig.write_image(scan.workdir + "/param_importances.png")
+
     scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="emnist_to_mnist",
+                           experiment_type="mnist",
                            experiment_indentifier="optuna_scan_trial",
-                           model="lenet5",
-                           dataset0="emnist",
+                           model="unet",
+                           dataset0=None,
                            dataset1="mnist",
                            thermostat=None,
+                           coupling_method="uniform",
                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-                           n_trials=30,
-                           epochs=100,
+                           n_trials=20,
+                           epochs=50,
                            batch_size=256,
-                           hidden_dim=(32, 512),
-                           time_embed_dim=(32, 512),
+                           hidden_dim=64,
+                           time_embed_dim=64,
                            learning_rate=(1e-6, 1e-2), 
                            ema_decay=(0.999, 0.9999),
                            num_timesteps=1000,
                            gamma=(0.0001, 1.0),
-                           device='cuda:0')
-
-
-    # scan = CRM_Scan_Optuna(dynamics="crm",
-    #                        experiment_type="emnist_to_mnist",
-    #                        experiment_indentifier="optuna_scan_trial",
-    #                        dataset0="emnist",
-    #                        dataset1="mnist",
-    #                        thermostat=None,
-    #                        model="UConvNISTNet",
-    #                        metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-    #                        n_trials=30,
-    #                        epochs=100,
-    #                        batch_size=256,
-    #                        learning_rate=(1e-6, 1e-2), 
-    #                        ema_decay=0.999,
-    #                        num_timesteps=1000,
-    #                        gamma=(0.0001, 1.0),
-    #                        device='cuda:1')
+                           device='cuda:2')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
@@ -238,3 +265,65 @@ if __name__ == "__main__":
     # Save Parameter Importances
     fig = plot_param_importances(scan.study)
     fig.write_image(scan.workdir + "/param_importances.png")
+
+
+
+    scan = CRM_Scan_Optuna(dynamics="crm",
+                           experiment_type="emnist_to_mnist_OT",
+                           experiment_indentifier="optuna_scan_trial",
+                           model="unet",
+                           dataset0="emnist",
+                           dataset1="mnist",
+                           thermostat=None,
+                           coupling_method="OTPlanSampler",
+                           metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
+                           n_trials=20,
+                           epochs=50,
+                           batch_size=256,
+                           hidden_dim=64,
+                           time_embed_dim=64,
+                           learning_rate=(1e-6, 1e-2), 
+                           ema_decay=(0.999, 0.9999),
+                           num_timesteps=1000,
+                           gamma=(0.0001, 1.0),
+                           device='cuda:1')
+
+    df = scan.study.trials_dataframe()
+    df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+
+    # Save Optimization History
+    fig = plot_optimization_history(scan.study)
+    fig.write_image(scan.workdir + "/optimization_history.png")
+
+    # Save Slice Plot
+    fig = plot_slice(scan.study)
+    fig.write_image(scan.workdir + "/slice_plot.png")
+
+   # Save Contour Plot
+    fig = plot_contour(scan.study)
+    fig.write_image(scan.workdir + "/contour_plot.png")
+
+    # Save Parallel Coordinate Plot
+    fig = plot_parallel_coordinate(scan.study)
+    fig.write_image(scan.workdir + "/parallel_coordinate.png")
+
+    # Save Parameter Importances
+    fig = plot_param_importances(scan.study)
+    fig.write_image(scan.workdir + "/param_importances.png")
+
+        # scan = CRM_Scan_Optuna(dynamics="crm",
+    #                        experiment_type="emnist_to_mnist",
+    #                        experiment_indentifier="optuna_scan_trial",
+    #                        dataset0="emnist",
+    #                        dataset1="mnist",
+    #                        thermostat=None,
+    #                        model="UConvNISTNet",
+    #                        metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
+    #                        n_trials=30,
+    #                        epochs=100,
+    #                        batch_size=256,
+    #                        learning_rate=(1e-6, 1e-2), 
+    #                        ema_decay=0.999,
+    #                        num_timesteps=1000,
+    #                        gamma=(0.0001, 1.0),
+    #                        device='cuda:1')

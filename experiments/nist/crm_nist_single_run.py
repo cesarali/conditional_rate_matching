@@ -80,7 +80,7 @@ def CRM_single_run(dynamics="crm",
             crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
         crm_config.temporal_network = TemporalUNetConfig(hidden_dim = hidden_dim,
-                                                         time_embed_dim = time_embed_dim,
+                                                         time_embed_dim = hidden_dim,
                                                          ema_decay=ema_decay)
 
     if model=="unet_conv":
@@ -158,22 +158,22 @@ if __name__ == "__main__":
     #                device="cuda:1")
 
     # CRM_single_run(dynamics="crm",
-    #            experiment_type="mnist_LeNet5_tiny_gamma",
+    #            experiment_type="fashion_to_mmnist_LeNet5",
     #            model="lenet5",
-    #            epochs=100,
+    #            epochs=10,
     #            thermostat=None,
-    #            coupling_method="uniform",#'OTPlanSampler',
-    #            dataset0=None,
+    #            coupling_method="uniform",#"OTPlanSampler",
+    #            dataset0="fashion",
     #            dataset1="mnist",
     #            metrics = ["mse_histograms", 
     #                       'fid_nist', 
     #                       "mnist_plot", 
     #                       "marginal_binary_histograms"],
     #            batch_size=256,
-    #            learning_rate= 0.000745,
-    #            hidden_dim=40,
-    #            time_embed_dim=168,
-    #            gamma=0.001,
+    #            learning_rate= 0.0001,
+    #            hidden_dim=256,
+    #            time_embed_dim=256,
+    #            gamma=0.15,
     #            device="cuda:1")
     
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='OTPlanSampler',
+               coupling_method='uniform',
                dataset0=None,
                dataset1="mnist",
                metrics = ["mse_histograms", 

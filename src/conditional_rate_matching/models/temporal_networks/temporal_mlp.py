@@ -204,16 +204,16 @@ class TemporalUNet(nn.Module):
 
     def Decoder(self):
         self.up0 = nn.Sequential(
-            nn.ConvTranspose2d(2 * self.hidden_dim, 2 * self.hidden_dim, 7, 7), # otherwise just have 2*n_feat
+            nn.ConvTranspose2d(2 * self.hidden_dim, 2 * self.hidden_dim, 7, 7), 
             nn.GroupNorm(8, 2 * self.hidden_dim),
-            nn.ReLU())
+            nn.GELU())
 
         self.up1 = UnetUp(4 * self.hidden_dim, self.hidden_dim)
         self.up2 = UnetUp(2 * self.hidden_dim, self.hidden_dim)
         self.out = nn.Sequential(
             nn.Conv2d(2 * self.hidden_dim, self.hidden_dim, 3, 1, 1),
             nn.GroupNorm(8, self.hidden_dim),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Conv2d(self.hidden_dim, self.vocab_size, 3, 1, 1),
         )
 
@@ -336,7 +336,6 @@ class TemporalMLP(nn.Module):
 
         self.dimensions = config_data.dimensions
         self.vocab_size = config_data.vocab_size
-
         self.define_deep_models(config)
         self.init_weights()
         self.to(device)
