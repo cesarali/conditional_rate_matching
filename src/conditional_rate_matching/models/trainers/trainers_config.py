@@ -12,6 +12,9 @@ class BasicTrainerConfig:
     log_loss:int = 100
     warm_up_best_model_epoch = 1e6
     save_model_test_stopping:bool = True
+    save_model_metrics_stopping:bool = False
+    metric_to_save:str=None
+
     save_model_epochs:int = 1e6
     save_metric_epochs:int = 1e6
     max_test_size:int = 2000
@@ -37,3 +40,4 @@ class BasicTrainerConfig:
         self.berlin = self.windows
         self.save_model_epochs = int(.5*self.number_of_epochs)
         self.save_metric_epochs = self.number_of_epochs - 1
+        self.save_model_test_stopping = not self.save_model_metrics_stopping

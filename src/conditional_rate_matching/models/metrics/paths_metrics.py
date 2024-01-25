@@ -1,8 +1,12 @@
 import torch
+import numpy as np
 from torch.nn import functional as F
 from conditional_rate_matching.models.metrics.fid_metrics import load_classifier
 
 def map_proportion_nist(crm,device,max_number_of_batches=1):
+    """
+    we
+    """
     number_of_source_labels = crm.config.data0.number_of_labels
     number_of_target_labels = crm.config.data1.number_of_labels
     classifier = load_classifier(crm.config.data1.dataset_name ,device)  # CLASSIFIES TARGET AT TIME 1
@@ -30,7 +34,6 @@ def map_proportion_nist(crm,device,max_number_of_batches=1):
                 label_to_label_histograms[label_to_see] += F.one_hot(y,number_of_target_labels).sum(axis=0) # how many of the target images are encountered from that source
 
         number_of_batches +=1
-
         if number_of_batches >= max_number_of_batches:
             break
 
@@ -39,3 +42,29 @@ def map_proportion_nist(crm,device,max_number_of_batches=1):
         print(label_to_label_histograms[source_label])
 
     return label_to_label_histograms
+
+def av_number_of_flips_in_path(crm,max_number_of_batches=1,train=False):
+    """
+
+    """
+    if train:
+        dataloader_iterator = crm.dataloader_0.train()
+    else:
+        dataloader_iterator = crm.dataloader_0.test()
+    av_flips_per_time = []
+
+    number_of_batches = 0
+    for databatch_0 in dataloader_iterator:
+        images_ = databatch_0[0]
+        labels_ = databatch_0[1]
+
+        # evolves from the whole batch then performs statistics
+        x_f, x_path, t_path = crm.pipeline(100, train=True, return_path=True,x_0=images_)
+        print(x_path.shape)
+        flips_per_time = torch.abs(x_path[:, 1:] - x_path[0, :-1, :]).mean()
+        av_flips_per_time.append(flips_per_time)
+
+        number_of_batches += 1
+        if number_of_batches >= max_number_of_batches:
+            break
+    return np.asarray(av_flips_per_time).mean()

@@ -93,6 +93,7 @@ class Trainer(ABC):
         self.parameters_info()
         self.writer = SummaryWriter(self.generative_model.experiment_files.tensorboard_path)
         self.tqdm_object = tqdm(range(self.config.trainer.number_of_epochs))
+        self.best_metric = np.inf
 
 
     @abstractmethod
@@ -156,29 +157,41 @@ class Trainer(ABC):
                     break
             training_state.set_average_train_loss()
             results_,all_metrics = self.global_training(training_state,all_metrics,epoch)
-            #VALIDATION
-            for step, databatch in enumerate(self.dataloader.test()):
-                databatch = self.preprocess_data(databatch)
-                # DATA
-                loss = self.test_step(databatch,training_state.number_of_test_step,epoch)
-                loss_ = loss.item() if isinstance(loss, torch.Tensor) else loss
-                training_state.update_test_batch(loss_)
-                if self.config.trainer.debug:
-                    break
+
+            #EVALUATES VALIDATION LOSS
+            if not self.config.trainer.save_model_metrics_stopping:
+                for step, databatch in enumerate(self.dataloader.test()):
+                    databatch = self.preprocess_data(databatch)
+                    # DATA
+                    loss = self.test_step(databatch,training_state.number_of_test_step,epoch)
+                    loss_ = loss.item() if isinstance(loss, torch.Tensor) else loss
+                    training_state.update_test_batch(loss_)
+                    if self.config.trainer.debug:
+                        break
+
+            # EVALUATES METRICS
+            if self.config.trainer.save_model_metrics_stopping:
+                all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best",writer=self.writer)
+
             training_state.set_average_test_loss()
             results_,all_metrics = self.global_test(training_state,all_metrics,epoch)
+
             # STORING MODEL CHECKPOINTS
             if (epoch + 1) % self.config.trainer.save_model_epochs == 0:
                 results_ = self.save_results(training_state,epoch+1,checkpoint=True)
-            # SAVE RESULTS IF LOSS DECREASES IN VALIDATION
-            if self.config.trainer.save_model_test_stopping:
-                current_average = training_state.average_test_loss
+
+            # SAVE RESULTS IF LOSS DECREASES IN VALIDATION NOT BY IMPROVED METRICS
+            if not self.config.trainer.save_model_metrics_stopping:
+                current_average = training_state.average_test_loss if self.config.trainer.save_model_test_stopping else training_state.average_train_loss
+                if current_average < training_state.best_loss:
+                    if self.config.trainer.warm_up_best_model_epoch < epoch or epoch == self.number_of_epochs - 1:
+                        results_ = self.save_results(training_state,epoch + 1,checkpoint=False)
+                    training_state.best_loss = training_state.average_test_loss
+
+            #SAVE RESULTS IF IT INCREASES METRICS
             else:
-                current_average = training_state.average_train_loss
-            if current_average < training_state.best_loss:
-                if self.config.trainer.warm_up_best_model_epoch < epoch or epoch == self.number_of_epochs - 1:
-                    results_ = self.save_results(training_state,epoch + 1,checkpoint=False)
-                training_state.best_loss = training_state.average_test_loss
+                if all_metrics[self.config.trainer.metric_to_save] < self.best_metric:
+                    results_ = self.save_results(training_state, epoch + 1, checkpoint=False)
             training_state.finish_epoch()
         #=====================================================
         # BEST MODEL IS READ AND METRICS ARE STORED
