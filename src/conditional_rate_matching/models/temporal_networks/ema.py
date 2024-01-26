@@ -31,6 +31,7 @@ class EMA():
         with torch.no_grad():
             parameters = [p for p in self.parameters() if p.requires_grad]
             for s_param, param in zip(self.shadow_params, parameters):
+                s_param = s_param.to(param.device)                       ############################ <-- HERE
                 s_param.sub_(one_minus_decay * (s_param - param))
 
     def state_dict(self):

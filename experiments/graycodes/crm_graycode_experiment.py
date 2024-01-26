@@ -63,13 +63,6 @@ def CRM_single_run(dynamics="crm",
                                                             activation = activation,
                                                             dropout = dropout)
         
-    # if model=="deepEBM":
-    #     crm_config.temporal_network = TemporalDeepEBMConfig(hidden_dim = hidden_dim,
-    #                                                         time_embed_dim = time_embed_dim,
-    #                                                         num_layers = num_layers,
-    #                                                         activation = activation,
-    #                                                         dropout = dropout)
-
     if thermostat == "log":  crm_config.thermostat = LogThermostatConfig()
     else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
 
@@ -79,7 +72,7 @@ def CRM_single_run(dynamics="crm",
                                           metrics=metrics,
                                           save_model_metrics_stopping=True,
                                           metric_to_save='kdmm',
-                                          save_model_metrics_warming = 350,
+                                          save_model_metrics_warming = 450,
                                           loss_regularize_square=False,
                                           loss_regularize=False)
 
@@ -224,76 +217,75 @@ if __name__ == "__main__":
 
     '''
 
-    # scan = CRM_Scan_Optuna(dynamics="crm",
-    #                        experiment_type="graycode_uniform",
-    #                        experiment_indentifier="optuna_scan_trial",
-    #                        dataset0=None, 
-    #                        dataset1=AvailableGrayCodes.swissroll,
-    #                        metrics=[MetricsAvaliable.mse_histograms,
-    #                                 MetricsAvaliable.marginal_binary_histograms,
-    #                                 MetricsAvaliable.kdmm,
-    #                                 MetricsAvaliable.grayscale_plot],
-    #                        thermostat=None,
-    #                        coupling_method='uniform',
-    #                        model="mlp",
-    #                        n_trials=100,
-    #                        epochs=100,
-    #                        batch_size=128,
-    #                        learning_rate=(1e-6, 1e-2), 
-    #                        hidden_dim=(32, 512), 
-    #                        time_embed_dim=(32, 512), 
-    #                        num_layers=(2,8),
-    #                        activation=('ReLU', 'Sigmoid', 'GELU'),
-    #                        dropout=(0.01, 0.5),
-    #                        gamma=(0.001, 1),
-    #                        num_timesteps=1000,
-    #                        device='cuda:2')
+    scan = CRM_Scan_Optuna(dynamics="crm",
+                           experiment_type="checkerboard",
+                           experiment_indentifier="optuna_scan_trial",
+                           dataset0=None, 
+                           dataset1=AvailableGrayCodes.checkerboard,
+                           metrics=[MetricsAvaliable.mse_histograms,
+                                    MetricsAvaliable.marginal_binary_histograms,
+                                    MetricsAvaliable.kdmm,
+                                    MetricsAvaliable.grayscale_plot],
+                           thermostat=None,
+                           coupling_method='uniform',
+                           model="mlp",
+                           n_trials=100,
+                           epochs=500,
+                           batch_size=128,
+                           learning_rate=(1e-6, 1e-2), 
+                           hidden_dim=(32, 512), 
+                           time_embed_dim=(32, 512), 
+                           num_layers=(2,8),
+                           activation=('ReLU', 'Sigmoid', 'GELU'),
+                           dropout=(0.01, 0.5),
+                           gamma=(0.001, 1),
+                           num_timesteps=1000,
+                           device='cuda:1')
     
-    # df = scan.study.trials_dataframe()
-    # df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+    df = scan.study.trials_dataframe()
+    df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
 
-    # # Save Optimization History
-    # fig = plot_optimization_history(scan.study)
-    # fig.write_image(scan.workdir + "/optimization_history.png")
+    # Save Optimization History
+    fig = plot_optimization_history(scan.study)
+    fig.write_image(scan.workdir + "/optimization_history.png")
 
-    # # Save Slice Plot
-    # fig = plot_slice(scan.study)
-    # fig.write_image(scan.workdir + "/slice_plot.png")
+    # Save Slice Plot
+    fig = plot_slice(scan.study)
+    fig.write_image(scan.workdir + "/slice_plot.png")
 
-    # # Save Contour Plot
-    # fig = plot_contour(scan.study)
-    # fig.write_image(scan.workdir + "/contour_plot.png")
+    # Save Contour Plot
+    fig = plot_contour(scan.study)
+    fig.write_image(scan.workdir + "/contour_plot.png")
 
-    # # Save Parallel Coordinate Plot
-    # fig = plot_parallel_coordinate(scan.study)
-    # fig.write_image(scan.workdir + "/parallel_coordinate.png")
+    # Save Parallel Coordinate Plot
+    fig = plot_parallel_coordinate(scan.study)
+    fig.write_image(scan.workdir + "/parallel_coordinate.png")
 
-    # # Save Parameter Importances
-    # fig = plot_param_importances(scan.study)
-    # fig.write_image(scan.workdir + "/param_importances.png")
+    # Save Parameter Importances
+    fig = plot_param_importances(scan.study)
+    fig.write_image(scan.workdir + "/param_importances.png")
 
 
 
-    CRM_single_run( dynamics="crm",
-                    experiment_type="graycode_swissroll",
-                    dataset0=None,
-                    dataset1=AvailableGrayCodes.swissroll,
-                    metrics=[MetricsAvaliable.mse_histograms,
-                             MetricsAvaliable.marginal_binary_histograms,
-                             MetricsAvaliable.kdmm,
-                             MetricsAvaliable.grayscale_plot],
-                   thermostat=None,
-                   coupling_method='uniform',
-                   model="mlp",
-                   epochs=500,
-                   batch_size=128,
-                   learning_rate=1e-4, 
-                   hidden_dim=174, 
-                   num_layers=6,
-                   activation="GELU",
-                   time_embed_dim=71,
-                   dropout=0.07074,
-                   device="cuda:1",
-                   ema_decay=0.999,
-                   gamma=0.320199,
-                   num_timesteps=1000)
+    # CRM_single_run( dynamics="crm",
+    #                 experiment_type="graycode_swissroll",
+    #                 dataset0=None,
+    #                 dataset1=AvailableGrayCodes.swissroll,
+    #                 metrics=[MetricsAvaliable.mse_histograms,
+    #                          MetricsAvaliable.marginal_binary_histograms,
+    #                          MetricsAvaliable.kdmm,
+    #                          MetricsAvaliable.grayscale_plot],
+    #                thermostat=None,
+    #                coupling_method='uniform',
+    #                model="mlp",
+    #                epochs=100,
+    #                batch_size=128,
+    #                learning_rate=1e-4, 
+    #                hidden_dim=174, 
+    #                num_layers=6,
+    #                activation="GELU",
+    #                time_embed_dim=71,
+    #                dropout=0.07074,
+    #                device="cuda:1",
+    #                gamma=0.320199,
+    #                num_timesteps=1000)

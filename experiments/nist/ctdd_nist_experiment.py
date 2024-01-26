@@ -24,6 +24,7 @@ class CTDD_Scan_Optuna:
                  activation=None,
                  time_embed_dim=(8, 64), 
                  dropout=None,
+                 ema_decay=(0.999, 0.9999),
                  num_timesteps=100,
                  metrics=[MetricsAvaliable.mse_histograms,
                           MetricsAvaliable.fid_nist,
@@ -47,6 +48,7 @@ class CTDD_Scan_Optuna:
         self.activation = activation
         self.time_embed_dim = time_embed_dim
         self.dropout = dropout
+        self.ema_decay = ema_decay
         self.num_timesteps = num_timesteps
         self.metrics = metrics
 
@@ -86,6 +88,7 @@ class CTDD_Scan_Optuna:
         batch_size = self.def_param(trial, 'bach_size', self.batch_size, type="int")
         learning_rate = self.def_param(trial, 'lr', self.learning_rate, type="float")
         time_embed_dim = self.def_param(trial, 'dim_t_emb', self.time_embed_dim, type="int")
+        ema_decay = self.def_param(trial, 'ema_decay', self.ema_decay, type="float") if self.ema_decay is not None else None
 
         hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int") if self.hidden_dim is not None else None
         num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int") if self.num_layers is not None else None
@@ -109,6 +112,7 @@ class CTDD_Scan_Optuna:
                                   activation=activation,
                                   time_embed_dim=time_embed_dim,
                                   dropout=dropout,
+                                  ema_decay=ema_decay,
                                   num_timesteps=self.num_timesteps)
         
         print('all metric: ', metrics)
@@ -128,44 +132,123 @@ class CTDD_Scan_Optuna:
 
 if __name__ == "__main__":
 
+    ############################
+    #  MLP
+    ############################
+
+#     scan = CTDD_Scan_Optuna(dynamics="ctdd",
+#                            experiment_type="mnist",
+#                            experiment_indentifier="optuna_scan_trial",
+#                            dataset0="mnist",
+#                            model="mlp",
+#                            metrics=["fid_nist", 
+#                                     "mse_histograms",  
+#                                     "mnist_plot", 
+#                                     "marginal_binary_histograms"],
+#                            n_trials=250,
+#                            epochs=100,
+#                            batch_size=256,
+#                            learning_rate=(1e-6, 1e-2), 
+#                            num_timesteps=1000,
+#                            hidden_dim=(32, 512),
+#                            time_embed_dim=(32, 512), 
+#                            num_layers=(2, 8),
+#                            dropout=(0.01, 0.5),
+#                            activation=["ReLU", "GELU"],
+#                            ema_decay=(0.999, 0.9999),
+#                            device='cuda:2')
+
+#     df = scan.study.trials_dataframe()
+#     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+
+#     # Save Optimization History
+#     fig = plot_optimization_history(scan.study)
+#     fig.write_image(scan.workdir + "/optimization_history.png")
+
+#     # Save Slice Plot
+#     fig = plot_slice(scan.study)
+#     fig.write_image(scan.workdir + "/slice_plot.png")
+
+#    # Save Contour Plot
+#     fig = plot_contour(scan.study)
+#     fig.write_image(scan.workdir + "/contour_plot.png")
+
+#     # Save Parallel Coordinate Plot
+#     fig = plot_parallel_coordinate(scan.study)
+#     fig.write_image(scan.workdir + "/parallel_coordinate.png")
+
+#     # Save Parameter Importances
+#     fig = plot_param_importances(scan.study)
+#     fig.write_image(scan.workdir + "/param_importances.png")
+
+    ############################
+    #  LENET5
+    ############################
+
+#     scan = CTDD_Scan_Optuna(dynamics="ctdd",
+#                            experiment_type="mnist",
+#                            experiment_indentifier="optuna_scan_trial",
+#                            dataset0="mnist",
+#                            model="lenet5",
+#                            metrics=["fid_nist", 
+#                                     "mse_histograms",  
+#                                     "mnist_plot", 
+#                                     "marginal_binary_histograms"],
+#                            n_trials=250,
+#                            epochs=100,
+#                            batch_size=256,
+#                            learning_rate=(1e-6, 1e-2), 
+#                            num_timesteps=1000,
+#                            hidden_dim=(32, 512),
+#                            time_embed_dim=(32, 512), 
+#                            ema_decay=(0.999, 0.9999),
+#                            device='cuda:2')
+
+#     df = scan.study.trials_dataframe()
+#     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+
+#     # Save Optimization History
+#     fig = plot_optimization_history(scan.study)
+#     fig.write_image(scan.workdir + "/optimization_history.png")
+
+#     # Save Slice Plot
+#     fig = plot_slice(scan.study)
+#     fig.write_image(scan.workdir + "/slice_plot.png")
+
+#    # Save Contour Plot
+#     fig = plot_contour(scan.study)
+#     fig.write_image(scan.workdir + "/contour_plot.png")
+
+#     # Save Parallel Coordinate Plot
+#     fig = plot_parallel_coordinate(scan.study)
+#     fig.write_image(scan.workdir + "/parallel_coordinate.png")
+
+#     # Save Parameter Importances
+#     fig = plot_param_importances(scan.study)
+#     fig.write_image(scan.workdir + "/param_importances.png")
+    
+   ############################
+    #  UNET
+    ############################
+
     scan = CTDD_Scan_Optuna(dynamics="ctdd",
                            experiment_type="mnist",
                            experiment_indentifier="optuna_scan_trial",
                            dataset0="mnist",
-                           model="mlp",
+                           model="unet",
                            metrics=["fid_nist", 
                                     "mse_histograms",  
                                     "mnist_plot", 
                                     "marginal_binary_histograms"],
-                           n_trials=250,
+                           n_trials=20,
                            epochs=100,
                            batch_size=256,
                            learning_rate=(1e-6, 1e-2), 
                            num_timesteps=1000,
-                           hidden_dim=(32, 256),
-                           time_embed_dim=(32, 256), 
-                           num_layers=(2, 8),
-                           dropout=(0.01, 0.5),
-                           activation=["ReLU", "GELU"],
+                           hidden_dim=128,
+                           time_embed_dim=128,
+                           ema_decay=(0.999, 0.9999),
                            device='cuda:2')
-
-    # scan = CTDD_Scan_Optuna(dynamics="ctdd",
-    #                        experiment_type="mnist",
-    #                        experiment_indentifier="optuna_scan_trial",
-    #                        dataset0="mnist",
-    #                        model="lenet5",
-    #                        metrics=["fid_nist", 
-    #                                 "mse_histograms",  
-    #                                 "mnist_plot", 
-    #                                 "marginal_binary_histograms"],
-    #                        n_trials=250,
-    #                        epochs=50,
-    #                        batch_size=256,
-    #                        learning_rate=(1e-6, 1e-2), 
-    #                        num_timesteps=1000,
-    #                        hidden_dim=(32, 256),
-    #                        time_embed_dim=(32, 256), 
-    #                        device='cuda:1')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)

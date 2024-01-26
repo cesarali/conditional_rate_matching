@@ -88,7 +88,7 @@ class TemporalLeNet5(nn.Module):
 
     def forward(self, x, times):
         time_embeddings = transformer_timestep_embedding(times, embedding_dim=self.time_embed_dim)
-
+        
         x = F.max_pool2d(F.relu(self.bn2d1(self.conv1(x))), (2, 2))
         x = F.max_pool2d(F.relu(self.bn2d2(self.conv2(x))), (2, 2))
         x = x.view(-1, np.prod(x.size()[1:]))

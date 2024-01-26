@@ -11,11 +11,8 @@ matplotlib
 pyyaml
 torchtyping
 torch_geometric
-<<<<<<< HEAD
-
-=======
 pot
 diffusers[torch]
 transformers
 pytest
->>>>>>> origin/main
+optuna

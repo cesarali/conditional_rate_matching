@@ -22,7 +22,7 @@ def CTDD_single_run(dynamics="ctdd",
                     dropout=0.1,
                     num_layers=3,
                     activation="ReLU",
-                    gamma=1.0,
+                    ema_decay=.999,
                     num_timesteps=1000,
                    ):
 
@@ -40,19 +40,20 @@ def CTDD_single_run(dynamics="ctdd",
                                                             time_embed_dim = time_embed_dim,
                                                             num_layers = num_layers,
                                                             activation = activation,
-                                                            dropout = dropout)
+                                                            dropout = dropout,
+                                                            ema_decay=ema_decay)
     
     if model=="lenet5":
         ctdd_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        ctdd_config.temporal_network = TemporalLeNet5Config(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim)
+        ctdd_config.temporal_network = TemporalLeNet5Config(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim, ema_decay=ema_decay)
 
     if model=="lenet5Autoencoder":
         ctdd_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        ctdd_config.temporal_network = TemporalLeNet5AutoencoderConfig(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim)
+        ctdd_config.temporal_network = TemporalLeNet5AutoencoderConfig(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim, ema_decay=ema_decay)
 
     if model=="unet":
         ctdd_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        ctdd_config.temporal_network = TemporalUNetConfig(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim)
+        ctdd_config.temporal_network = TemporalUNetConfig(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim, ema_decay=ema_decay)
 
     ctdd_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
                                              device=device,
@@ -74,12 +75,12 @@ if __name__ == "__main__":
     # CTDD_single_run(dynamics="ctdd",
     #                experiment_type="mnist",
     #                model="mlp",
-    #                epochs=15,
     #                dataset0="mnist",
     #                metrics=["mse_histograms", 
     #                         "fid_nist", 
     #                         "mnist_plot", 
     #                         "marginal_binary_histograms"],
+    #                epochs=15,
     #                batch_size=256,
     #                learning_rate=0.001,
     #                hidden_dim=128,
@@ -90,18 +91,20 @@ if __name__ == "__main__":
     #                num_timesteps=1000,
     #                device="cuda:1")
 
+    
     CTDD_single_run(dynamics="ctdd",
-                   experiment_type="mnist_unet",
-                   model="mlp",
-                   epochs=10,
-                   dataset0="mnist",
-                   metrics=["mse_histograms", 
-                            "fid_nist", 
-                            "mnist_plot", 
-                            "marginal_binary_histograms"],
-                   batch_size=256,
-                   learning_rate=0.0001,
-                   hidden_dim=256,
-                   time_embed_dim=128,
-                   num_timesteps=1000,
-                   device="cuda:2")
+                    experiment_type="mnist",
+                    model="lenet5",
+                    dataset0="mnist",
+                    metrics = ['fid_nist', 
+                               'mse_histograms', 
+                               "mnist_plot", 
+                               "marginal_binary_histograms"],
+                    epochs=5,
+                    batch_size=256,
+                    hidden_dim=256,
+                    time_embed_dim=256,
+                    learning_rate=1e-4, 
+                    num_timesteps=1000,
+                    ema_decay=0.9995,
+                    device='cuda:2')

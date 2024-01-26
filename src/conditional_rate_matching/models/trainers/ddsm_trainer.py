@@ -26,7 +26,7 @@ from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 
 max_test_size = 1000 #4000
 DEBUG = False
-device = "cuda:3"  # alternative option is "cpu"
+device = "cuda:1"  # alternative option is "cpu"
 
 #=================================
 # PRESAMPLED NOISE VARIABLE
@@ -297,7 +297,7 @@ if __name__=="__main__":
 
         #torch.set_default_dtype(torch.float64)
 
-        device = "cuda:3" # "cuda:1"  # torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = "cuda:1" # "cuda:1"  # torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         alpha = torch.ones(num_cat - 1).to(device)
         beta = torch.arange(num_cat - 1, 0, -1).to(device)

@@ -96,8 +96,6 @@ def CRM_single_run(dynamics="crm",
                                           learning_rate=learning_rate,
                                           device=device,
                                           metrics=metrics,
-                                          save_model_metrics_stopping=False,
-                                        #   metric_to_save='fid_1',
                                           loss_regularize_square=False,
                                           loss_regularize=False)
     
@@ -116,11 +114,11 @@ def CRM_single_run(dynamics="crm",
 if __name__ == "__main__":
 
     # CRM_single_run(dynamics="crm",
-    #                experiment_type="mnist_mlp_tinygamma_uniform",
+    #                experiment_type="noise_to_mnist",
     #                model="mlp",
-    #                epochs=50,
+    #                epochs=2,
     #                thermostat=None,
-    #                coupling_method="uniform",#'OTPlanSampler',
+    #                coupling_method="uniform", #'OTPlanSampler',
     #                dataset0=None,
     #                dataset1="mnist",
     #                metrics = ["mse_histograms", 
@@ -135,7 +133,7 @@ if __name__ == "__main__":
     #                num_layers=6,
     #                dropout=0.15,
     #                gamma=0.01,
-    #                device="cuda:1")
+    #                device="cuda:0")
 
     # CRM_single_run(dynamics="crm",
     #                experiment_type="emnist_2_mnist_mlp",
@@ -159,24 +157,24 @@ if __name__ == "__main__":
     #                gamma=0.15,
     #                device="cuda:1")
 
-    CRM_single_run(dynamics="crm",
-               experiment_type="mnist_unetconv",
-               model="unet_conv",
-               epochs=100,
-               thermostat=None,
-               coupling_method="uniform", #"OTPlanSampler",
-               dataset0=None,
-               dataset1="mnist",
-               metrics = ["mse_histograms", 
-                          'fid_nist', 
-                          "mnist_plot", 
-                          "marginal_binary_histograms"],
-               batch_size=256,
-               learning_rate= 0.0001,
-               hidden_dim=256,
-               time_embed_dim=256,
-               gamma=0.15,
-               device="cuda:3")
+    # CRM_single_run(dynamics="crm",
+    #            experiment_type="mnist_unetconv",
+    #            model="unet_conv",
+    #            epochs=10,
+    #            thermostat=None,
+    #            coupling_method="uniform", #"OTPlanSampler",
+    #            dataset0=None,
+    #            dataset1="mnist",
+    #            metrics = ["mse_histograms", 
+    #                       'fid_nist', 
+    #                       "mnist_plot", 
+    #                       "marginal_binary_histograms"],
+    #            batch_size=256,
+    #            learning_rate= 0.0001,
+    #            hidden_dim=256,
+    #            time_embed_dim=256,
+    #            gamma=0.15,
+    #            device="cuda:3")
     
 
         # CRM_single_run(dynamics="crm",
@@ -197,3 +195,24 @@ if __name__ == "__main__":
         #        time_embed_dim=64,
         #        gamma=0.15,
         #        device="cuda:2")
+    
+
+
+    CRM_single_run(dynamics="crm",
+                    experiment_type="mnist",
+                    model="lenet5",
+                    epochs=100,
+                    thermostat=None,
+                    coupling_method='uniform',
+                    dataset0=None,
+                    dataset1="mnist",
+                    metrics = ["mse_histograms", 
+                                'fid_nist', 
+                                "mnist_plot", 
+                                "marginal_binary_histograms"],
+                    batch_size=256,
+                    learning_rate= 0.0001,
+                    hidden_dim=256,
+                    time_embed_dim=256,
+                    gamma=0.15,
+                    device="cuda:2")

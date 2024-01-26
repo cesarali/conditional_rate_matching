@@ -140,12 +140,11 @@ class CRM_Scan_Optuna:
 
         print('all metric: ', metrics)
 
-        mse_histograms = metrics["mse_marginal_histograms"]
         fid_layer_1 = metrics["fid_1"]
         fid_layer_2 = metrics["fid_2"]
         fid_layer_3 = metrics["fid_3"]
 
-        self.nist_metric = (100000 * mse_histograms + fid_layer_1 + fid_layer_2 + fid_layer_3) / 4.0
+        self.nist_metric = (fid_layer_1 + fid_layer_2 + fid_layer_3) / 3.0
         if self.nist_metric < self.metric: self.metric = self.nist_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         return self.nist_metric
@@ -154,40 +153,120 @@ class CRM_Scan_Optuna:
 
 if __name__ == "__main__":
 
-    # scan = CRM_Scan_Optuna(dynamics="crm",
-    #                        experiment_type="mnist",
-    #                        experiment_indentifier="optuna_scan_trial",
-    #                        dataset0='emnist',
-    #                        dataset1="mnist",
-    #                        thermostat=None,
-    #                        model="mlp",
-    #                        metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-    #                        n_trials=250,
-    #                        epochs=100,
-    #                        batch_size=256,
-    #                        learning_rate=(1e-6, 1e-2), 
-    #                        ema_decay=(0.999, 0.99999),
-    #                        num_timesteps=1000,
-    #                        hidden_dim=(32, 512),
-    #                        time_embed_dim=(32, 512), 
-    #                        num_layers=(2, 8),
-    #                        dropout=(0.01, 0.5),
-    #                        activation=["ReLU", "GELU"],
-    #                        gamma=(0.001, 1.0),
-    #                        device='cuda:1')
 
+    ############################
+    #  MLP
+    ############################
+    
+#     scan = CRM_Scan_Optuna(dynamics="crm",
+#                            experiment_type="mnist",
+#                            experiment_indentifier="optuna_scan_trial",
+#                            dataset0=None,
+#                            dataset1="mnist",
+#                            thermostat=None,
+#                            model="mlp",
+#                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
+#                            n_trials=250,
+#                            epochs=100,
+#                            batch_size=256,
+#                            learning_rate=(1e-6, 1e-2), 
+#                            ema_decay=(0.999, 0.9999),
+#                            num_timesteps=1000,
+#                            hidden_dim=(32, 512),
+#                            time_embed_dim=(32, 512), 
+#                            num_layers=(2, 8),
+#                            dropout=(0.01, 0.5),
+#                            activation=["ReLU", "GELU"],
+#                            gamma=(0.001, 1.0),
+#                            device='cuda:0')
+
+
+#     df = scan.study.trials_dataframe()
+#     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+
+#     # Save Optimization History
+#     fig = plot_optimization_history(scan.study)
+#     fig.write_image(scan.workdir + "/optimization_history.png")
+
+#     # Save Slice Plot
+#     fig = plot_slice(scan.study)
+#     fig.write_image(scan.workdir + "/slice_plot.png")
+
+#     # Save Contour Plot
+#     fig = plot_contour(scan.study)
+#     fig.write_image(scan.workdir + "/contour_plot.png")
+
+#     # Save Parallel Coordinate Plot
+#     fig = plot_parallel_coordinate(scan.study)
+#     fig.write_image(scan.workdir + "/parallel_coordinate.png")
+
+#     # Save Parameter Importances
+#     fig = plot_param_importances(scan.study)
+#     fig.write_image(scan.workdir + "/param_importances.png")
 
 
 #     scan = CRM_Scan_Optuna(dynamics="crm",
-#                            experiment_type="fashion_to_mnist",
+#                            experiment_type="emnist_to_mnist",
+#                            experiment_indentifier="optuna_scan_trial",
+#                            dataset0='emnist',
+#                            dataset1="mnist",
+#                            thermostat=None,
+#                            model="mlp",
+#                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
+#                            n_trials=250,
+#                            epochs=100,
+#                            batch_size=256,
+#                            learning_rate=(1e-6, 1e-2), 
+#                            ema_decay=(0.999, 0.9999),
+#                            num_timesteps=1000,
+#                            hidden_dim=(32, 512),
+#                            time_embed_dim=(32, 512), 
+#                            num_layers=(2, 8),
+#                            dropout=(0.01, 0.5),
+#                            activation=["ReLU", "GELU"],
+#                            gamma=(0.001, 1.0),
+#                            device='cuda:0')
+
+    
+#     df = scan.study.trials_dataframe()
+#     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+
+#     # Save Optimization History
+#     fig = plot_optimization_history(scan.study)
+#     fig.write_image(scan.workdir + "/optimization_history.png")
+
+#     # Save Slice Plot
+#     fig = plot_slice(scan.study)
+#     fig.write_image(scan.workdir + "/slice_plot.png")
+
+#    # Save Contour Plot
+#     fig = plot_contour(scan.study)
+#     fig.write_image(scan.workdir + "/contour_plot.png")
+
+#     # Save Parallel Coordinate Plot
+#     fig = plot_parallel_coordinate(scan.study)
+#     fig.write_image(scan.workdir + "/parallel_coordinate.png")
+
+#     # Save Parameter Importances
+#     fig = plot_param_importances(scan.study)
+#     fig.write_image(scan.workdir + "/param_importances.png")
+
+
+    ############################
+    #  LENET5
+    ############################
+    
+
+#     scan = CRM_Scan_Optuna(dynamics="crm",
+#                            experiment_type="mnist",
 #                            experiment_indentifier="optuna_scan_trial",
 #                            model="lenet5",
-#                            dataset0="fashion",
+#                            dataset0=None,
 #                            dataset1="mnist",
 #                            thermostat=None,
 #                            coupling_method="uniform",
-#                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-#                            n_trials=30,
+#                            metrics = ['fid_nist', 'mse_histograms', "mnist_plot", "marginal_binary_histograms"],
+#                            n_trials=250,
 #                            epochs=100,
 #                            batch_size=256,
 #                            hidden_dim=(32, 512),
@@ -196,7 +275,53 @@ if __name__ == "__main__":
 #                            ema_decay=(0.999, 0.9999),
 #                            num_timesteps=1000,
 #                            gamma=(0.0001, 1.0),
-#                            device='cuda:2')
+#                            device='cuda:0')
+
+
+#     df = scan.study.trials_dataframe()
+#     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+
+#     # Save Optimization History
+#     fig = plot_optimization_history(scan.study)
+#     fig.write_image(scan.workdir + "/optimization_history.png")
+
+#     # Save Slice Plot
+#     fig = plot_slice(scan.study)
+#     fig.write_image(scan.workdir + "/slice_plot.png")
+
+#    # Save Contour Plot
+#     fig = plot_contour(scan.study)
+#     fig.write_image(scan.workdir + "/contour_plot.png")
+
+#     # Save Parallel Coordinate Plot
+#     fig = plot_parallel_coordinate(scan.study)
+#     fig.write_image(scan.workdir + "/parallel_coordinate.png")
+
+#     # Save Parameter Importances
+#     fig = plot_param_importances(scan.study)
+#     fig.write_image(scan.workdir + "/param_importances.png")
+
+
+
+#     scan = CRM_Scan_Optuna(dynamics="crm",
+#                            experiment_type="emnist_to_mnist",
+#                            experiment_indentifier="optuna_scan_trial",
+#                            model="lenet5",
+#                            dataset0="emnist",
+#                            dataset1="mnist",
+#                            thermostat=None,
+#                            coupling_method="uniform",
+#                            metrics = ['fid_nist', 'mse_histograms', "mnist_plot", "marginal_binary_histograms"],
+#                            n_trials=250,
+#                            epochs=100,
+#                            batch_size=256,
+#                            hidden_dim=(32, 512),
+#                            time_embed_dim=(32, 512),
+#                            learning_rate=(1e-6, 1e-2), 
+#                            ema_decay=(0.999, 0.9999),
+#                            num_timesteps=1000,
+#                            gamma=(0.0001, 1.0),
+#                            device='cuda:0')
 
 
 
@@ -223,6 +348,10 @@ if __name__ == "__main__":
 #     fig = plot_param_importances(scan.study)
 #     fig.write_image(scan.workdir + "/param_importances.png")
 
+    ############################
+    #  UNET
+    ############################
+
     scan = CRM_Scan_Optuna(dynamics="crm",
                            experiment_type="mnist",
                            experiment_indentifier="optuna_scan_trial",
@@ -232,16 +361,16 @@ if __name__ == "__main__":
                            thermostat=None,
                            coupling_method="uniform",
                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-                           n_trials=20,
-                           epochs=50,
+                           n_trials=50,
+                           epochs=250,
                            batch_size=256,
-                           hidden_dim=64,
-                           time_embed_dim=64,
+                           hidden_dim=128,
+                           time_embed_dim=128,
                            learning_rate=(1e-6, 1e-2), 
                            ema_decay=(0.999, 0.9999),
                            num_timesteps=1000,
                            gamma=(0.0001, 1.0),
-                           device='cuda:2')
+                           device='cuda:0')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
@@ -269,24 +398,27 @@ if __name__ == "__main__":
 
 
     scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="emnist_to_mnist_OT",
+                           experiment_type="emnist_to_mnist",
                            experiment_indentifier="optuna_scan_trial",
                            model="unet",
                            dataset0="emnist",
                            dataset1="mnist",
                            thermostat=None,
-                           coupling_method="OTPlanSampler",
-                           metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-                           n_trials=20,
-                           epochs=50,
+                           coupling_method="uniform",
+                           metrics = ['fid_nist', 
+                                      'mse_histograms',  
+                                      "mnist_plot", 
+                                      "marginal_binary_histograms"],
+                           n_trials=50,
+                           epochs=250,
                            batch_size=256,
-                           hidden_dim=64,
-                           time_embed_dim=64,
+                           hidden_dim=128,
+                           time_embed_dim=128,
                            learning_rate=(1e-6, 1e-2), 
                            ema_decay=(0.999, 0.9999),
                            num_timesteps=1000,
                            gamma=(0.0001, 1.0),
-                           device='cuda:1')
+                           device='cuda:0')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
@@ -310,20 +442,3 @@ if __name__ == "__main__":
     # Save Parameter Importances
     fig = plot_param_importances(scan.study)
     fig.write_image(scan.workdir + "/param_importances.png")
-
-        # scan = CRM_Scan_Optuna(dynamics="crm",
-    #                        experiment_type="emnist_to_mnist",
-    #                        experiment_indentifier="optuna_scan_trial",
-    #                        dataset0="emnist",
-    #                        dataset1="mnist",
-    #                        thermostat=None,
-    #                        model="UConvNISTNet",
-    #                        metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
-    #                        n_trials=30,
-    #                        epochs=100,
-    #                        batch_size=256,
-    #                        learning_rate=(1e-6, 1e-2), 
-    #                        ema_decay=0.999,
-    #                        num_timesteps=1000,
-    #                        gamma=(0.0001, 1.0),
-    #                        device='cuda:1')

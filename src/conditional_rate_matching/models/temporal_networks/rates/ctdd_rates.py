@@ -16,6 +16,8 @@ from diffusers.utils import BaseOutput
 from conditional_rate_matching.models.temporal_networks.ema import EMA
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
 from conditional_rate_matching.models.temporal_networks.temporal_convnet import UConvNISTNet
+from conditional_rate_matching.models.temporal_networks.temporal_mlp import TemporalDeepMLP
+
 @dataclass
 class BackwardRateOutput(BaseOutput):
     """
@@ -200,8 +202,9 @@ class BackRateMLP(EMA,BackwardRate,GaussianTargetRate):
             x = x.view(B, C*H*W)
         x = self._center_data(x)
         batch_size = x.size(0)
-        if isinstance(self.net,UConvNISTNet):
+        if not isinstance(self.net,TemporalDeepMLP):
             x = x.view(-1,1,28,28)
+            # x = x.view(-1, 1, self.net.expected_output_shape[0], self.net.expected_output_shape[1])
         rate_logits = self.net(x,times)
         if self.net.expected_output_shape != [self.dimensions,self.vocab_size]:
             rate_logits = rate_logits.reshape(batch_size, -1)
