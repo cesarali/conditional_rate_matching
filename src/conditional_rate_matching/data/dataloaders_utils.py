@@ -9,14 +9,15 @@ from conditional_rate_matching.data.image_dataloader_config import NISTLoaderCon
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.data.graph_dataloaders_config import BridgeConfig
+from conditional_rate_matching.data.image_dataloader_config import DiscreteCIFAR10Config
 
 from conditional_rate_matching.data.gray_codes_dataloaders import GrayCodeDataLoader
-from conditional_rate_matching.data.image_dataloaders import NISTLoader
+from conditional_rate_matching.data.image_dataloaders import DiscreteCIFAR10Dataloader
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 
 from conditional_rate_matching.data.states_dataloaders import StatesDataloader
 from conditional_rate_matching.data.ctdd_target import CTDDTargetData
-
+from conditional_rate_matching.data.image_dataloaders import NISTLoader
 def get_dataloaders(config):
     """
 
@@ -73,6 +74,8 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_1 = GraphDataloaders(config.data1)
     elif isinstance(config.data1,GrayCodesDataloaderConfig):
         dataloader_1 = GrayCodeDataLoader(config.data1)
+    elif isinstance(config.data1,DiscreteCIFAR10Config):
+        dataloader_1 = DiscreteCIFAR10Dataloader(config.data1)
     # OTHER BRIDGE ENDS
     elif isinstance(config.data1,BridgeConfig):
         dataloader_1 = GraphDataloaders(config.data0,config.data1.dataset_name)
@@ -94,6 +97,8 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_0 = GraphDataloaders(config.data0)
     elif isinstance(config.data0,GrayCodesDataloaderConfig):
         dataloader_0 = GrayCodeDataLoader(config.data0)
+    elif isinstance(config.data0,DiscreteCIFAR10Config):
+        dataloader_0 = DiscreteCIFAR10Dataloader(config.data0)
     # OTHER BRIDGE ENDS
     elif isinstance(config.data0,BridgeConfig):
         dataloader_0 = GraphDataloaders(config.data1,config.data0.dataset_name)
