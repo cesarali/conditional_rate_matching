@@ -70,6 +70,7 @@ class DiffusersUnet2DConfig:
     name: str = "DiffusersUnet2D"
     num_res_blocks: int = 2
     num_scales: int = 4
+    ch:int=128
     ch_mult: List[int] = field(default_factory=lambda: [1, 1, 1, 1])
     input_channels: int = 1
     scale_count_to_put_attn: int = 1
@@ -80,6 +81,8 @@ class DiffusersUnet2DConfig:
     time_scale_factor: int = 1000
     ema_decay :float = 0.9999  # 0.9999
 
+    def __post_init__(self):
+        self.ch = self.time_embed_dim
 
 @dataclass
 class TemporalScoreNetworkAConfig:
