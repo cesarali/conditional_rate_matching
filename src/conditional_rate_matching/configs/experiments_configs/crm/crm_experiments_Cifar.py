@@ -5,7 +5,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 
 def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
-    batch_size = 10
+    batch_size = 2
     config = CRMConfig()
     config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size, max_test_size=None)
     config.data1 = DiscreteCIFAR10Config(batch_size=batch_size)
@@ -36,7 +36,7 @@ if __name__=="__main__":
     config = experiment_cifar10_config(10,temporal_network_name="mlp")
 
     config.trainer.debug = True
-    config.trainer.device = "cuda:1"
+    config.trainer.device = "cuda:0"
 
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 
