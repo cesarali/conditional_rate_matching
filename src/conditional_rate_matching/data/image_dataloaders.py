@@ -1,6 +1,8 @@
+import os
 import torch
 from pathlib import Path
-
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
+from conditional_rate_matching.data.image_dataloader_config import DiscreteCIFAR10Config
 import numpy as np
 from torch.utils.data import Dataset
 from PIL import Image
@@ -11,6 +13,9 @@ from conditional_rate_matching.data.transforms import CorrectEMNISTOrientation
 from conditional_rate_matching.data.transforms import BinaryTensorToSpinsTransform
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from torch.utils.data import Subset
+import torchvision
+from conditional_rate_matching.data.image_dataloader_config import DiscreteCIFAR10Config
+
 
 def get_data(config:NISTLoaderConfig):
     data_= config.dataset_name
@@ -106,11 +111,77 @@ class NISTLoader:
     def test(self):
         return self.test_loader
 
+class DiscreteCIFAR10(torchvision.datasets.CIFAR10):
+    def __init__(self, data_root,train=True,download=True,random_flips=False):
+        super().__init__(root=data_root,
+                         train=train,
+                         download=download)
+
+        self.data = torch.from_numpy(self.data)
+        self.data = self.data.transpose(1,3)
+        self.data = self.data.transpose(2,3)
+
+        self.targets = torch.from_numpy(np.array(self.targets))
+
+        # Put both data and targets on GPU in advance
+        self.data = self.data.view(-1, 3, 32, 32)
+
+        self.random_flips = random_flips
+        if self.random_flips:
+            self.flip = torchvision.transforms.RandomHorizontalFlip()
+
+    @property
+    def raw_folder(self) -> str:
+        return os.path.join(self.root, 'CIFAR10', 'raw')
+
+    @property
+    def processed_folder(self) -> str:
+        return os.path.join(self.root, 'CIFAR10', 'processed')
+
+    def __getitem__(self, index):
+        """
+        Args:
+            index (int): Index
+
+        Returns:
+            tuple: (image, target) where target is index of the target class.
+        """
+        img, target = self.data[index], self.targets[index]
+
+        if self.random_flips:
+            img = self.flip(img)
+
+        return img,target
+
+class DiscreteCIFAR10Dataloader():
+    """
+
+    """
+    def __init__(self,cfg:DiscreteCIFAR10Config,device=torch.device("cpu")):
+        train_dataset = DiscreteCIFAR10(data_root=DiscreteCIFAR10Config.data_dir,train=True)
+        test_dataset =  DiscreteCIFAR10(data_root=DiscreteCIFAR10Config.data_dir,train=False)
+
+
+        self.number_of_spins = cfg.dimensions
+
+        self.train_dataloader = torch.utils.data.DataLoader(train_dataset,
+                                                            batch_size=cfg.batch_size,
+                                                            shuffle=True)
+
+        self.test_dataloader = torch.utils.data.DataLoader(test_dataset,
+                                                           batch_size=cfg.batch_size,
+                                                           shuffle=True)
+    def train(self):
+        return self.train_dataloader
+
+    def test(self):
+        return self.test_dataloader
+
 if __name__ =="__main__":
     from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
     data_config = NISTLoaderConfig(flatten=False,batch_size=23)
     dataloder,_ = get_data(data_config)
     databatch = next(dataloder.__iter__())
-    print(databatch[0].shape)
+
 

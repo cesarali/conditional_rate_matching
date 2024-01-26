@@ -98,20 +98,20 @@ if __name__=="__main__":
     from dataclasses import asdict
     from pprint import pprint
 
-    config = experiment_comunity_small_bridge(number_of_epochs=100,network="mlp")
+    #config = experiment_comunity_small_bridge(number_of_epochs=100,network="mlp")
     #config = experiment_grid_bridge(number_of_epochs=2,network="mlp")
-    #config = experiment_ego_bridge(number_of_epochs=500,network="mlp")
+    config = experiment_ego_bridge(number_of_epochs=10,network="gnn")
 
     #config.trainer.orca_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_berlin_2/"
     #config.trainer.windows = True
 
-    config.thermostat = ExponentialThermostatConfig(max=1.,gamma=1.)
+    #config.thermostat = ExponentialThermostatConfig(max=1.,gamma=1.)
 
     config.trainer.debug = False
     config.trainer.save_model_test_stopping = True
     #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
 
-    config.thermostat.gamma = 2.
+    config.thermostat.gamma = .1
     config.trainer.learning_rate = 1e-3
     config.pipeline.number_of_steps = 1000
     config.trainer.loss_regularize_variance = False
@@ -119,5 +119,5 @@ if __name__=="__main__":
     results,metrics = call_trainer(config,
                                    experiment_name="prenzlauer_experiment",
                                    experiment_type="crm_best",
-                                   experiment_indentifier="dario3")
+                                   experiment_indentifier="ego5")
     print(metrics)

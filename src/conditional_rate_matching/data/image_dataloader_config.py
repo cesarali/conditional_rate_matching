@@ -10,9 +10,9 @@ NUMBER_OF_LABELS = {"mnist":10,"fashion":10,"emnist":27}
 
 @dataclass
 class DiscreteCIFAR10Config:
-    data: str = "Cifar10"
-    dir: Path=image_data_path
-    batch_size: int= 16
+    dataset_name: str = "Cifar10"
+    data_dir: Path=image_data_path
+    batch_size: int= 128
 
     C: int = 3
     H: int = 32
@@ -21,7 +21,7 @@ class DiscreteCIFAR10Config:
     D: int = None
 
     shape: list = None
-    random_flips = True
+    random_flips:bool = True
     preprocess_datapath:str = "orca_berlin"
     doucet:bool = True
     as_spins:bool = False
@@ -33,9 +33,11 @@ class DiscreteCIFAR10Config:
     def __post_init__(self):
         self.shape = [3,32,32]
         self.temporal_net_expected_shape = self.shape
-        self.D = self.C * self.H * self.W
-        self.S = 256
+        self.dimensions = self.C * self.H * self.W
+        self.vocab_size = 256
         self.data_min_max = [0,255]
+        self.test_split = float(self.test_size/self.total_data_size)
+
 
 
 @dataclass
