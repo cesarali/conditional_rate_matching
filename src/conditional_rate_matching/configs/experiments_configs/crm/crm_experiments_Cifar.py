@@ -9,11 +9,11 @@ def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
     config = CRMConfig()
     config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size, max_test_size=None)
     config.data1 = DiscreteCIFAR10Config(batch_size=batch_size)
-    config.trainer = CRMTrainerConfig(
-        number_of_epochs=epochs,
-        learning_rate=1e-4,
-        metrics=[]
-    )
+    config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
+                                      learning_rate=1e-4,
+                                      metrics=[]
+                                      )
+
     config.pipeline = BasicPipelineConfig(number_of_steps=1000)
     config.temporal_network = DiffusersUnet2DConfig(num_res_blocks=2,
                                                     num_scales=4,
@@ -35,7 +35,7 @@ if __name__=="__main__":
     config = experiment_cifar10_config(10,temporal_network_name="mlp")
 
     config.trainer.debug = True
-    config.trainer.device = "cpu"
+    config.trainer.device = "cuda:1"
 
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 
