@@ -17,6 +17,7 @@ def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
     config.pipeline = BasicPipelineConfig(number_of_steps=1000)
     config.temporal_network = DiffusersUnet2DConfig(num_res_blocks=2,
                                                     num_scales=4,
+                                                    ch=128,
                                                     ch_mult=[1, 2, 2, 2],
                                                     input_channels=3,
                                                     scale_count_to_put_attn=1,
