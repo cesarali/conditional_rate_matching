@@ -6,11 +6,14 @@ from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils imp
 class CRMPipeline:
     """
     """
-    def __init__(self,config,model,dataloader_0,dataloader_1):
+    def __init__(self,config,model,dataloader_0,dataloader_1,parent_dataloader=None):
         self.model = model
         self.config = config
         self.dataloder_0 = dataloader_0
         self.dataloder_1 = dataloader_1
+        self.parent_dataloader = parent_dataloader
+
+
         self.model = model
         self.device = check_model_devices(self.model)
 

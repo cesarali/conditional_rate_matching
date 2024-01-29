@@ -6,7 +6,7 @@ from torch.utils.data import TensorDataset,DataLoader
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
 
-def sample_categorical_from_dirichlet(config:StatesDataloaderConfig):
+def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tensor_samples=False):
     """
 
     :param probs:
@@ -44,7 +44,9 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig):
     categorical_samples = distribution_per_dimension.sample([sample_size]).float()
 
     test_size = int(test_split * categorical_samples.size(0))
-    train_dataset, test_dataset = TensorDataset(categorical_samples[test_size:]), TensorDataset(categorical_samples[:test_size])
+    train_samples = categorical_samples[test_size:]
+    test_samples = categorical_samples[:test_size]
+    train_dataset, test_dataset = TensorDataset(train_samples), TensorDataset(test_samples)
 
     training_data_size = len(train_dataset)
     test_data_size = len(test_dataset)
@@ -55,14 +57,17 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig):
     config.total_data_size = total_data_size
     config.training_proportion = float(training_data_size) / total_data_size
 
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset,
-        batch_size=batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset,
-        batch_size=batch_size, shuffle=True)
+    if return_tensor_samples:
+        return train_samples,test_samples
+    else:
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset,
+            batch_size=batch_size, shuffle=True)
+        test_loader = torch.utils.data.DataLoader(
+            test_dataset,
+            batch_size=batch_size, shuffle=True)
 
-    return train_loader,test_loader
+        return train_loader, test_loader
 
 class StatesDataloader:
 

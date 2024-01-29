@@ -9,6 +9,7 @@ from dataclasses import asdict
 
 from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
+from conditional_rate_matching.data.music_dataloaders import LankhPianoRollDataloader
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
@@ -28,6 +29,7 @@ class CRM:
     experiment_files: ExperimentFiles = None
     dataloader_0: Union[GraphDataloaders,DataLoader] = None
     dataloader_1: Union[GraphDataloaders,DataLoader] = None
+    parent_dataloder: LankhPianoRollDataloader =None
     forward_rate: Union[ClassificationForwardRate] = None
     op_sampler: OTPlanSampler = None
     pipeline:CRMPipeline = None
@@ -47,7 +49,7 @@ class CRM:
         # =====================================================
         # DATA STUFF
         # =====================================================
-        self.dataloader_0, self.dataloader_1 = get_dataloaders_crm(config)
+        self.dataloader_0, self.dataloader_1,self.parent_dataloader = get_dataloaders_crm(config)
         # =========================================================
         # Initialize
         # =========================================================
@@ -77,9 +79,9 @@ class CRM:
             self.device = device
 
         self.forward_rate.to(self.device)
-        self.dataloader_0, self.dataloader_1 = get_dataloaders_crm(self.config)
+        self.dataloader_0, self.dataloader_1,self.parent_dataloader = get_dataloaders_crm(self.config)
 
-        self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
+        self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1,self.parent_dataloader)
         self.op_sampler = OTPlanSampler(**asdict(self.config.optimal_transport))
 
     def start_new_experiment(self):

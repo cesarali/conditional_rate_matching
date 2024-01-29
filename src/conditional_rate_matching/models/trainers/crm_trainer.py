@@ -10,12 +10,15 @@ from conditional_rate_matching.models.generative_models.crm import (
 
 from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
+from conditional_rate_matching.data.music_dataloaders import LankhPianoRollDataloader
+from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
 
 class CRMDataloder:
 
     def __init__(self,data0,data1):
         self.data0 = data0
         self.data1 = data1
+
     def train(self):
         return zip(self.data0.train(),self.data1.train())
 
@@ -36,7 +39,11 @@ class CRMTrainer(Trainer):
 
         self.device = torch.device(device_str if torch.cuda.is_available() else "cpu")
         self.generative_model = CRM(self.config, experiment_files=experiment_files, device=self.device)
-        self.dataloader = CRMDataloder(self.generative_model.dataloader_0,self.generative_model.dataloader_1)
+
+        if hasattr(config.data1, "conditional_model"):
+            self.dataloader = self.generative_model.parent_dataloader
+        else:
+            self.dataloader = CRMDataloder(self.generative_model.dataloader_0,self.generative_model.dataloader_1)
 
     def preprocess_data(self, databatch):
         return databatch
