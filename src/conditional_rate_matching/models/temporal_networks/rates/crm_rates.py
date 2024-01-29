@@ -52,6 +52,11 @@ class ClassificationForwardRate(EMA,nn.Module):
                     nn.Linear(intermediate_to_rate, self.dimensions * self.vocab_size)
                 )
 
+        if hasattr(self.config.data1, "conditional_model"):
+            if self.config.data1.conditional_model:
+                self.conditional_layer = nn.Linear(self.config.data1.conditional_dimension,
+                                                   self.config.temporal_network.hidden_dim)
+
     def define_thermostat(self,config):
         self.thermostat = load_thermostat(config)
 

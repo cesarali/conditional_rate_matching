@@ -4,6 +4,7 @@ from conditional_rate_matching.data.states_dataloaders_config import StatesDatal
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig, BasicPipelineConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import DiffusersUnet2DConfig
 from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
+from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 
 def experiment_music_config(epochs=100, temporal_network_name="unet"):
     batch_size = 32
@@ -22,17 +23,19 @@ def experiment_music_config(epochs=100, temporal_network_name="unet"):
     return config
 
 def experiment_music_conditional_config(epochs=100,temporal_network_name="transformer"):
-    batch_size = 32
+    batch_size = 128
     config = CRMConfig()
     config.data0 = LakhPianoRollConfig(batch_size=batch_size,
                                        conditional_model=True,
                                        bridge_conditional=True)
     config.data1 = config.data0
-
+    if temporal_network_name == "mlp":
+        config.temporal_network = TemporalDeepMLPConfig(time_embed_dim=150,
+                                                        hidden_dim=200)
     config.trainer = CRMTrainerConfig(
         number_of_epochs=epochs,
         learning_rate=1e-4,
-        metrics=[]
+        metrics=[MetricsAvaliable.hellinger_distance]
     )
 
     config.pipeline = BasicPipelineConfig(number_of_steps=5)
@@ -41,15 +44,13 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
 
 
 
-
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-    config = experiment_music_conditional_config(10,temporal_network_name="mlp")
+    config = experiment_music_conditional_config(5,temporal_network_name="mlp")
 
     config.trainer.debug = True
     config.trainer.device = "cpu"
-
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 
     call_trainer(config,

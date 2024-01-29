@@ -31,8 +31,11 @@ from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 from conditional_rate_matching.models.metrics.graphs_metrics import eval_graph_list
 from conditional_rate_matching.utils.plots.graph_plots import plot_graphs_list2
 
+#hellinger
+from conditional_rate_matching.models.metrics.completion_metrics import hellinger_distance
 from conditional_rate_matching.utils.plots.gray_code_plots import plot_samples
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+
 
 key_in_dict = lambda dictionary, key: dictionary is not None and key in dictionary
 
@@ -52,6 +55,7 @@ class MetricsAvaliable:
     fid_nist: str = "fid_nist"
     grayscale_plot: str = "grayscale_plot"
 
+    hellinger_distance:str = "hellinger_distance"
     loss_variance_times:str = "loss_variance_times"
 
 def store_metrics(experiment_files,all_metrics,new_metrics,metric_string_name,epoch,where_to_log=None):
@@ -65,14 +69,23 @@ def store_metrics(experiment_files,all_metrics,new_metrics,metric_string_name,ep
     return all_metrics
 
 def sample_crm(crm,config):
+    original_sample = None
     source_dataloader = crm.dataloader_0
     data_dataloader = crm.dataloader_1
     vocab_size, dimensions, max_test_size = config.data1.vocab_size, config.data1.dimensions, config.trainer.max_test_size
     dataloader = crm.dataloader_1.test()
     test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(crm.device)
-    generative_sample, generative_path, ts = crm.pipeline(sample_size=test_sample.shape[0],return_intermediaries=True,train=False)
     sizes = (vocab_size, dimensions, max_test_size)
-    return sizes, source_dataloader,data_dataloader,generative_sample, generative_path, ts,test_sample
+    if hasattr(config.data1,"conditional_model"):
+        if config.data1.conditional_model:
+            generative_sample, original_sample, generative_path, ts = crm.pipeline(sample_size=test_sample.shape[0],
+                                                                                   return_intermediaries=True,
+                                                                                   train=False,
+                                                                                   origin=True)
+    else:
+        generative_sample, generative_path, ts = crm.pipeline(sample_size=test_sample.shape[0],return_intermediaries=True, train=False)
+
+    return sizes, source_dataloader,data_dataloader,generative_sample, original_sample,generative_path, ts,test_sample
 
 def sample_ctdd(ctdd,config):
     source_dataloader = ctdd.dataloader_1
@@ -107,7 +120,7 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
 
     #OBTAIN SAMPLES
     if isinstance(generative_model, CRM):
-        sizes, source_dataloader,data_dataloader,generative_sample, generative_path,ts,test_sample = sample_crm(generative_model, config)
+        sizes, source_dataloader,data_dataloader,generative_sample, origin_sample, generative_path,ts,test_sample = sample_crm(generative_model, config)
     elif isinstance(generative_model, CTDD):
         sizes, source_dataloader, data_dataloader, generative_sample,test_sample = sample_ctdd(generative_model,config)
     elif isinstance(generative_model,Oops):
@@ -120,6 +133,13 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
 
     generative_sample = generative_sample[:size_]
     test_sample = test_sample[:size_]
+
+    # HELLINGER
+    metric_string_name = "hellinger_distance"
+    if metric_string_name in metrics_to_log:
+        hellinger_ = hellinger_distance(generative_sample,origin_sample,config)
+        mse_metrics = {"hellinger_distance": hellinger_.item()}
+        all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=mse_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
 
     # HISTOGRAMS METRICS
     metric_string_name = "mse_histograms"

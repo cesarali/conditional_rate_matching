@@ -63,8 +63,8 @@ class BasicPipelineConfig:
 @dataclass
 class CRMConfig:
     # data
-    data0: StatesDataloaderConfig = StatesDataloaderConfig()
-    data1: NISTLoaderConfig = NISTLoaderConfig()
+    data0: Union[LakhPianoRollConfig,StatesDataloaderConfig] = StatesDataloaderConfig()
+    data1: Union[LakhPianoRollConfig,NISTLoaderConfig] = NISTLoaderConfig()
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal_to_rate
@@ -77,7 +77,6 @@ class CRMConfig:
     trainer: CRMTrainerConfig = CRMTrainerConfig()
     #pipeline
     pipeline : BasicPipelineConfig = BasicPipelineConfig()
-
 
     def __post_init__(self):
         if isinstance(self.data0,dict):

@@ -6,14 +6,16 @@ import torch.nn.functional as F
 from conditional_rate_matching.utils.activations import get_activation_function
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as CRMConfig
 from conditional_rate_matching.models.temporal_networks.temporal_embedding_utils import transformer_timestep_embedding
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 class TemporalDeepMLP(nn.Module):
 
     def __init__(self,
-                 config,
+                 config:CRMConfig,
                  device):
 
         super().__init__()
+        self.config = config
         self.dimensions = config.data1.dimensions
         self.vocab_size = config.data1.vocab_size
         self.define_deep_models(config)

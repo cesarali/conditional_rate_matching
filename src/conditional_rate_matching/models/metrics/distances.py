@@ -10,7 +10,6 @@ def marginal_histograms(generative_sample,test_sample):
     :return: backward_histogram,forward_histogram,forward_time
 
     """
-
     #================================
     # HISTOGRAMS OF DATA
     #================================
