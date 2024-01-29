@@ -10,7 +10,6 @@ class DiffusersUnetTau(nn.Module):
 
         in_chanels = cfg.temporal_network.input_channels
 
-
         self.expected_output_shape = [in_chanels,32,32]
 
         ch = cfg.temporal_network.ch

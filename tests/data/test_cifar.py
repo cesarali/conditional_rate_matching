@@ -4,6 +4,7 @@ from conditional_rate_matching.data.image_dataloader_config import DiscreteCIFAR
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 from conditional_rate_matching.models.generative_models.crm import CRM
 from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_Cifar import experiment_cifar10_config
+
 def test_cifar():
     config = experiment_cifar10_config()
     device = config.trainer.device if torch.cuda.is_available() else torch.device("cpu")

@@ -18,6 +18,9 @@ from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.data.states_dataloaders import StatesDataloader
 from conditional_rate_matching.data.ctdd_target import CTDDTargetData
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
+from conditional_rate_matching.data.music_dataloaders import LankhPianoRollDataloader
+from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
+
 def get_dataloaders(config):
     """
 
@@ -81,6 +84,10 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_1 = GraphDataloaders(config.data0,config.data1.dataset_name)
         config.data1.dimensions = config.data0.dimensions
         config.data1.vocab_size = config.data0.vocab_size
+    elif isinstance(config.data1,LakhPianoRollConfig):
+        if not config.data0.conditional_model:
+            piano_dataloader = LankhPianoRollDataloader(config.data1)
+            dataloader_1 = piano_dataloader
 
     #=====================================================
     # DATA 0
@@ -99,6 +106,11 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_0 = GrayCodeDataLoader(config.data0)
     elif isinstance(config.data0,DiscreteCIFAR10Config):
         dataloader_0 = DiscreteCIFAR10Dataloader(config.data0)
+    elif isinstance(config.data0,LakhPianoRollConfig):
+        if not config.data0.conditional_model:
+            piano_dataloader = LankhPianoRollDataloader(config.data0)
+            dataloader_0 = piano_dataloader
+
     # OTHER BRIDGE ENDS
     elif isinstance(config.data0,BridgeConfig):
         dataloader_0 = GraphDataloaders(config.data1,config.data0.dataset_name)
@@ -109,7 +121,16 @@ def get_dataloaders_crm(config:CRMConfig):
     config.dimensions = config.data1.dimensions
     config.vocab_size = config.data1.vocab_size
 
-    return dataloader_0,dataloader_1
+    #============================================
+    # CONDITIONAL MODEL
+    #============================================
+    if hasattr(config.data1,"conditional_model"):
+        parent_dataloader = LankhPianoRollDataloader(config.data0)
+        dataloader_0 = parent_dataloader.data0
+        dataloader_1 = parent_dataloader.data1
+        return dataloader_0,dataloader_1,parent_dataloader
+    else:
+        return dataloader_0,dataloader_1,None
 
 def get_dataloaders_ctdd(config:CTDDConfig):
     """

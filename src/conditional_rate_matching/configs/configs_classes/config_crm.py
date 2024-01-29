@@ -17,6 +17,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 )
 
 # data config
+from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
@@ -29,6 +30,7 @@ from conditional_rate_matching.data.graph_dataloaders_config import BridgeConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig,LogThermostatConfig
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
+                "LakhPianoRoll":LakhPianoRollConfig,
                 "GraphDataloader":GraphDataloaderConfig,
                 "BridgeConfig":BridgeConfig,
                 "StatesDataloader":StatesDataloaderConfig,

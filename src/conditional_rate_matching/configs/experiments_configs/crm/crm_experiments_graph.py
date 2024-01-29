@@ -99,6 +99,7 @@ if __name__ == "__main__":
 
     config.trainer.save_model_test_stopping = True
     #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
+    #config.trainer.debug = True
 
     config.thermostat.gamma = 0.01
     config.trainer.learning_rate = 1e-3
@@ -109,4 +110,4 @@ if __name__ == "__main__":
     results, metrics = call_trainer(config,
                                     experiment_name="prenzlauer_experiment",
                                     experiment_type="crm",
-                                    experiment_indentifier="bridge_plot_mlp_mu_001")
+                                    experiment_indentifier=None)
