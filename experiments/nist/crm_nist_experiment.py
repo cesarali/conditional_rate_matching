@@ -275,7 +275,7 @@ if __name__ == "__main__":
 #                            ema_decay=(0.999, 0.9999),
 #                            num_timesteps=1000,
 #                            gamma=(0.0001, 1.0),
-#                            device='cuda:0')
+#                            device='cuda:1')
 
 
 #     df = scan.study.trials_dataframe()
@@ -353,7 +353,7 @@ if __name__ == "__main__":
     ############################
 
     scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="mnist",
+                           experiment_type="mnist_128x128",
                            experiment_indentifier="optuna_scan_trial",
                            model="unet",
                            dataset0=None,
@@ -362,7 +362,7 @@ if __name__ == "__main__":
                            coupling_method="uniform",
                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
                            n_trials=50,
-                           epochs=250,
+                           epochs=100,
                            batch_size=256,
                            hidden_dim=128,
                            time_embed_dim=128,
@@ -397,48 +397,48 @@ if __name__ == "__main__":
 
 
 
-    scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="emnist_to_mnist",
-                           experiment_indentifier="optuna_scan_trial",
-                           model="unet",
-                           dataset0="emnist",
-                           dataset1="mnist",
-                           thermostat=None,
-                           coupling_method="uniform",
-                           metrics = ['fid_nist', 
-                                      'mse_histograms',  
-                                      "mnist_plot", 
-                                      "marginal_binary_histograms"],
-                           n_trials=50,
-                           epochs=250,
-                           batch_size=256,
-                           hidden_dim=128,
-                           time_embed_dim=128,
-                           learning_rate=(1e-6, 1e-2), 
-                           ema_decay=(0.999, 0.9999),
-                           num_timesteps=1000,
-                           gamma=(0.0001, 1.0),
-                           device='cuda:0')
+#     scan = CRM_Scan_Optuna(dynamics="crm",
+#                            experiment_type="emnist_to_mnist",
+#                            experiment_indentifier="optuna_scan_trial",
+#                            model="unet",
+#                            dataset0="emnist",
+#                            dataset1="mnist",
+#                            thermostat=None,
+#                            coupling_method="uniform",
+#                            metrics = ['fid_nist', 
+#                                       'mse_histograms',  
+#                                       "mnist_plot", 
+#                                       "marginal_binary_histograms"],
+#                            n_trials=50,
+#                            epochs=250,
+#                            batch_size=256,
+#                            hidden_dim=128,
+#                            time_embed_dim=128,
+#                            learning_rate=(1e-6, 1e-2), 
+#                            ema_decay=(0.999, 0.9999),
+#                            num_timesteps=1000,
+#                            gamma=(0.0001, 1.0),
+#                            device='cuda:0')
 
-    df = scan.study.trials_dataframe()
-    df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
+#     df = scan.study.trials_dataframe()
+#     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
 
-    # Save Optimization History
-    fig = plot_optimization_history(scan.study)
-    fig.write_image(scan.workdir + "/optimization_history.png")
+#     # Save Optimization History
+#     fig = plot_optimization_history(scan.study)
+#     fig.write_image(scan.workdir + "/optimization_history.png")
 
-    # Save Slice Plot
-    fig = plot_slice(scan.study)
-    fig.write_image(scan.workdir + "/slice_plot.png")
+#     # Save Slice Plot
+#     fig = plot_slice(scan.study)
+#     fig.write_image(scan.workdir + "/slice_plot.png")
 
-   # Save Contour Plot
-    fig = plot_contour(scan.study)
-    fig.write_image(scan.workdir + "/contour_plot.png")
+#    # Save Contour Plot
+#     fig = plot_contour(scan.study)
+#     fig.write_image(scan.workdir + "/contour_plot.png")
 
-    # Save Parallel Coordinate Plot
-    fig = plot_parallel_coordinate(scan.study)
-    fig.write_image(scan.workdir + "/parallel_coordinate.png")
+#     # Save Parallel Coordinate Plot
+#     fig = plot_parallel_coordinate(scan.study)
+#     fig.write_image(scan.workdir + "/parallel_coordinate.png")
 
-    # Save Parameter Importances
-    fig = plot_param_importances(scan.study)
-    fig.write_image(scan.workdir + "/param_importances.png")
+#     # Save Parameter Importances
+#     fig = plot_param_importances(scan.study)
+#     fig.write_image(scan.workdir + "/param_importances.png")

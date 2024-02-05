@@ -232,7 +232,7 @@ if __name__ == "__main__":
     ############################
 
     scan = CTDD_Scan_Optuna(dynamics="ctdd",
-                           experiment_type="mnist",
+                           experiment_type="mnist_64x64",
                            experiment_indentifier="optuna_scan_trial",
                            dataset0="mnist",
                            model="unet",
@@ -245,8 +245,8 @@ if __name__ == "__main__":
                            batch_size=256,
                            learning_rate=(1e-6, 1e-2), 
                            num_timesteps=1000,
-                           hidden_dim=128,
-                           time_embed_dim=128,
+                           hidden_dim=64,
+                           time_embed_dim=64,
                            ema_decay=(0.999, 0.9999),
                            device='cuda:2')
 

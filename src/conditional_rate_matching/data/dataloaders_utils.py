@@ -6,6 +6,7 @@ from conditional_rate_matching.data.states_dataloaders import sample_categorical
 
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+from conditional_rate_matching.data.image_dataloader_config import DistortedNISTLoaderConfig
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.data.graph_dataloaders_config import BridgeConfig
@@ -18,6 +19,7 @@ from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.data.states_dataloaders import StatesDataloader
 from conditional_rate_matching.data.ctdd_target import CTDDTargetData
 from conditional_rate_matching.data.image_dataloaders import NISTLoader
+from conditional_rate_matching.data.image_dataloaders import DistortedNISTLoader
 from conditional_rate_matching.data.music_dataloaders import LankhPianoRollDataloader
 from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
 
@@ -124,6 +126,7 @@ def get_dataloaders_crm(config:CRMConfig):
     #============================================
     # CONDITIONAL MODEL
     #============================================
+
     if hasattr(config.data1,"conditional_model"):
         parent_dataloader = LankhPianoRollDataloader(config.data0)
         dataloader_0 = parent_dataloader.data0
@@ -131,6 +134,8 @@ def get_dataloaders_crm(config:CRMConfig):
         return dataloader_0,dataloader_1,parent_dataloader
     else:
         return dataloader_0,dataloader_1,None
+    
+
 
 def get_dataloaders_ctdd(config:CTDDConfig):
     """
