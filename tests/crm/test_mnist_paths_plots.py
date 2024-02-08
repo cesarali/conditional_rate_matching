@@ -61,6 +61,8 @@ def test_mnist_maps_batch_example():
     classifier = load_classifier(crm.config.data1.dataset_name,device)
 
     selected_images = select_label(crm.dataloader_1,label_to_see=1,sample_size=number_of_images_to_see,train=True)
+
+
     num_images_encountered = selected_images.size(0)
     crm.config.pipeline.num_intermediates = steps_of_noise_to_see
     x_f, x_hist, ts = crm.pipeline(100,return_intermediaries=True,train=False,x_0=selected_images)

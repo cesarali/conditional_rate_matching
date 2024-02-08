@@ -2,11 +2,12 @@ import torch
 from conditional_rate_matching.utils.devices import check_model_devices
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers import TauLeaping
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 class CRMPipeline:
     """
     """
-    def __init__(self,config,model,dataloader_0,dataloader_1,parent_dataloader=None):
+    def __init__(self,config:CRMConfig,model,dataloader_0,dataloader_1,parent_dataloader=None):
         self.model = model
         self.config = config
         self.dataloder_0 = dataloader_0
@@ -33,7 +34,8 @@ class CRMPipeline:
                  return_path=False,
                  return_intermediaries=False,
                  batch_size=128,
-                 x_0=None):
+                 x_0=None,
+                 origin=False):
         """
         For Conditional Rate Matching We Move Forward in Time
 
@@ -58,9 +60,16 @@ class CRMPipeline:
             batch_size = x_0.size(0)
             x_0 = x_0.view(batch_size,-1)
 
+
+        x_original = x_0.clone()
         # If batch_size is not set or sample_size is within the batch limit, process normally
         if batch_size is None or sample_size <= batch_size:
-            x_f, x_hist, x0_hist, ts = TauLeaping(self.config, self.model, x_0, forward=True, return_path=return_path)
+            if hasattr(self.config.data1, "conditional_model"):
+                if self.config.data1.conditional_model:
+                    x_f, x_hist, x0_hist, ts = TauLeaping(self.config, self.model, x_0, forward=True,return_path=return_path)
+
+            else:
+                x_f, x_hist, x0_hist, ts = TauLeaping(self.config, self.model, x_0, forward=True, return_path=return_path)
         else:
             # Initialize lists to store results from each batch
             x_f_batches = []
@@ -93,7 +102,13 @@ class CRMPipeline:
 
         # Return results based on flags
         if return_path or return_intermediaries:
-            return x_f, x_hist, ts
+            if origin:
+                return x_f, x_original,x_hist, ts
+            else:
+                return x_f,x_hist,ts
         else:
-            return x_f
+            if origin:
+                return x_f,x_0
+            else:
+                return x_f
 

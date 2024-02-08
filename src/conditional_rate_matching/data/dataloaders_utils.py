@@ -22,6 +22,9 @@ from conditional_rate_matching.data.image_dataloaders import NISTLoader
 from conditional_rate_matching.data.image_dataloaders import DistortedNISTLoader
 from conditional_rate_matching.data.music_dataloaders import LankhPianoRollDataloader
 from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
+from conditional_rate_matching.data.ctdd_target_config import GaussianTargetConfig
+from conditional_rate_matching.data.image_dataloaders_conditional_config import DistortedNISTLoaderConfig
+from conditional_rate_matching.data.image_dataloaders_conditional import DistortedNISTLoader
 
 def get_dataloaders(config):
     """
@@ -81,6 +84,7 @@ def get_dataloaders_crm(config:CRMConfig):
         dataloader_1 = GrayCodeDataLoader(config.data1)
     elif isinstance(config.data1,DiscreteCIFAR10Config):
         dataloader_1 = DiscreteCIFAR10Dataloader(config.data1)
+
     # OTHER BRIDGE ENDS
     elif isinstance(config.data1,BridgeConfig):
         dataloader_1 = GraphDataloaders(config.data0,config.data1.dataset_name)
@@ -128,10 +132,18 @@ def get_dataloaders_crm(config:CRMConfig):
     #============================================
 
     if hasattr(config.data1,"conditional_model"):
-        parent_dataloader = LankhPianoRollDataloader(config.data0)
-        dataloader_0 = parent_dataloader.data0
-        dataloader_1 = parent_dataloader.data1
-        return dataloader_0,dataloader_1,parent_dataloader
+        if isinstance(config.data1,LakhPianoRollConfig):
+            parent_dataloader = LankhPianoRollDataloader(config.data0)
+            dataloader_0 = parent_dataloader.data0
+            dataloader_1 = parent_dataloader.data1
+
+        elif isinstance(config.data1,DistortedNISTLoaderConfig):
+            parent_dataloader = DistortedNISTLoader(config.data0)
+            dataloader_0 = parent_dataloader.data0
+            dataloader_1 = parent_dataloader.data1
+
+        return dataloader_0, dataloader_1, parent_dataloader
+
     else:
         return dataloader_0,dataloader_1,None
     
@@ -180,7 +192,6 @@ def get_dataloader_oops(config):
 
     return dataloader_0
 
-from conditional_rate_matching.data.ctdd_target_config import GaussianTargetConfig
 
 def get_dataloaders_dsb(config:DSBConfig):
     """

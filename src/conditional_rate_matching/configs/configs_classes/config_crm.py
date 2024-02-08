@@ -24,7 +24,11 @@ from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRol
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+<<<<<<< HEAD
 from conditional_rate_matching.data.image_dataloader_config import DistortedNISTLoaderConfig
+=======
+from conditional_rate_matching.data.image_dataloaders_conditional_config import DistortedNISTLoaderConfig
+>>>>>>> origin/main
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
 from conditional_rate_matching.configs import temporal_network_configs
@@ -64,12 +68,13 @@ class BasicPipelineConfig:
     name:str="BasicPipeline"
     number_of_steps:int = 20
     num_intermediates:int = 10
+    time_epsilon = 1e-3
 
 @dataclass
 class CRMConfig:
     # data
-    data0: StatesDataloaderConfig = StatesDataloaderConfig()
-    data1: NISTLoaderConfig = NISTLoaderConfig()
+    data0: Union[LakhPianoRollConfig,StatesDataloaderConfig] = StatesDataloaderConfig()
+    data1: Union[LakhPianoRollConfig,NISTLoaderConfig] = NISTLoaderConfig()
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal_to_rate
@@ -89,7 +94,6 @@ class CRMConfig:
     trainer: CRMTrainerConfig = CRMTrainerConfig()
     #pipeline
     pipeline : BasicPipelineConfig = BasicPipelineConfig()
-
 
     def __post_init__(self):
         if isinstance(self.data0,dict):

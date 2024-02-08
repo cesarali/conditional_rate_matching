@@ -12,6 +12,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_utils 
     TemporalScoreNetworkAConfig,
     TemporalMLPConfig
 )
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ExponentialThermostatConfig
 
 
 """

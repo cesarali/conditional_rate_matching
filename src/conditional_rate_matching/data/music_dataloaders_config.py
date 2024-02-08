@@ -9,7 +9,7 @@ image_data_path = os.path.join(data_path,"raw")
 @dataclass
 class LakhPianoRollConfig:
     name:str = "LakhPianoRoll"
-    dataset_name:str = "lahk_roll" # emnist, fashion, mnist
+    dataset_name:str = "lakh_roll" # emnist, fashion, mnist
     conditional_model:bool = True
     bridge_conditional:bool = True
 
