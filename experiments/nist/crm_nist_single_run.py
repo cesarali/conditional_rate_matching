@@ -136,12 +136,12 @@ if __name__ == "__main__":
     #                device="cuda:0")
 
     # CRM_single_run(dynamics="crm",
-    #                experiment_type="emnist_2_mnist_mlp",
+    #                experiment_type="fashion_2_mnist_mlp",
     #                model="mlp",
     #                epochs=50,
     #                thermostat=None,
     #                coupling_method='uniform', #'OTPlanSampler',
-    #                dataset0='emnist',
+    #                dataset0='fashion',
     #                dataset1="mnist",
     #                metrics = ["mse_histograms", 
     #                           'fid_nist', 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     #                num_layers=7,
     #                dropout=0.15,
     #                gamma=0.15,
-    #                device="cuda:1")
+    #                device="cuda:2")
 
     # CRM_single_run(dynamics="crm",
     #            experiment_type="mnist_unetconv",
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     #            hidden_dim=256,
     #            time_embed_dim=256,
     #            gamma=0.15,
-    #            device="cuda:3")
+    #            device="cuda:0")
     
         # CRM_single_run(dynamics="crm",
     #                 experiment_type="mnist",
@@ -338,7 +338,7 @@ if __name__ == "__main__":
         #        device="cuda:0")
     
         # CRM_single_run(dynamics="crm",
-        #        experiment_type="mnist_unet_128x128_5",
+        #        experiment_type="mnist_unet_128x128_1.5",
         #        model="unet",
         #        epochs=100,
         #        thermostat=None,
@@ -354,11 +354,11 @@ if __name__ == "__main__":
         #        hidden_dim=128,
         #        time_embed_dim=128,
         #        ema_decay=0.99933,
-        #        gamma=5,
-        #        device="cuda:0")
+        #        gamma=1.5,
+        #        device="cuda:2")
 
         # CRM_single_run(dynamics="crm",
-        #        experiment_type="mnist_unet_128x128_10",
+        #        experiment_type="mnist_unet_128x128_2",
         #        model="unet",
         #        epochs=100,
         #        thermostat=None,
@@ -374,17 +374,59 @@ if __name__ == "__main__":
         #        hidden_dim=128,
         #        time_embed_dim=128,
         #        ema_decay=0.99933,
-        #        gamma=10,
-        #        device="cuda:0")
+        #        gamma=2,
+        #        device="cuda:2")
+
+        # CRM_single_run(dynamics="crm",
+        #        experiment_type="mnist_unet_128x128_3",
+        #        model="unet",
+        #        epochs=100,
+        #        thermostat=None,
+        #        coupling_method='uniform',
+        #        dataset0=None,
+        #        dataset1="mnist",
+        #        metrics = ["mse_histograms", 
+        #                   'fid_nist', 
+        #                   "mnist_plot", 
+        #                   "marginal_binary_histograms"],
+        #        batch_size=256,
+        #        learning_rate= 0.00029,
+        #        hidden_dim=128,
+        #        time_embed_dim=128,
+        #        ema_decay=0.99933,
+        #        gamma=3,
+        #        device="cuda:2")
 
     
+        # CRM_single_run(dynamics="crm",
+        #        experiment_type="mnist_unet_128x128_4",
+        #        model="unet",
+        #        epochs=100,
+        #        thermostat=None,
+        #        coupling_method='uniform',
+        #        dataset0=None,
+        #        dataset1="mnist",
+        #        metrics = ["mse_histograms", 
+        #                   'fid_nist', 
+        #                   "mnist_plot", 
+        #                   "marginal_binary_histograms"],
+        #        batch_size=256,
+        #        learning_rate= 0.00029,
+        #        hidden_dim=128,
+        #        time_embed_dim=128,
+        #        ema_decay=0.99933,
+        #        gamma=4,
+        #        device="cuda:2")
+
+    
+
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_0.01",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_0.01",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -396,15 +438,15 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.01,
-               device="cuda:3")
+               device="cuda:2")
     
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_0.05",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_0.05",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -416,15 +458,15 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.05,
-               device="cuda:3")
+               device="cuda:2")
 
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_0.1",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_0.1",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -436,15 +478,15 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.1,
-               device="cuda:3")
+               device="cuda:2")
         
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_0.25",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_0.25",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -456,15 +498,15 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.25,
-               device="cuda:3")
+               device="cuda:2")
 
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_0.5",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_0.5",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0=None,
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -476,15 +518,15 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.5,
-               device="cuda:3")
+               device="cuda:2")
         
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_0.75",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_0.75",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -496,15 +538,15 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.75,
-               device="cuda:3")
+               device="cuda:2")
         
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_1",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_1",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -516,15 +558,95 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=1,
-               device="cuda:3")
-    
+               device="cuda:2")
+
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_5",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_1.5",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
+               dataset1="mnist",
+               metrics = ["mse_histograms", 
+                          'fid_nist', 
+                          "mnist_plot", 
+                          "marginal_binary_histograms"],
+               batch_size=256,
+               learning_rate= 0.00029,
+               hidden_dim=128,
+               time_embed_dim=128,
+               ema_decay=0.99933,
+               gamma=1.5,
+               device="cuda:2")
+    
+        CRM_single_run(dynamics="crm",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_2",
+               model="unet",
+               epochs=100,
+               thermostat=None,
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
+               dataset1="mnist",
+               metrics = ["mse_histograms", 
+                          'fid_nist', 
+                          "mnist_plot", 
+                          "marginal_binary_histograms"],
+               batch_size=256,
+               learning_rate= 0.00029,
+               hidden_dim=128,
+               time_embed_dim=128,
+               ema_decay=0.99933,
+               gamma=2,
+               device="cuda:2")
+        
+        CRM_single_run(dynamics="crm",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_3",
+               model="unet",
+               epochs=100,
+               thermostat=None,
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
+               dataset1="mnist",
+               metrics = ["mse_histograms", 
+                          'fid_nist', 
+                          "mnist_plot", 
+                          "marginal_binary_histograms"],
+               batch_size=256,
+               learning_rate= 0.00029,
+               hidden_dim=128,
+               time_embed_dim=128,
+               ema_decay=0.99933,
+               gamma=3,
+               device="cuda:2")
+
+        CRM_single_run(dynamics="crm",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_4",
+               model="unet",
+               epochs=100,
+               thermostat=None,
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
+               dataset1="mnist",
+               metrics = ["mse_histograms", 
+                          'fid_nist', 
+                          "mnist_plot", 
+                          "marginal_binary_histograms"],
+               batch_size=256,
+               learning_rate= 0.00029,
+               hidden_dim=128,
+               time_embed_dim=128,
+               ema_decay=0.99933,
+               gamma=4,
+               device="cuda:2")
+
+        CRM_single_run(dynamics="crm",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_5",
+               model="unet",
+               epochs=100,
+               thermostat=None,
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -536,15 +658,15 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=5,
-               device="cuda:3")
+               device="cuda:2")
 
         CRM_single_run(dynamics="crm",
-               experiment_type="emnist_to_mnist_unet_128x128_10",
+               experiment_type="fashion_to_mnist_OT_unet_128x128_10",
                model="unet",
                epochs=100,
                thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               coupling_method='OTPlanSampler',
+               dataset0="fashion",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -556,4 +678,4 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=10,
-               device="cuda:0")
+               device="cuda:2")
