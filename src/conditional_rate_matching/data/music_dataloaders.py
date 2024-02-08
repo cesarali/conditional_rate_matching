@@ -46,10 +46,6 @@ def get_conditional_data(train_data,test_data,config:LakhPianoRollConfig):
 
     return (train_data_0,test_data_0),(train_data_1,test_data_1)
 
-def create_conditionals():
-    return None
-
-
 
 class LankhPianoRollDataloaderDataEdge:
 

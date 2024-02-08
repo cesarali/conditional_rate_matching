@@ -35,7 +35,8 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
     config.trainer = CRMTrainerConfig(
         number_of_epochs=epochs,
         learning_rate=1e-4,
-        metrics=[MetricsAvaliable.hellinger_distance]
+        metrics=[MetricsAvaliable.hellinger_distance,
+                 MetricsAvaliable.categorical_histograms]
     )
 
     config.pipeline = BasicPipelineConfig(number_of_steps=5)
@@ -47,7 +48,7 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-    config = experiment_music_conditional_config(5,temporal_network_name="mlp")
+    config = experiment_music_conditional_config(10,temporal_network_name="mlp")
 
     config.trainer.debug = True
     config.trainer.device = "cpu"
@@ -56,4 +57,4 @@ if __name__=="__main__":
     call_trainer(config,
                  experiment_name="prenzlauer_experiment",
                  experiment_type="crm_music",
-                 experiment_indentifier=None)
+                 experiment_indentifier="second_experiment")

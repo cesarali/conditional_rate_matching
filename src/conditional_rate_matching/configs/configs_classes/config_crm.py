@@ -21,6 +21,7 @@ from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRol
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+from conditional_rate_matching.data.image_dataloaders_conditional_config import DistortedNISTLoaderConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
 from conditional_rate_matching.configs import temporal_network_configs
@@ -30,6 +31,7 @@ from conditional_rate_matching.data.graph_dataloaders_config import BridgeConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig,LogThermostatConfig
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
+                "DistortedNISTLoader":DistortedNISTLoaderConfig,
                 "LakhPianoRoll":LakhPianoRollConfig,
                 "GraphDataloader":GraphDataloaderConfig,
                 "BridgeConfig":BridgeConfig,
@@ -59,6 +61,7 @@ class BasicPipelineConfig:
     name:str="BasicPipeline"
     number_of_steps:int = 20
     num_intermediates:int = 10
+    time_epsilon = 1e-3
 
 @dataclass
 class CRMConfig:

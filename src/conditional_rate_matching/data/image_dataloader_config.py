@@ -38,8 +38,6 @@ class DiscreteCIFAR10Config:
         self.data_min_max = [0,255]
         self.test_split = float(self.test_size/self.total_data_size)
 
-
-
 @dataclass
 class NISTLoaderConfig:
     name:str = "NISTLoader"

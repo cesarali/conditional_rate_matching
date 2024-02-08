@@ -29,15 +29,16 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
     D = x_0.size(1)
     S = config.data0.vocab_size
     num_steps = config.pipeline.number_of_steps
+    time_epsilon = config.pipeline.time_epsilon
     min_t = 1./num_steps
     device = x_0.device
 
     with torch.no_grad():
         x = x_0
-        ts = np.concatenate((np.linspace(1.0, min_t, num_steps), np.array([0])))
+        ts = np.concatenate((np.linspace(1.0 - time_epsilon, min_t, num_steps), np.array([0])))
 
         if return_path:
-            save_ts = np.concatenate((np.linspace(1.0, min_t, num_steps), np.array([0])))
+            save_ts = np.concatenate((np.linspace(1.0 - time_epsilon, min_t, num_steps), np.array([0])))
         else:
             save_ts = ts[np.linspace(0, len(ts)-2, config.pipeline.num_intermediates, dtype=int)]
 
