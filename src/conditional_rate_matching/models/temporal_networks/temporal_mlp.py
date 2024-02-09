@@ -17,14 +17,9 @@ class TemporalDeepMLP(nn.Module):
                  device):
 
         super().__init__()
-<<<<<<< HEAD
-        self.dimensions = config.data0.dimensions
-        self.vocab_size = config.data0.vocab_size
-=======
         self.config = config
         self.dimensions = config.data1.dimensions
         self.vocab_size = config.data1.vocab_size
->>>>>>> origin/main
         self.define_deep_models(config)
         self.init_weights()
         self.to(device)

@@ -31,13 +31,9 @@ from conditional_rate_matching.data.image_dataloader_config import NISTLoaderCon
 #graph
 from conditional_rate_matching.models.metrics.graphs_metrics import eval_graph_list
 from conditional_rate_matching.utils.plots.graph_plots import plot_graphs_list2
-<<<<<<< HEAD
-from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
-=======
 
 #hellinger
 from conditional_rate_matching.models.metrics.completion_metrics import hellinger_distance
->>>>>>> origin/main
 from conditional_rate_matching.utils.plots.gray_code_plots import plot_samples
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
