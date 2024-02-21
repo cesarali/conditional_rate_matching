@@ -17,6 +17,12 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
     InvertedExponentialThermostatConfig
 )
 
+from conditional_rate_matching.models.networks.mlp_config import MLPConfig
+
+conditional_network_configs = {
+    "MLP":MLPConfig
+}
+
 temporal_network_configs = {
     "TemporalMLP":TemporalMLPConfig,
     "TemporalLeNet5":TemporalLeNet5Config,

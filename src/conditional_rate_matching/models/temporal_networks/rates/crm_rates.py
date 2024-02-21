@@ -5,6 +5,7 @@ from conditional_rate_matching.configs.configs_classes.config_crm import CRMConf
 
 from conditional_rate_matching.models.pipelines.thermostat.thermostat_utils import load_thermostat
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
+from conditional_rate_matching.models.networks.conditional_networks_utils import get_conditional_network
 from conditional_rate_matching.utils.integration import integrate_quad_tensor_vec
 from conditional_rate_matching.models.temporal_networks.ema import EMA
 
@@ -29,6 +30,8 @@ class ClassificationForwardRate(EMA,nn.Module):
         self.dimensions = config.data1.dimensions
         self.temporal_network_to_rate = config.temporal_network_to_rate
         self.expected_data_shape = config.data1.temporal_net_expected_shape
+
+
         self.define_deep_models(config,device)
         self.define_thermostat(config)
         self.to(device)
@@ -36,6 +39,8 @@ class ClassificationForwardRate(EMA,nn.Module):
 
     def define_deep_models(self,config,device):
         self.temporal_network = load_temporal_network(config,device=device)
+        self.conditional_network = get_conditional_network(config,device=device)
+
         self.expected_temporal_output_shape = self.temporal_network.expected_output_shape
         if self.expected_temporal_output_shape != [self.dimensions,self.vocab_size]:
             temporal_output_total = reduce(lambda x, y: x * y, self.expected_temporal_output_shape)
@@ -82,7 +87,7 @@ class ClassificationForwardRate(EMA,nn.Module):
             change_logits = change_logits.reshape(batch_size,self.dimensions,self.vocab_size)
         return change_logits
 
-    def forward(self, x, time):
+    def forward(self, x, time, conditional=None):
         """
         RATE
 
@@ -90,6 +95,8 @@ class ClassificationForwardRate(EMA,nn.Module):
         :param time:
         :return:[batch_size,dimensions,vocabulary_size]
         """
+
+
         batch_size = x.size(0)
         if len(x.shape) != 2:
             x = x.reshape(batch_size,-1)

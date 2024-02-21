@@ -12,11 +12,14 @@ class LakhPianoRollConfig:
     dataset_name:str = "lakh_roll" # emnist, fashion, mnist
     conditional_model:bool = True
     bridge_conditional:bool = True
+    conditional_tau_leaping:bool = False
 
     batch_size: int= 32
     data_dir:str = image_data_path
 
     conditional_dimension:int = 12
+    generation_dimension:int = 244
+
     dimensions: int = 256
     vocab_size: int = 129
 
@@ -38,7 +41,10 @@ class LakhPianoRollConfig:
         self.dimensions, self.temporal_net_expected_shape = self.dimensions, [self.dimensions]
         self.number_of_labels = None
         self.test_split = self.test_size/float(self.total_data_size)
-
+        #==========================================================
+        # CHECK FOR CONDITIONAL MODEL
+        if self.conditional_model and not self.bridge_conditional:
+            self.conditional_tau_leaping = True
 
     def expected_shape(self,as_image,flatten,unet=False):
         if as_image:

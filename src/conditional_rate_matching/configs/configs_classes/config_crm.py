@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from dataclasses import field,asdict
 from conditional_rate_matching import data_path
 
+from conditional_rate_matching.models.networks.mlp_config import MLPConfig
+
 # model config
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
@@ -13,7 +15,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
     DiffusersUnet2DConfig,
-    TemporalScoreNetworkAConfig
+    TemporalScoreNetworkAConfig,
+    SequenceTransformerConfig
 )
 
 # data config
@@ -24,7 +27,7 @@ from conditional_rate_matching.data.image_dataloader_config import NISTLoaderCon
 from conditional_rate_matching.data.image_dataloaders_conditional_config import DistortedNISTLoaderConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
-from conditional_rate_matching.configs import temporal_network_configs
+from conditional_rate_matching.configs import temporal_network_configs,conditional_network_configs
 from conditional_rate_matching.configs import thermostat_configs
 from conditional_rate_matching.models.pipelines.pipelines_config import BasicPipelineConfig
 from conditional_rate_matching.data.graph_dataloaders_config import BridgeConfig
@@ -61,7 +64,7 @@ class BasicPipelineConfig:
     name:str="BasicPipeline"
     number_of_steps:int = 20
     num_intermediates:int = 10
-    time_epsilon = 1e-3
+    time_epsilon = 0.05
 
 @dataclass
 class CRMConfig:
@@ -73,7 +76,9 @@ class CRMConfig:
     # temporal_to_rate
     temporal_network_to_rate : Union[int,float] = None
     # temporal network
-    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig] = TemporalMLPConfig()
+    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig,SequenceTransformerConfig] = TemporalMLPConfig()
+    # conditional model
+    conditional_network: MLPConfig = None
     # ot
     optimal_transport:OptimalTransportSamplerConfig = OptimalTransportSamplerConfig()
     # training
@@ -90,6 +95,9 @@ class CRMConfig:
 
         if isinstance(self.temporal_network,dict):
             self.temporal_network = temporal_network_configs[self.temporal_network["name"]](**self.temporal_network)
+
+        if isinstance(self.conditional_network,dict):
+            self.temporal_network = conditional_network_configs[self.conditional_network["name"]](**self.conditional_network)
 
         if isinstance(self.optimal_transport,dict):
             self.optimal_transport = OptimalTransportSamplerConfig(**self.optimal_transport)

@@ -76,6 +76,18 @@ class CRMTrainer(Trainer):
             self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer,
                                                                     gamma=self.config.trainer.lr_decay)
 
+        conditional_tau_leaping = False
+        if hasattr(self.config.data1, "conditional_model"):
+            self.conditional_model = self.config.data1.conditional_model
+            self.conditional_dimension = self.config.data1.conditional_dimension
+            self.generation_dimension = self.config.data1.dimensions - self.conditional_dimension
+
+        if hasattr(self.config.data1, "conditional_model"):
+            self.bridge_conditional = self.config.data1.bridge_conditional
+
+        if self.conditional_model and not self.bridge_conditional:
+            self.conditional_tau_leaping = True
+
         return np.inf
 
     def train_step(self,databatch, number_of_training_step,epoch):
@@ -91,20 +103,42 @@ class CRMTrainer(Trainer):
             batch_size = x_1.size(0)
             x_1 = x_1.reshape(batch_size,-1)
 
+        # conditional model
+        if self.conditional_tau_leaping:
+            conditioner = x_0[:, 0:self.conditional_dimension]
+            noise = x_0[:, self.conditional_dimension:]
+
         # time selection
         batch_size = x_0.size(0)
         time = torch.rand(batch_size).to(self.device)
 
         # sample x from z
-        sampled_x = self.generative_model.forward_rate.sample_x(x_1, x_0, time)
+        sampled_x = self.generative_model.forward_rate.sample_x(x_1, x_0, time).float()
+        if self.conditional_tau_leaping:
+            conditional_sampled_x = sampled_x[:, self.conditional_dimension:]
 
         # loss
-        model_classification = self.generative_model.forward_rate.classify(sampled_x.float(), time)
-        model_classification_ = model_classification.view(-1, self.config.data1.vocab_size)
-        x_1 = x_1.view(-1)
+        if self.conditional_tau_leaping:
+            completed_sampled_x = torch.concat((conditioner, conditional_sampled_x), dim=1)
+            model_classification = self.generative_model.forward_rate.classify(completed_sampled_x, time)
 
-        loss = self.generative_model.loss(model_classification_,x_1.long())
+            model_classification_ = model_classification[:, self.conditional_dimension:,:]
+            x_1_ = x_1[:,self.conditional_dimension:]
 
+            # reshape for cross logits
+            model_classification_ = model_classification_.reshape(-1, self.config.data1.vocab_size)
+            x_1_ = x_1_.reshape(-1)
+
+            loss = self.generative_model.loss(model_classification_, x_1_.long())
+        else:
+            model_classification = self.generative_model.forward_rate.classify(sampled_x, time)
+            model_classification_ = model_classification.view(-1, self.config.data1.vocab_size)
+            x_1 = x_1.view(-1)
+            loss = self.generative_model.loss(model_classification_,x_1.long())
+
+        #=================================================
+        # REGULARIZATION
+        #=================================================
         if self.config.trainer.loss_regularize_variance:
             variance = self.generative_model.forward_rate.compute_variance_torch(time,x_1,x_0)
             variance = variance.view(-1)
@@ -119,6 +153,7 @@ class CRMTrainer(Trainer):
             rate_regularizer = rate_regularizer[:,None]
             rate_regularizer = rate_regularizer.repeat((1,self.config.data1.dimensions)).view(-1)
             loss = rate_regularizer*loss
+        #==================================================
 
         loss = loss.mean()
 

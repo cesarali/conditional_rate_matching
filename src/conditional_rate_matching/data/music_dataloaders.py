@@ -21,7 +21,10 @@ def get_data(config:LakhPianoRollConfig):
     if config.max_test_size is not None:
         test_data = test_data[:min(config.max_test_size, len(test_data))]
 
-    return torch.Tensor(train_data),torch.Tensor(test_data)
+    descramble_datafile = os.path.join(data_path, "pianoroll_dataset", "pianoroll_dataset", "descramble_key.txt")
+    descramble_key = np.loadtxt(descramble_datafile)
+
+    return torch.Tensor(train_data),torch.Tensor(test_data),descramble_key
 
 def get_conditional_data(train_data,test_data,config:LakhPianoRollConfig):
     config.dirichlet_alpha = 100.
@@ -37,27 +40,29 @@ def get_conditional_data(train_data,test_data,config:LakhPianoRollConfig):
     train_data_0 = torch.cat([train_data[:,:config.conditional_dimension],training_noise[:,config.conditional_dimension:]],dim=1)
     test_data_0 = torch.cat([test_data[:,:config.conditional_dimension],test_noise[:,config.conditional_dimension:]],dim=1)
 
-    if config.bridge_conditional:
-        train_data_1 = train_data
-        test_data_1 = test_data
-    else:
-        train_data_1 = torch.cat([train_data[:,]],training_noise[:])
-        test_data_1 = torch.cat([test_data[:],test_noise[:]])
+    train_data_1 = train_data
+    test_data_1 = test_data
 
-    return (train_data_0,test_data_0),(train_data_1,test_data_1)
+    return (train_data_1,test_data_1),(train_data_0,test_data_0)
 
 
 class LankhPianoRollDataloaderDataEdge:
 
-    def __init__(self,test_dl,train_dl):
+    def __init__(self,test_dl,train_dl,descramble):
         self.test_dl = test_dl
         self.train_dl = train_dl
+        self.descramble_ = descramble
+
 
     def train(self):
         return self.train_dl
 
     def test(self):
         return self.test_dl
+
+    def descramble(self,sample):
+        return self.descramble_(sample)
+
 
 
 class LankhPianoRollDataloader:
@@ -75,7 +80,7 @@ class LankhPianoRollDataloader:
         self.music_config = music_config
         self.number_of_spins = self.music_config.dimensions
 
-        train_data,test_data = get_data(music_config)
+        train_data,test_data,descramble_key = get_data(music_config)
         if self.music_config.conditional_model:
             data_1, data_0 = get_conditional_data(train_data,test_data,self.music_config)
             self.create_conditional_dataloaders(data_1,data_0)
@@ -83,6 +88,10 @@ class LankhPianoRollDataloader:
             self.train_dataloader_,self.test_dataloader_ = self.create_dataloaders(train_data,test_data)
 
         self.fake_time_ = torch.rand(self.music_config.batch_size)
+        self.descramble_key = descramble_key
+
+    def descramble(self,samples):
+        return self.descramble_key[samples.flatten().astype(int)].reshape(*samples.shape)
 
     def train(self):
         if self.music_config.conditional_model:
@@ -146,22 +155,22 @@ class LankhPianoRollDataloader:
 
         self.data0_train = DataLoader(train0_ds,
                                  batch_size=self.music_config.batch_size,
-                                 shuffle=True)
+                                 shuffle=False)
 
         self.data1_train = DataLoader(train1_ds,
                                  batch_size=self.music_config.batch_size,
-                                 shuffle=True)
+                                 shuffle=False)
 
         self.data0_test = DataLoader(test0_ds,
                                 batch_size=self.music_config.batch_size,
-                                shuffle=True)
+                                shuffle=False)
 
         self.data1_test = DataLoader(test1_ds,
                                 batch_size=self.music_config.batch_size,
-                                shuffle=True)
+                                shuffle=False)
 
-        self.data1 = LankhPianoRollDataloaderDataEdge(self.data1_test,self.data1_train)
-        self.data0 = LankhPianoRollDataloaderDataEdge(self.data0_test,self.data0_train)
+        self.data1 = LankhPianoRollDataloaderDataEdge(self.data1_test,self.data1_train,descramble=self.descramble)
+        self.data0 = LankhPianoRollDataloaderDataEdge(self.data0_test,self.data0_train,descramble=self.descramble)
 
         #=======================
         # JOIN

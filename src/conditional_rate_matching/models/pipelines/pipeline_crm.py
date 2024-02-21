@@ -18,15 +18,31 @@ class CRMPipeline:
         self.model = model
         self.device = check_model_devices(self.model)
 
-    def get_x0_sample(self,sample_size,train=True):
-        # select the right iterator
-        if hasattr(self.dataloder_0, "train"):
-            dataloder_iterator = self.dataloder_0.train() if train else self.dataloder_0.test()
-        else:
-            dataloder_iterator = self.dataloder_0
-        x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
+    def get_x0_sample(self,sample_size,train=True,origin=False):
+        if not origin:
+            # select the right iterator
+            if hasattr(self.dataloder_0, "train"):
+                dataloder_iterator = self.dataloder_0.train() if train else self.dataloder_0.test()
+            else:
+                dataloder_iterator = self.dataloder_0
+            x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
 
-        return x_0
+            return x_0,None
+        else:
+            if hasattr(self.dataloder_0, "train"):
+                dataloder_iterator = self.dataloder_0.train() if train else self.dataloder_0.test()
+            else:
+                dataloder_iterator = self.dataloder_0
+            x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
+
+            if hasattr(self.dataloder_1, "train"):
+                dataloder_iterator = self.dataloder_1.train() if train else self.dataloder_1.test()
+            else:
+                dataloder_iterator = self.dataloder_1
+
+            x_1 = sample_from_dataloader(dataloder_iterator, sample_size)
+            return x_0,x_1
+
 
     def __call__(self,
                  sample_size=100,
@@ -55,19 +71,19 @@ class CRMPipeline:
 
         # Get the initial sample
         if x_0 is None:
-            x_0 = self.get_x0_sample(sample_size=sample_size, train=train).to(self.device)
+            x_0,x_original = self.get_x0_sample(sample_size=sample_size, train=train,origin=origin)
+            x_0 = x_0.to(self.device)
+            if x_original is not None:
+                x_original = x_original.to(self.device)
         else:
             batch_size = x_0.size(0)
             x_0 = x_0.view(batch_size,-1)
 
-
-        x_original = x_0.clone()
         # If batch_size is not set or sample_size is within the batch limit, process normally
         if batch_size is None or sample_size <= batch_size:
             if hasattr(self.config.data1, "conditional_model"):
                 if self.config.data1.conditional_model:
                     x_f, x_hist, x0_hist, ts = TauLeaping(self.config, self.model, x_0, forward=True,return_path=return_path)
-
             else:
                 x_f, x_hist, x0_hist, ts = TauLeaping(self.config, self.model, x_0, forward=True, return_path=return_path)
         else:
@@ -108,7 +124,7 @@ class CRMPipeline:
                 return x_f,x_hist,ts
         else:
             if origin:
-                return x_f,x_0
+                return x_f,x_original
             else:
                 return x_f
 

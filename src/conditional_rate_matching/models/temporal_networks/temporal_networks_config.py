@@ -86,7 +86,7 @@ class DiffusersUnet2DConfig:
 
 @dataclass
 class TemporalScoreNetworkAConfig:
-    name: "str" = "TemporalScoreNetworkA"
+    name: str = "TemporalScoreNetworkA"
     conv: str = "GCN" # MLP,GCN
     num_heads:int = 4
     depth: int = 3
@@ -100,6 +100,22 @@ class TemporalScoreNetworkAConfig:
 
     time_embed_dim: int = 128
     time_scale_factor: int = 1000
+
+    ema_decay :float = 0.9999  # 0.9999
+
+
+@dataclass
+class SequenceTransformerConfig:
+    name: str = "SequenceTransformer"
+    num_layers:int = 6
+    d_model:int = 128
+    num_heads:int = 8
+    dim_feedforward:int = 2048
+    dropout:float = 0.1
+    temb_dim:int = 128
+    num_output_FFresiduals:int = 2
+    time_scale_factor:int = 1000
+    use_one_hot_input:bool = True
 
     ema_decay :float = 0.9999  # 0.9999
 
