@@ -34,6 +34,8 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
     device = x_0.device
 
     conditional_tau_leaping = False
+    conditional_model = False
+    bridge_conditional = False
     if hasattr(config.data1,"conditional_model"):
         conditional_model = config.data1.conditional_model
         conditional_dimension = config.data1.conditional_dimension

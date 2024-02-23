@@ -39,8 +39,6 @@ class ClassificationForwardRate(EMA,nn.Module):
 
     def define_deep_models(self,config,device):
         self.temporal_network = load_temporal_network(config,device=device)
-        self.conditional_network = get_conditional_network(config,device=device)
-
         self.expected_temporal_output_shape = self.temporal_network.expected_output_shape
         if self.expected_temporal_output_shape != [self.dimensions,self.vocab_size]:
             temporal_output_total = reduce(lambda x, y: x * y, self.expected_temporal_output_shape)
@@ -56,11 +54,6 @@ class ClassificationForwardRate(EMA,nn.Module):
                     nn.Linear(temporal_output_total, intermediate_to_rate),
                     nn.Linear(intermediate_to_rate, self.dimensions * self.vocab_size)
                 )
-
-        if hasattr(self.config.data1, "conditional_model"):
-            if self.config.data1.conditional_model:
-                self.conditional_layer = nn.Linear(self.config.data1.conditional_dimension,
-                                                   self.config.temporal_network.hidden_dim)
 
     def define_thermostat(self,config):
         self.thermostat = load_thermostat(config)

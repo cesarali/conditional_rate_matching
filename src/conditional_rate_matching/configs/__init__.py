@@ -6,6 +6,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     TemporalGraphConvNetConfig,
     TemporalDeepMLPConfig,
     TemporalScoreNetworkAConfig,
+    SequenceTransformerConfig,
     DiffusersUnet2DConfig,
     UConvNISTNetConfig
 )
@@ -27,6 +28,7 @@ temporal_network_configs = {
     "TemporalMLP":TemporalMLPConfig,
     "TemporalLeNet5":TemporalLeNet5Config,
     "ConvNetAutoencoder":ConvNetAutoencoderConfig,
+    "SequenceTransformer":SequenceTransformerConfig,
     "TemporalDeepMLP":TemporalDeepMLPConfig,
     "TemporalDeepSets":TemporalDeepSetsConfig,
     "TemporalGraphConvNet":TemporalGraphConvNetConfig,

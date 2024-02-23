@@ -76,7 +76,8 @@ class CRMTrainer(Trainer):
             self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer,
                                                                     gamma=self.config.trainer.lr_decay)
 
-        conditional_tau_leaping = False
+        self.conditional_tau_leaping = False
+        self.conditional_model = False
         if hasattr(self.config.data1, "conditional_model"):
             self.conditional_model = self.config.data1.conditional_model
             self.conditional_dimension = self.config.data1.conditional_dimension

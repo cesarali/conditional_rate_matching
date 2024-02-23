@@ -19,10 +19,13 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 
 from conditional_rate_matching.models.temporal_networks.temporal_diffusers_wrappers import DiffusersUnet2D
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import DiffusersUnet2DConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import CFMUnetConfig
 
 from conditional_rate_matching.models.temporal_networks.temporal_gnn.TemporalScoreNetwork_A import TemporalScoreNetworkA
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalScoreNetworkAConfig
 from conditional_rate_matching.models.temporal_networks.temporal_transformers import SequenceTransformer
+
+from conditional_rate_matching.models.temporal_networks.unet import UNetModelWrapper
 
 def load_temporal_network(config:CRMConfig, device):
     if isinstance(config.temporal_network,TemporalMLPConfig):
@@ -45,6 +48,8 @@ def load_temporal_network(config:CRMConfig, device):
         temporal_network = TemporalLeNet5(config, device)
     elif isinstance(config.temporal_network, SequenceTransformerConfig):
         temporal_network = SequenceTransformer(config, device)
+    elif isinstance(config.temporal_network,CFMUnetConfig):
+        temporal_network = UNetModelWrapper(**config.temporal_network.__dict__).to(device)
     else:
         raise Exception("Temporal Network not Defined")
     return temporal_network

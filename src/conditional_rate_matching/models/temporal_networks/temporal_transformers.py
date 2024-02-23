@@ -259,7 +259,7 @@ class SequenceTransformer(nn.Module):
         super().__init__()
 
         num_layers = cfg.temporal_network.num_layers
-        d_model = cfg.temporal_network.hidden_dim
+        d_model = cfg.temporal_network.d_model
         num_heads = cfg.temporal_network.num_heads
         dim_feedforward = cfg.temporal_network.dim_feedforward
         dropout = cfg.temporal_network.dropout
@@ -281,6 +281,7 @@ class SequenceTransformer(nn.Module):
         #    self.net = DDP(tmp_net, device_ids=[rank])
         #else:
         self.net = tmp_net
+        self.expected_output_shape = [256, 129]
 
     def forward(self,
         x: TensorType["B", "D"],

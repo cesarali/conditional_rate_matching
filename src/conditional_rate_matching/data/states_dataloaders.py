@@ -48,9 +48,9 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
     train_samples = categorical_samples[test_size:]
     test_samples = categorical_samples[:test_size]
 
-    if test_samples.size(0) > max_test_size:
-        test_samples = test_samples[:max_test_size]
-
+    if max_test_size is not None:
+        if test_samples.size(0) > max_test_size:
+            test_samples = test_samples[:max_test_size]
 
     train_dataset, test_dataset = TensorDataset(train_samples), TensorDataset(test_samples)
 

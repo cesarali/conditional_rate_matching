@@ -57,7 +57,6 @@ def variance_scaling(scale, mode, distribution,
 
     return init
 
-
 def default_init(scale=1.):
     """The same initialization used in DDPM."""
     scale = 1e-10 if scale == 0 else scale

@@ -38,7 +38,6 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
     if temporal_network_name == "transformer":
         config.temporal_network = SequenceTransformerConfig()
 
-    config.conditional_network = MLPConfig()
 
     config.trainer = CRMTrainerConfig(
         number_of_epochs=epochs,
@@ -47,20 +46,18 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
                  MetricsAvaliable.music_plot]
     )
     config.pipeline = BasicPipelineConfig(number_of_steps=5)
-    config.temporal_network = TemporalDeepMLPConfig()
     return config
 
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
+    from conditional_rate_matching.models.temporal_networks.temporal_networks_config import SequenceTransformerConfig
 
     config = experiment_music_conditional_config(10,temporal_network_name="transformer")
 
+    config.temporal_network = SequenceTransformerConfig(num_layers=1,num_heads=1)
     config.trainer.debug = True
     config.trainer.device = "cpu"
-
-    config.temporal_network.num_layers = 2
-    config.temporal_network.num_heads = 1
 
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 

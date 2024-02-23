@@ -1,4 +1,4 @@
-from typing import List
+from typing import List,Tuple
 from dataclasses import dataclass,asdict,field
 
 @dataclass
@@ -83,6 +83,28 @@ class DiffusersUnet2DConfig:
 
     def __post_init__(self):
         self.ch = self.time_embed_dim
+
+NUM_CLASSES = 1000
+
+@dataclass
+class CFMUnetConfig:
+    dim: Tuple[int]= field(default_factory=lambda:(1, 28, 28))
+    num_channels:int=32
+    num_res_blocks:int=1
+    channel_mult: int = None
+    learn_sigma: int = False
+    class_cond: int = False
+    num_classes: int = NUM_CLASSES
+    use_checkpoint: int = False
+    attention_resolutions: int = "16"
+    num_heads:int = 1
+    num_head_channels:int = -1
+    num_heads_upsample:int = -1
+    use_scale_shift_norm:bool = False
+    dropout:int = 0
+    resblock_updown:bool = False
+    use_fp16:bool = False
+    use_new_attention_order:bool = False
 
 @dataclass
 class TemporalScoreNetworkAConfig:
