@@ -33,6 +33,7 @@ from conditional_rate_matching.utils.plots.graph_plots import plot_graphs_list2
 
 #hellinger
 from conditional_rate_matching.models.metrics.completion_metrics import hellinger_distance
+from conditional_rate_matching.models.metrics.completion_metrics import outliers
 from conditional_rate_matching.utils.plots.gray_code_plots import plot_samples
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
@@ -56,6 +57,7 @@ class MetricsAvaliable:
     grayscale_plot: str = "grayscale_plot"
 
     hellinger_distance:str = "hellinger_distance"
+    outliers:str = "outliers"
     music_plot:str = "music_plot"
     loss_variance_times:str = "loss_variance_times"
 
@@ -139,7 +141,13 @@ def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {},
     metric_string_name = "hellinger_distance"
     if metric_string_name in metrics_to_log:
         hellinger_ = hellinger_distance(generative_sample,origin_sample,config)
-        mse_metrics = {"hellinger_distance": hellinger_.item()}
+        mse_metrics = {"hellinger_distance": hellinger_}
+        all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=mse_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
+
+    metric_string_name = "outliers"
+    if metric_string_name in metrics_to_log:
+        outliers_ = outliers(generative_sample,origin_sample,config)
+        mse_metrics = {"outliers":outliers_}
         all_metrics = store_metrics(generative_model.experiment_files, all_metrics, new_metrics=mse_metrics, metric_string_name=metric_string_name, epoch=epoch, where_to_log=where_to_log)
 
     from conditional_rate_matching.utils.plots.music_plots import music_plot_conditional
