@@ -51,7 +51,7 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(10,"emnist",temporal_network_name="crm_unet")
+    config = experiment_nist(10,"emnist",temporal_network_name="cfm_unet")
     config.trainer.debug = True
     config.trainer.device = "cpu"
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
