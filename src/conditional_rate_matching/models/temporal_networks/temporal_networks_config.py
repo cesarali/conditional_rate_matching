@@ -88,6 +88,7 @@ NUM_CLASSES = 1000
 
 @dataclass
 class CFMUnetConfig:
+    name: str =  "CFMUnet"
     dim: Tuple[int]= field(default_factory=lambda:(1, 28, 28))
     num_channels:int=32
     num_res_blocks:int=1

@@ -36,7 +36,7 @@ def experiment_nist(number_of_epochs=300,
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128)
         crm_config.temporal_network = CFMUnetConfig()
 
-    crm_config.pipeline.number_of_steps = 100
+    crm_config.pipeline.number_of_steps = 10
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
                                           windows=berlin,
                                           metrics=[MetricsAvaliable.mse_histograms,
@@ -51,7 +51,7 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(10,"emnist",temporal_network_name="cfm_unet")
+    config = experiment_nist(2,"emnist",temporal_network_name="cfm_unet")
     config.trainer.debug = True
     config.trainer.device = "cpu"
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)

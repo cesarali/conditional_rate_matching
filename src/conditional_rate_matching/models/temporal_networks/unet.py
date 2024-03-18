@@ -859,6 +859,7 @@ NUM_CLASSES = 1000
 class UNetModelWrapper(UNetModel):
     def __init__(
         self,
+        name,
         dim,
         num_channels,
         num_res_blocks,
