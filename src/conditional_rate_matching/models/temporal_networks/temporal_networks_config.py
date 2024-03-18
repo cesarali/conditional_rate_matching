@@ -105,6 +105,7 @@ class CFMUnetConfig:
     resblock_updown:bool = False
     use_fp16:bool = False
     use_new_attention_order:bool = False
+    ema_decay:float = 0.999
 
 @dataclass
 class TemporalScoreNetworkAConfig:

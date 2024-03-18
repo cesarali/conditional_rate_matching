@@ -876,6 +876,7 @@ class UNetModelWrapper(UNetModel):
         resblock_updown=False,
         use_fp16=False,
         use_new_attention_order=False,
+        ema_decay=0.9999,
     ):
         if isinstance(dim,list):
             dim = tuple(dim)
@@ -925,5 +926,6 @@ class UNetModelWrapper(UNetModel):
             use_new_attention_order=use_new_attention_order,
         )
 
-    def forward(self, t, x, y=None, *args, **kwargs):
+    def forward(self, x, t, y=None, *args, **kwargs):
+
         return super().forward(t, x, y=y)
