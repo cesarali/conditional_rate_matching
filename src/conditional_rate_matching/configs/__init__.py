@@ -9,7 +9,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     TemporalScoreNetworkAConfig,
     SequenceTransformerConfig,
     DiffusersUnet2DConfig,
-    UConvNISTNetConfig
+    UConvNISTNetConfig,
+    CFMUnetConfig
 )
 
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import (
@@ -26,6 +27,7 @@ conditional_network_configs = {
 }
 
 temporal_network_configs = {
+    "CFMUnet" :CFMUnetConfig,
     "TemporalMLP":TemporalMLPConfig,
     "TemporalLeNet5":TemporalLeNet5Config,
     "ConvNetAutoencoder":ConvNetAutoencoderConfig,

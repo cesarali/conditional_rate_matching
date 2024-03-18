@@ -33,6 +33,9 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
     min_t = 1./num_steps
     device = x_0.device
 
+    #==========================================
+    # CONDITIONAL SAMPLING
+    #==========================================
     conditional_tau_leaping = False
     conditional_model = False
     bridge_conditional = False
