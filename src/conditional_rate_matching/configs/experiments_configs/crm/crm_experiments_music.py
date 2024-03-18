@@ -63,6 +63,6 @@ if __name__=="__main__":
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 
     call_trainer(config,
-                 experiment_name="prenzlauer_experiment",
+                 experiment_name="test_piano_roll_transformer",
                  experiment_type="crm_music",
                  experiment_indentifier=None)

@@ -34,7 +34,7 @@ def experiment_nist(number_of_epochs=300,
     elif temporal_network_name == "cfm_unet":
         crm_config.data1 = NISTLoaderConfig(flatten=False,as_image=True, batch_size=128,dataset_name=dataset_name,unet_resize=False)
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128)
-        crm_config.temporal_network = CFMUnetConfig()
+        crm_config.temporal_network = CFMUnetConfig(ema_decay=0.999)
 
     crm_config.pipeline.number_of_steps = 1000
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
