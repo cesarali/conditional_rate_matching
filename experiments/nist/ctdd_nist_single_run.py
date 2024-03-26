@@ -1,7 +1,7 @@
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.ctdd_trainer import CTDDTrainer
 from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig, BasicTrainerConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, TemporalUNetConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig, TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, TemporalUNetConfig,  CFMUnetConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 
@@ -55,6 +55,10 @@ def CTDD_single_run(dynamics="ctdd",
         ctdd_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
         ctdd_config.temporal_network = TemporalUNetConfig(hidden_dim = hidden_dim, time_embed_dim = time_embed_dim, ema_decay=ema_decay)
 
+    if model=="unet_cfm":
+        ctdd_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
+        ctdd_config.temporal_network = CFMUnetConfig()
+
     ctdd_config.trainer = BasicTrainerConfig(number_of_epochs=epochs,
                                              device=device,
                                              metrics=metrics,
@@ -92,19 +96,35 @@ if __name__ == "__main__":
     #                device="cuda:1")
 
     
+    # CTDD_single_run(dynamics="ctdd",
+    #                 experiment_type="mnist",
+    #                 model="lenet5",
+    #                 dataset0="mnist",
+    #                 metrics = ['fid_nist', 
+    #                            'mse_histograms', 
+    #                            "mnist_plot", 
+    #                            "marginal_binary_histograms"],
+    #                 epochs=5,
+    #                 batch_size=256,
+    #                 hidden_dim=256,
+    #                 time_embed_dim=256,
+    #                 learning_rate=1e-4, 
+    #                 num_timesteps=1000,
+    #                 ema_decay=0.9995,
+    #                 device='cuda:2')
+
+        
     CTDD_single_run(dynamics="ctdd",
-                    experiment_type="mnist",
-                    model="lenet5",
+                    experiment_type="noise_to_mnist",
+                    model="unet_cfm",
                     dataset0="mnist",
                     metrics = ['fid_nist', 
                                'mse_histograms', 
                                "mnist_plot", 
                                "marginal_binary_histograms"],
-                    epochs=5,
+                    epochs=2,
                     batch_size=256,
-                    hidden_dim=256,
-                    time_embed_dim=256,
-                    learning_rate=1e-4, 
-                    num_timesteps=1000,
-                    ema_decay=0.9995,
-                    device='cuda:2')
+                    learning_rate= 0.0001,
+                    hidden_dim=128,
+                    time_embed_dim=128,
+                    device='cuda:1')
