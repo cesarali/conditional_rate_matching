@@ -1,7 +1,7 @@
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
-from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig, ExponentialThermostatConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, TemporalUNetConfig, CFMUnetConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
@@ -31,9 +31,7 @@ def CRM_single_run(dynamics="crm",
                     dropout=0.1,
                     num_layers=3,
                     activation="ReLU",
-                    gamma=1.0,
-                    thermostat_time_exponential=3.,
-                    thermostat_time_base=1.0,
+                    gamma_thermostat =1.0,
                     num_timesteps=1000,
                     ema_decay=0.999
                     ):
@@ -96,8 +94,14 @@ def CRM_single_run(dynamics="crm",
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
         crm_config.temporal_network = UConvNISTNetConfig()
 
-    if thermostat == "log": crm_config.thermostat = LogThermostatConfig(time_exponential=thermostat_time_exponential, time_base=thermostat_time_base,)
-    else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
+    if thermostat == "LogThermostat": 
+        crm_config.thermostat = LogThermostatConfig(time_exponential=gamma_thermostat, time_base=1.0,)
+    
+    elif thermostat == "ExponentialThermostat":
+        crm_config.thermostat = ExponentialThermostatConfig(max=1.0, gamma=gamma_thermostat,)
+    
+    else: 
+        crm_config.thermostat = ConstantThermostatConfig(gamma=gamma_thermostat)
 
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
                                           learning_rate=learning_rate,
@@ -134,8 +138,8 @@ if __name__ == "__main__":
         CRM_single_run(dynamics="crm",
                experiment_type=experiment + '_' + gamma + '_' + ensemble,
                model="unet_cfm",
-               epochs=100,
-               thermostat=None,
+               epochs=200,
+               thermostat="ExponentialThermostat",
                coupling_method=coupling,
                dataset0=dataset0,
                dataset1="mnist",
@@ -147,7 +151,7 @@ if __name__ == "__main__":
                learning_rate= 0.0001,
                hidden_dim=128,
                time_embed_dim=128,
-               gamma=float(gamma),
+               gamma_thermostat=float(gamma),
                device="cuda:" + cuda)
 
         # CRM_single_run(dynamics="crm",
