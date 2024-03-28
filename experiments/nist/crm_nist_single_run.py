@@ -98,7 +98,7 @@ def CRM_single_run(dynamics="crm",
         crm_config.thermostat = LogThermostatConfig(time_exponential=gamma_thermostat, time_base=1.0,)
     
     elif thermostat == "ExponentialThermostat":
-        crm_config.thermostat = ExponentialThermostatConfig(max=1.0, gamma=gamma_thermostat,)
+        crm_config.thermostat = ExponentialThermostatConfig(max=0.3, gamma=gamma_thermostat,)
     
     else: 
         crm_config.thermostat = ConstantThermostatConfig(gamma=gamma_thermostat)

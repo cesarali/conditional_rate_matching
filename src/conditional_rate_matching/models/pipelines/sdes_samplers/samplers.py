@@ -88,8 +88,14 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
             overall_jump = torch.sum(adj_diffs, dim=2)
             xp = x + overall_jump
             x_new = torch.clamp(xp, min=0, max=S-1)
-
             x = x_new
+            
+            ##################################################
+            ## dario:
+            # p_gt = rate_model(x.float().to(device), times)
+            # x_ = torch.max(p_gt, dim=2)[1]
+            # x = x_.float().to(device)
+            ##################################################
 
         # last step
         if conditional_tau_leaping:
