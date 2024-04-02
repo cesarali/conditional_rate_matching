@@ -62,7 +62,6 @@ class CRM:
         self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1,self.parent_dataloader)
         self.op_sampler = OTPlanSampler(**asdict(self.config.optimal_transport))
 
-
     def load_from_experiment(self,experiment_dir,device=None):
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
         results_ = self.experiment_files.load_results()
