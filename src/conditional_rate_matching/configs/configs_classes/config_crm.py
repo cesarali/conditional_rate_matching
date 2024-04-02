@@ -67,6 +67,15 @@ class BasicPipelineConfig:
     time_epsilon = 0.05
 
 @dataclass
+class TemporalNetworkToRateConfig:
+    name:str = "TemporalNetworkToRate"
+    type_of:str = None # bernoulli, empty, linear, None
+    linear_reduction:Union[float,int] = 0.1 # if None full layer, 
+                                            # if float is the percentage of output dimensions that is assigned as hidden 
+                                            #otherwise hidden
+
+
+@dataclass
 class CRMConfig:
     # data
     data0: Union[LakhPianoRollConfig,StatesDataloaderConfig] = StatesDataloaderConfig()
@@ -74,7 +83,7 @@ class CRMConfig:
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal_to_rate
-    temporal_network_to_rate : Union[int,float] = None
+    temporal_network_to_rate : Union[int,float,TemporalNetworkToRateConfig] = None
     # temporal network
     temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig,SequenceTransformerConfig] = TemporalMLPConfig()
     # conditional model
@@ -110,3 +119,6 @@ class CRMConfig:
 
         if isinstance(self.pipeline,dict):
             self.pipeline = BasicPipelineConfig(**self.pipeline)
+
+        if isinstance(self.temporal_network_to_rate,dict):
+            self.temporal_network_to_rate = TemporalNetworkToRateConfig(**self.temporal_network_to_rate)
