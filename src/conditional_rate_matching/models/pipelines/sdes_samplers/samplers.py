@@ -12,6 +12,7 @@ from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import Sc
 from conditional_rate_matching.models.temporal_networks.rates.crm_rates import ClassificationForwardRate
 
 
+
 def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
                rate_model:Union[ClassificationForwardRate,SchrodingerBridgeRate],
                x_0:torch.Tensor,
@@ -114,6 +115,81 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
             x0_hist = torch.cat(x0_hist,dim=1).float()
 
         return x_0max.detach().float(), x_hist, x0_hist, torch.Tensor(save_ts.copy()).to(device)
+
+
+
+def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
+               rate_model:Union[ClassificationForwardRate,SchrodingerBridgeRate],
+               x_0:torch.Tensor,
+               forward=True,
+               return_path=False):
+    """
+    :param rate_model:
+    :param x_0:
+    :param N:
+    :param num_intermediates:
+    :return:
+    """
+
+    number_of_paths = x_0.size(0)
+    D = x_0.size(1)
+    S = config.data0.vocab_size
+    num_steps = config.pipeline.number_of_steps
+    time_epsilon = config.pipeline.time_epsilon
+    min_t = 1./num_steps
+    device = x_0.device
+
+    #==========================================
+    # CONDITIONAL SAMPLING
+    #==========================================
+    conditional_tau_leaping = False
+    conditional_model = False
+    bridge_conditional = False
+    if hasattr(config.data1,"conditional_model"):
+        conditional_model = config.data1.conditional_model
+        conditional_dimension = config.data1.conditional_dimension
+        generation_dimension = config.data1.dimensions - conditional_dimension
+        bridge_conditional = config.data1.bridge_conditional
+
+    if conditional_model and not bridge_conditional:
+        conditional_tau_leaping = True
+
+    if conditional_tau_leaping:
+        conditioner = x_0[:,0:conditional_dimension]
+
+    with torch.no_grad():
+
+        x=x_0
+        ts = np.linspace(1.0 - time_epsilon, 0.0, num_steps)
+        if forward: ts = ts[::-1]
+
+        x_hist = [x_0.clone().detach().unsqueeze(1)]
+        x_max_hist = [x_0.clone().detach().unsqueeze(1)]
+
+        for t in tqdm(ts[1:] if forward else ts[:-1]):
+
+            times = t * torch.ones(number_of_paths,).to(device)
+            rates = rate_model(x,times) # (N, D, S)
+
+            #...TAU LEAPING
+
+            diffs = torch.arange(S, device=device).view(1,1,S) - x.view(number_of_paths,D,1)
+            poisson_dist = torch.distributions.poisson.Poisson(rates * min_t)
+            jump_nums = poisson_dist.sample().to(device)
+            adj_diffs = jump_nums * diffs
+            overall_jump = torch.sum(adj_diffs, dim=2)
+            xp = x + overall_jump
+            x = torch.clamp(xp, min=0, max=S-1)
+            x_max = torch.max(rates, dim=2)[1]
+
+            x_hist.append(x.clone().detach().unsqueeze(1))
+            x_max_hist.append(x_max.clone().detach().unsqueeze(1))
+
+        if len(x_hist) > 0:
+            x_hist = torch.cat(x_hist,dim=1).float()
+            x_max_hist = torch.cat(x_max_hist,dim=1).float()
+            
+        return x_max.detach().float(), x_hist, x_max_hist, torch.Tensor(ts.copy()).to(device)
 
 
 

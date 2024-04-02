@@ -1,7 +1,7 @@
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
-from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig, ExponentialThermostatConfig
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig, ExponentialThermostatConfig,  InvertedExponentialThermostatConfig, PeriodicThermostatConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, TemporalUNetConfig, CFMUnetConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
@@ -31,8 +31,9 @@ def CRM_single_run(dynamics="crm",
                     dropout=0.1,
                     num_layers=3,
                     activation="ReLU",
-                    gamma_thermostat =1.0,
-                    num_timesteps=1000,
+                    gamma =1.0,
+                    max=1.0,
+                    num_timesteps=50,
                     ema_decay=0.999
                     ):
 
@@ -95,13 +96,19 @@ def CRM_single_run(dynamics="crm",
         crm_config.temporal_network = UConvNISTNetConfig()
 
     if thermostat == "LogThermostat": 
-        crm_config.thermostat = LogThermostatConfig(time_exponential=gamma_thermostat, time_base=1.0,)
+        crm_config.thermostat = LogThermostatConfig(time_exponential=gamma, time_base=1.0,)
     
     elif thermostat == "ExponentialThermostat":
-        crm_config.thermostat = ExponentialThermostatConfig(max=0.3, gamma=gamma_thermostat,)
+        crm_config.thermostat = ExponentialThermostatConfig(max=max, gamma=gamma,)
+    
+    elif thermostat == "InvertedExponentialThermostat":
+        crm_config.thermostat = InvertedExponentialThermostatConfig(max=max, gamma=gamma,)
+
+    elif thermostat == "PeriodicThermostat":
+        crm_config.thermostat = PeriodicThermostatConfig(max=max, gamma=gamma,)
     
     else: 
-        crm_config.thermostat = ConstantThermostatConfig(gamma=gamma_thermostat)
+        crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
 
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
                                           learning_rate=learning_rate,
@@ -128,18 +135,21 @@ if __name__ == "__main__":
 
         cuda = sys.argv[1]
         experiment = sys.argv[2]
-        gamma = sys.argv[3]
-        ensemble = sys.argv[4]
+        thermostat = sys.argv[3] + "Thermostat"
+        gamma = sys.argv[4]
+        max = sys.argv[5]
+        dataset0 = experiment.split('_')[0]
 
-        dataset0 = experiment.split('_')[0] 
+        print('experiment=',experiment, 'thermostat=',thermostat, 'gamma=',gamma, 'max=',max, 'dataset0=',dataset0, 'cuda=',cuda)
+
         if dataset0 == 'noise': dataset0 = None
         coupling = 'OTPlanSampler' if experiment.split('_')[-1] == 'OT' else 'uniform'
 
         CRM_single_run(dynamics="crm",
-               experiment_type=experiment + '_' + gamma + '_' + ensemble,
-               model="unet_cfm",
-               epochs=200,
-               thermostat="ExponentialThermostat",
+               experiment_type=experiment + '_' + thermostat + '_gamma_' + gamma + '_max_' + max,
+               model="unet",
+               epochs=100,
+               thermostat=thermostat+"Thermostat",
                coupling_method=coupling,
                dataset0=dataset0,
                dataset1="mnist",
@@ -148,280 +158,11 @@ if __name__ == "__main__":
                           "mnist_plot", 
                           "marginal_binary_histograms"],
                batch_size=256,
-               learning_rate= 0.0001,
+               learning_rate=0.00029,
+               ema_decay=0.99933,
                hidden_dim=128,
                time_embed_dim=128,
-               gamma_thermostat=float(gamma),
+               gamma=float(gamma),
+               max=float(max),
+               num_timesteps=500,
                device="cuda:" + cuda)
-
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_2.5",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=2.5,
-        #        device="cuda:0")
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_3.0",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=3.0,
-        #        device="cuda:0")
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_3.5",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=3.5,
-        #        device="cuda:0")
-
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_4.0",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=4.0,
-        #        device="cuda:0")
-
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_4.5",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=4.5,
-        #        device="cuda:0")
-
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_5.0",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=5.0,
-        #        device="cuda:0")
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_0.75",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=0.75,
-        #        device="cuda:0")
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_0.5",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=0.5,
-        #        device="cuda:0")
-        
-
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_0.25",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=0.25,
-        #        device="cuda:0")
-        
-
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_0.1",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=0.1,
-        #        device="cuda:0")
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_0.01",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=0.01,
-        #        device="cuda:0")
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_0.001",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=0.001,
-        #        device="cuda:0")
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_1.5",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=1.5,
-        #        device="cuda:0")
-        
-
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="fashion_to_mnist_unet_cfm_OT_2.0",
-        #        model="unet_cfm",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='OTPlanSampler',
-        #        dataset0="fashion",
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.0001,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        gamma=2.0,
-        #        device="cuda:0")
-        

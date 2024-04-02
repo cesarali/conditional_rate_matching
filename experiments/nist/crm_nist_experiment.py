@@ -30,7 +30,7 @@ class CRM_Scan_Optuna:
                  coupling_method = 'uniform',
                  model="mlp",
                  device="cuda:0",
-                 n_trials=100,
+                 n_trials=20,
                  epochs=500,
                  batch_size=(5, 50),
                  learning_rate=(1e-5, 1e-2), 
@@ -137,6 +137,27 @@ class CRM_Scan_Optuna:
                                 dropout=dropout,
                                 gamma=gamma,
                                 num_timesteps=self.num_timesteps)
+
+        # metrics = CRM_single_run(dynamics=self.dynamics,
+        #                         experiment_type=self.experiment_type,
+        #                         model="unet_cfm",
+        #                         epochs=1000,
+        #                         thermostat="ConstantThermostat",
+        #                         coupling_method=coupling,
+        #                         dataset0=dataset0,
+        #                         dataset1="mnist",
+        #                         metrics = ["mse_histograms", 
+        #                                     'fid_nist', 
+        #                                     "mnist_plot", 
+        #                                     "marginal_binary_histograms"],
+        #                         batch_size=256,
+        #                         learning_rate= 0.0001,
+        #                         hidden_dim=128,
+        #                         time_embed_dim=128,
+        #                         gamma_thermostat=float(gamma),
+        #                         device="cuda:" + cuda)
+
+
 
         print('all metric: ', metrics)
 
@@ -353,24 +374,24 @@ if __name__ == "__main__":
     ############################
 
     scan = CRM_Scan_Optuna(dynamics="crm",
-                           experiment_type="mnist_128x128",
+                           experiment_type="mnist",
                            experiment_indentifier="optuna_scan_trial",
-                           model="unet",
-                           dataset0=None,
+                           model="unet_cfm",
+                           dataset0="fashion",
                            dataset1="mnist",
                            thermostat=None,
                            coupling_method="uniform",
                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
                            n_trials=50,
-                           epochs=100,
+                           epochs=250,
                            batch_size=256,
                            hidden_dim=128,
                            time_embed_dim=128,
                            learning_rate=(1e-6, 1e-2), 
-                           ema_decay=(0.999, 0.9999),
+                           ema_decay=0.999,
                            num_timesteps=1000,
                            gamma=(0.0001, 1.0),
-                           device='cuda:0')
+                           device='cuda:1')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)

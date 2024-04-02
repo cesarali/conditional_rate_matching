@@ -5,10 +5,10 @@
 # ensemble = sys.argv[4]
 
 # Run the NIST experiments
-python crm_nist_single_run.py 1 "emnist_to_mnist_unet_cfm_expthermostat_OT" 10.0 0
-python crm_nist_single_run.py 1 "emnist_to_mnist_unet_cfm_expthermostat_OT" 2.0 0
-python crm_nist_single_run.py 1 "emnist_to_mnist_unet_cfm_expthermostat_OT" 4.0 0
-python crm_nist_single_run.py 1 "emnist_to_mnist_unet_cfm_expthermostat_OT" 6.0 0
-python crm_nist_single_run.py 1 "emnist_to_mnist_unet_cfm_expthermostat_OT" 8.0 0
-python crm_nist_single_run.py 1 "emnist_to_mnist_unet_cfm_expthermostat_OT" 20.0 0
-python crm_nist_single_run.py 1 "emnist_to_mnist_unet_cfm_expthermostat_OT" 50.0 0
+
+python crm_nist_single_run.py 1 "emnist_to_mnist_unet" "Exponential" 10.0 0.05
+python crm_nist_single_run.py 1 "emnist_to_mnist_unet" "Exponential" 10.0 0.1
+python crm_nist_single_run.py 1 "emnist_to_mnist_unet" "Exponential" 10.0 0.25
+python crm_nist_single_run.py 1 "emnist_to_mnist_unet" "Exponential" 10.0 0.5
+python crm_nist_single_run.py 1 "emnist_to_mnist_unet" "Exponential" 10.0 0.75
+python crm_nist_single_run.py 1 "emnist_to_mnist_unet" "Exponential" 10.0 1.0

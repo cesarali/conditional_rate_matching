@@ -22,3 +22,9 @@ class InvertedExponentialThermostatConfig:
     name:str="InvertedExponentialThermostat"
     max:float = 10.
     gamma:float = 10.
+
+@dataclass
+class PeriodicThermostatConfig:
+    name:str="PeriodicThermostat"
+    max:float = 1.
+    gamma:float = 1.
