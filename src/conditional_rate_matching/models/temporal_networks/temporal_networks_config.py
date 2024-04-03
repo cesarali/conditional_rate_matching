@@ -122,6 +122,9 @@ class TemporalScoreNetworkAConfig:
     c_hid: int = 8
     c_final: int = 4
 
+    dropout_rate:float = 0.1
+    use_bn: bool = False
+
     time_embed_dim: int = 128
     time_scale_factor: int = 1000
 

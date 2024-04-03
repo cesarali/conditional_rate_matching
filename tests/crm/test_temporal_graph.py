@@ -3,7 +3,6 @@ from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_g
 from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_graph import experiment_ego
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig, TemporalNetworkToRateConfig
 
-
 def test_graph():
     from conditional_rate_matching.configs.config_files import ExperimentFiles
     from conditional_rate_matching.models.generative_models.crm import CRM
@@ -14,11 +13,9 @@ def test_graph():
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
     config = experiment_comunity_small(number_of_epochs=50,network="gnn")
-    config = experiment_ego(number_of_epochs=50,network="gnn")
+    #config = experiment_ego(number_of_epochs=50,network="gnn")
 
-    #config.temporal_network = ConvNetAutoencoderConfig()
-    #config.temporal_network = TemporalGraphConvNetConfig()
-    #config.temporal_network = TemporalScoreNetworkAConfig()
+    config.temporal_network = TemporalScoreNetworkAConfig(use_bn=False)
 
     #config.temporal_network_to_rate = None
     config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.5)

@@ -13,6 +13,7 @@ import pytest
 
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
+
 def test_graph():
     from conditional_rate_matching.configs.config_files import ExperimentFiles
     from conditional_rate_matching.models.generative_models.crm import CRM

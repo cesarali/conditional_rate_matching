@@ -81,6 +81,15 @@ class GridConfig(GraphDataloaderConfig):
     total_data_size:int = 200
     init: str = 'ones'
 
+@dataclass
+class EnzymesConfig(GraphDataloaderConfig):
+    dataset_name: str = 'ENZYMES'
+    batch_size: int = 64
+    test_split: float = 0.2
+    max_node_num: int = 125
+    max_feat_num: int = 10
+    total_data_size:int = 587
+    init: str = 'ones'
 
 @dataclass
 class BridgeConfig:
