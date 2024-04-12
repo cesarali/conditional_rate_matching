@@ -43,8 +43,6 @@ def generate_samples(path,
     crm.config.pipeline.num_intermediates = num_timesteps
     crm.config.pipeline.number_of_steps = num_timesteps
 
-
-
     x_1, x_t, t = crm.pipeline(x_test.shape[0], 
                                return_intermediaries=True, 
                                train=False, 
@@ -61,44 +59,58 @@ def generate_mnist_samples(path,
                            class_label=None, 
                            device="cpu"):
     
-    if generative_model == 'crm':
-        Model = CRM(experiment_dir=path, device=device)
-        Model.config.pipeline.time_epsilon = time_epsilon
-        Model.config.pipeline.num_intermediates = num_timesteps
-        Model.config.pipeline.number_of_steps = num_timesteps
-        source = Model.dataloader_0.test()
-        target = Model.dataloader_1.test()
-
     if generative_model == 'ctdd':
-        Model = CTDD(experiment_dir=path, device=device)
-        source = Model.dataloader_0.test()
-        target = Model.dataloader_1.test()
 
-    x_1, x_0, x_test = [], [], []
+        ctdd = CTDD(experiment_dir=path, device=device)
+        target = ctdd.dataloader_1.test()
+     
+        x_0, x_1, x_test = [], [], []
 
-    #...get test/truth dataset:
+        for batch in target:
+            if len(batch) == 2: test_images, labels = batch[0], batch[1]
+            else: test_images = batch[0]
+            x_test.append(test_images)
+        
+        for _ in range(10):
+            input_images = ctdd.pipeline.get_x0_sample(train=False, sample_size=1000)
+            gen_images = ctdd.pipeline(ctdd.backward_rate, train=False, sample_size=1000) 
+            x_0.append(input_images)
+            x_1.append(gen_images.detach().cpu())
 
-    for batch in target:
-        if len(batch) == 2: test_images, labels = batch[0], batch[1]
-        else: test_images = batch[0]
-        x_test.append(test_images)
-    
-    x_test = torch.cat(x_test)
+        x_test = torch.cat(x_test).view(-1, 1, 28, 28)
+        x_0 = torch.cat(x_0).view(-1, 1, 28, 28)
+        x_1 = torch.cat(x_1).view(-1, 1, 28, 28)
 
-    #...generate target data from model:
+    if generative_model == 'crm':
 
-    for batch in source:
-        if len(batch) == 2:
-            sample, labels = batch[0], batch[1]
-            input_images = sample[labels == class_label] if class_label is not None else sample 
-        else:
-            input_images = batch[0]
-        gen_images = Model.pipeline(input_images.shape[0], return_intermediaries=False, train=False, x_0=input_images.to(Model.device))
-        x_0.append(input_images)
-        x_1.append(gen_images.detach().cpu())
+        crm = CRM(experiment_dir=path, device=device)
+        crm.config.pipeline.time_epsilon = time_epsilon
+        crm.config.pipeline.num_intermediates = num_timesteps
+        crm.config.pipeline.number_of_steps = num_timesteps
+        source = crm.dataloader_0.test()
+        target = crm.dataloader_1.test()
 
-    x_0 = torch.cat(x_0, dim=0).view(-1, 1, 28, 28)
-    x_1 = torch.cat(x_1, dim=0).view(-1, 1, 28, 28)
+        x_1, x_0, x_test = [], [], []
+
+        for batch in target:
+            if len(batch) == 2: test_images, labels = batch[0], batch[1]
+            else: test_images = batch[0]
+            x_test.append(test_images)
+        
+        for batch in source:
+            if len(batch) == 2:
+                sample, labels = batch[0], batch[1]
+                input_images = sample[labels == class_label] if class_label is not None else sample 
+            else:
+                input_images = batch[0]
+                
+            gen_images = crm.pipeline(sample_size=input_images.shape[0], return_intermediaries=False, train=False, x_0=input_images.to(crm.device))
+            x_0.append(input_images)
+            x_1.append(gen_images.detach().cpu())
+
+        x_test = torch.cat(x_test)
+        x_0 = torch.cat(x_0, dim=0).view(-1, 1, 28, 28)
+        x_1 = torch.cat(x_1, dim=0).view(-1, 1, 28, 28)
 
     torch.save(x_0, os.path.join(path, "sample_gen_x0.dat"))      
     torch.save(x_1, os.path.join(path, "sample_gen_x1.dat"))      
