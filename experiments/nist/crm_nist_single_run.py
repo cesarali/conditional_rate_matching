@@ -30,7 +30,7 @@ def CRM_single_run(dynamics="crm",
                     time_embed_dim=128,
                     dropout=0.1,
                     num_layers=3,
-                    activation="ReLU",
+                    activation="GELU",
                     gamma =1.0,
                     max=1.0,
                     num_timesteps=50,
@@ -80,7 +80,9 @@ def CRM_single_run(dynamics="crm",
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
         crm_config.temporal_network = TemporalUNetConfig(hidden_dim = hidden_dim,
                                                          time_embed_dim = hidden_dim,
-                                                         ema_decay=ema_decay)
+                                                         ema_decay=ema_decay,
+                                                         activation = activation,
+                                                         dropout = dropout)
 
     if model=="unet_cfm":
         if dataset0 is not None:
@@ -164,5 +166,5 @@ if __name__ == "__main__":
                time_embed_dim=128,
                gamma=float(gamma),
                max=float(max),
-               num_timesteps=500,
+               num_timesteps=200,
                device="cuda:" + cuda)

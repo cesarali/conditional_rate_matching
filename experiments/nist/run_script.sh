@@ -10,12 +10,18 @@
 
 # Run the NIST experiments
 
-python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 6.0 0.05
-python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 4.0 0.05
-python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 2.0 0.05
-python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 6.0 0.5
-python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 4.0 0.5
-python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 2.0 0.5
+# python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 6.0 0.05
+# python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 4.0 0.05
+# python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 2.0 0.05
+# python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 6.0 0.5
+# python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 4.0 0.5
+# python crm_nist_single_run.py 0 "emnist_to_mnist_unet" "Periodic" 2.0 0.5
 
+python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.5 0.0
+python crm_nist_single_run.py 1 "emnist_to_mnist_unet" "Constant" 0.5 0.0
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet" "Constant" 0.5 0.0
 
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet" "Constant" 0.05 0.0
+python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.05 0.0
+python crm_nist_single_run.py 1 "emnist_to_mnist_unet" "Constant" 0.05 0.0
 

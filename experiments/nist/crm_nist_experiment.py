@@ -41,7 +41,7 @@ class CRM_Scan_Optuna:
                  time_embed_dim=(8, 64), 
                  dropout=None,
                  gamma=None,
-                 num_timesteps=100,
+                 num_timesteps=250,
                  metrics=[MetricsAvaliable.mse_histograms,
                           MetricsAvaliable.fid_nist,
                           MetricsAvaliable.mnist_plot,
@@ -65,7 +65,7 @@ class CRM_Scan_Optuna:
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.activation = activation
-        self.time_embed_dim = None if model=="unet" else time_embed_dim
+        self.time_embed_dim = time_embed_dim
         self.dropout = dropout
         self.gamma = gamma
         self.ema_decay = ema_decay
@@ -109,7 +109,7 @@ class CRM_Scan_Optuna:
         hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int") if self.hidden_dim is not None else None
         time_embed_dim = self.def_param(trial, 'dim_t_emb', self.time_embed_dim, type="int") if self.time_embed_dim is not None else hidden_dim
         num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int") if self.num_layers is not None else None
-        activation = self.def_param(trial, 'activation', list(self.activation), type="cat") if self.activation is not None else None
+        # activation = self.def_param(trial, 'activation', list(self.activation), type="cat") if self.activation is not None else None
         dropout = self.def_param(trial, 'dropout', self.dropout, type="float") if self.dropout is not None else None
         ema_decay = self.def_param(trial, 'ema_decay', self.ema_decay, type="float") if self.ema_decay is not None else None
         gamma = self.def_param(trial, 'gamma', self.gamma, type="float") if self.gamma is not None else None
@@ -132,7 +132,7 @@ class CRM_Scan_Optuna:
                                 ema_decay=ema_decay,
                                 hidden_dim=hidden_dim, 
                                 num_layers=num_layers,
-                                activation=activation,
+                                # activation=activation,
                                 time_embed_dim=time_embed_dim,
                                 dropout=dropout,
                                 gamma=gamma,
@@ -161,11 +161,11 @@ class CRM_Scan_Optuna:
 
         print('all metric: ', metrics)
 
-        fid_layer_1 = metrics["fid_1"]
-        fid_layer_2 = metrics["fid_2"]
+        # fid_layer_1 = metrics["fid_1"]
+        # fid_layer_2 = metrics["fid_2"]
         fid_layer_3 = metrics["fid_3"]
 
-        self.nist_metric = (fid_layer_1 + fid_layer_2 + fid_layer_3) / 3.0
+        self.nist_metric = fid_layer_3
         if self.nist_metric < self.metric: self.metric = self.nist_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
         return self.nist_metric
@@ -376,22 +376,23 @@ if __name__ == "__main__":
     scan = CRM_Scan_Optuna(dynamics="crm",
                            experiment_type="mnist",
                            experiment_indentifier="optuna_scan_trial",
-                           model="unet_cfm",
-                           dataset0="fashion",
+                           model="unet",
+                           dataset0=None,
                            dataset1="mnist",
                            thermostat=None,
                            coupling_method="uniform",
                            metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
                            n_trials=50,
-                           epochs=250,
+                           epochs=100,
                            batch_size=256,
-                           hidden_dim=128,
-                           time_embed_dim=128,
+                           hidden_dim=(32, 256),
+                           time_embed_dim=(32, 256),
                            learning_rate=(1e-6, 1e-2), 
-                           ema_decay=0.999,
-                           num_timesteps=1000,
+                           ema_decay=(0.999, 0.99999),
+                           num_timesteps=200,
                            gamma=(0.0001, 1.0),
-                           device='cuda:1')
+                           dropout=(0.01, 0.5),
+                           device='cuda:2')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)

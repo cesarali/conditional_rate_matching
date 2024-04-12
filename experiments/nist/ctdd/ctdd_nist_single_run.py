@@ -23,7 +23,7 @@ def CTDD_single_run(dynamics="ctdd",
                     num_layers=3,
                     activation="ReLU",
                     ema_decay=.999,
-                    num_timesteps=1000,
+                    num_timesteps=100,
                    ):
 
     experiment_files = ExperimentFiles(experiment_name=dynamics,
@@ -116,15 +116,16 @@ if __name__ == "__main__":
         
     CTDD_single_run(dynamics="ctdd",
                     experiment_type="noise_to_mnist",
-                    model="unet_cfm",
+                    model="unet",
                     dataset0="mnist",
                     metrics = ['fid_nist', 
                                'mse_histograms', 
                                "mnist_plot", 
                                "marginal_binary_histograms"],
-                    epochs=2,
+                    epochs=100,
                     batch_size=256,
                     learning_rate= 0.0001,
                     hidden_dim=128,
                     time_embed_dim=128,
-                    device='cuda:1')
+                    ema_decay=0.9995,
+                    device='cuda:0')

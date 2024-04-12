@@ -27,8 +27,8 @@ def experiment_ego(number_of_epochs=300, berlin=True, network="mlp",temporal_to_
         crm_config.trainer.learning_rate = 1e-2
     else:
         crm_config.data1 = EgoConfig(flatten=True, as_image=False, full_adjacency=False, batch_size=20)
-        crm_config.temporal_network.hidden_dim = 50
-        crm_config.temporal_network.time_embed_dim = 50
+        crm_config.temporal_network.hidden_dim = 256
+        crm_config.temporal_network.time_embed_dim = 128
         crm_config.trainer.learning_rate = 1e-4
 
     if temporal_to_rate == "linear":
@@ -70,7 +70,7 @@ def experiment_comunity_small(number_of_epochs=300, berlin=True, network="mlp", 
     return crm_config
 
 
-def experiment_grid(number_of_epochs=300, berlin=True, network="mlp", temporal_to_rate=None):
+def experiment_grid(number_of_epochs=300, berlin=False, network="mlp", temporal_to_rate=None):
     crm_config = CRMConfig()
     crm_config.temporal_network_to_rate = 0.1
     crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.,batch_size=20)
@@ -85,13 +85,21 @@ def experiment_grid(number_of_epochs=300, berlin=True, network="mlp", temporal_t
     if network == "gnn":
         crm_config.data1 = GridConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
         crm_config.temporal_network = TemporalScoreNetworkAConfig()
-        crm_config.pipeline.number_of_steps = 1000
         crm_config.trainer.learning_rate = 1e-2
     else:
         crm_config.data1 = GridConfig(flatten=True, as_image=False, full_adjacency=False, batch_size=20)
-        crm_config.temporal_network.hidden_dim = 100
-        crm_config.temporal_network.time_embed_dim = 100
+        crm_config.temporal_network.hidden_dim = 50
+        crm_config.temporal_network.time_embed_dim = 30
         crm_config.trainer.learning_rate = 1e-4
+
+    crm_config.pipeline.number_of_steps = 100
+
+    if temporal_to_rate == "linear":
+        crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.5)
+    elif temporal_to_rate == "bernoulli":
+        crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="bernoulli")
+    else:
+        crm_config.temporal_network_to_rate = None
 
     return crm_config
 
@@ -99,23 +107,24 @@ def experiment_grid(number_of_epochs=300, berlin=True, network="mlp", temporal_t
 if __name__ == "__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-    config = experiment_comunity_small(number_of_epochs=10, network="gnn",temporal_to_rate="bernoulli")
-    # config = experiment_grid(number_of_epochs=10)
-    # config = experiment_ego(number_of_epochs=10,network="gnn")
+    # config = experiment_comunity_small(number_of_epochs=1000, network="mlp",temporal_to_rate="bernouilli")
+    config = experiment_grid(number_of_epochs=100, network="mlp", temporal_to_rate="bernoulli")
+    # config = experiment_ego(number_of_epochs=10, network="gnn")
+    # config = experiment_ego(number_of_epochs=100, network="mlp", temporal_to_rate=None)
 
-    #config.trainer.orca_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_berlin_2/"
-    #config.trainer.orca_dir = "/home/cvejoski/Projects/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca"
-    #config.trainer.windows = True
+    # config.trainer.orca_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_new_jersey/"
+    config.trainer.orca_dir = "/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_new_jersey"
+    config.trainer.windows = False
 
     config.trainer.save_model_test_stopping = True
-    #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
+    config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
     #config.trainer.debug = True
 
-    config.thermostat.gamma = 0.01
+    config.thermostat.gamma = 0.1
     config.trainer.learning_rate = 1e-3
-    config.pipeline.number_of_steps = 1000
+    config.pipeline.number_of_steps = 200
     config.trainer.loss_regularize_variance = False
-    config.trainer.device = "cpu"
+    config.trainer.device = "cuda:0"
 
     results, metrics = call_trainer(config,
                                     experiment_name="prenzlauer_experiment",
