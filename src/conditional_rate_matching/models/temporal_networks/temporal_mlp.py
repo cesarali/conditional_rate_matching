@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from torch import nn as nn
+from torch.nn import init
 import torch.nn.functional as F
 import numpy as np
 
@@ -397,13 +398,13 @@ class TemporalUNet(nn.Module):
 
     def Decoder(self):
         self.up0 = nn.Sequential(nn.ConvTranspose2d(2 * self.dim_hidden, 2 * self.dim_hidden, 7, 7), 
-                                 nn.GroupNorm(get_num_groups(2 * self.dim_hidden), 2 * self.dim_hidden),
+                                 normalization(2 * self.dim_hidden, normalization='group'),
                                  self.act)
 
         self.up1 = Up(in_channels=4 * self.dim_hidden, out_channels=self.dim_hidden, time_channels=self.dim_hidden,  activation=self.act, dropout=self.dropout)
         self.up2 = Up(in_channels=2 * self.dim_hidden, out_channels=self.dim_hidden, time_channels=self.dim_hidden,  activation=self.act, dropout=self.dropout)
         self.output = nn.Sequential(nn.Conv2d(2 * self.dim_hidden, self.dim_hidden, kernel_size=3, stride=1, padding=1),
-                                    nn.GroupNorm(get_num_groups(self.dim_hidden), self.dim_hidden),
+                                    normalization(self.dim_hidden, normalization='group'),
                                     self.act,
                                     nn.Conv2d(self.dim_hidden,  self.vocab_size, kernel_size=3, stride=1, padding=1)
                                     )
@@ -427,17 +428,13 @@ class TemporalUNet(nn.Module):
 
         return output.permute(0, 2, 3, 1) 
 
-def get_num_groups(channels, preferred_groups=8):
-    while channels % preferred_groups != 0:
-        preferred_groups -= 1
-    return preferred_groups
-
 class TemporalResidualConvBlock(nn.Module):
     def __init__( self, 
                  in_channels: int, 
                  out_channels: int, 
                  time_channels: int,
                  activation: nn.Module=nn.GELU(),
+                 res_conv_norm: str='batch',
                  dropout: float=0.1):
         super().__init__()
         '''
@@ -446,26 +443,28 @@ class TemporalResidualConvBlock(nn.Module):
         self.same_channels = in_channels==out_channels
 
         self.conv_1 = nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1),
-                                    nn.BatchNorm2d(out_channels),
+                                    normalization(out_channels, normalization=res_conv_norm),
                                     activation,
                                     )
         
         self.conv_2 = nn.Sequential(nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1),
-                                    nn.BatchNorm2d(out_channels),
+                                    normalization(out_channels, normalization=res_conv_norm),
                                     activation,
                                     )
 
         self.time_emb_1 = nn.Sequential(nn.Linear(time_channels, out_channels),
-                                       nn.BatchNorm1d (out_channels), 
+                                       nn.BatchNorm1d(out_channels), 
                                        activation, 
                                        nn.Dropout(dropout)) 
 
         self.time_emb_2 = nn.Sequential(nn.Linear(time_channels, out_channels),
-                                       nn.BatchNorm1d (out_channels), 
+                                       nn.BatchNorm1d(out_channels), 
                                        activation, 
                                        nn.Dropout(dropout)) 
 
         self.skip = nn.Conv2d(in_channels, out_channels, kernel_size=(1, 1)) if not self.same_channels else nn.Identity()
+
+        self.initialize()
 
     def forward(self, x, t):
         h = self.conv_1(x)
@@ -474,7 +473,14 @@ class TemporalResidualConvBlock(nn.Module):
         h += self.time_emb_2(t).view(-1, h.shape[1], 1, 1)
         h += self.skip(x)
         return h / (np.sqrt(2.0) if self.same_channels else 1.0) 
-    
+
+    def initialize(self):
+        for module in self.modules():
+            if isinstance(module, nn.Linear):
+                init.xavier_uniform_(module.weight)
+                init.zeros_(module.bias)
+
+
 class Down(nn.Module):
     def __init__(self, in_channels, out_channels, time_channels, activation, dropout):
         super(Down, self).__init__()
@@ -512,11 +518,17 @@ class Time_embedding(nn.Module):
                    nn.Linear(dim_hidden, dim_hidden),
                   ]
         self.fc = nn.Sequential(*layers)
+        self.initialize()
 
     def forward(self, t):
         temb = transformer_timestep_embedding(t.squeeze(), self.dim_time_emb, max_positions=10000)
         return self.fc(temb)
-
+    
+    def initialize(self):
+        for module in self.modules():
+            if isinstance(module, nn.Linear):
+                init.xavier_uniform_(module.weight)
+                init.zeros_(module.bias)
 
 def transformer_timestep_embedding(timesteps, embedding_dim, max_positions=10000):
     assert len(timesteps.shape) == 1 
@@ -530,3 +542,17 @@ def transformer_timestep_embedding(timesteps, embedding_dim, max_positions=10000
         emb = F.pad(emb, (0, 1), mode='constant')
     assert emb.shape == (timesteps.shape[0], embedding_dim)
     return emb
+
+def get_num_groups(channels, preferred_groups=8):
+    while channels % preferred_groups != 0:
+        preferred_groups -= 1
+    return preferred_groups
+
+def normalization(x, normalization='batch'):
+    if normalization == 'batch':
+        return nn.BatchNorm2d(x)
+    elif normalization == 'group':
+        return nn.GroupNorm(get_num_groups(x), x)
+    else:
+        return nn.Identity()
+
