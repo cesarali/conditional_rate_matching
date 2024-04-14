@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 def get_activation_function(name: str = 'ReLU'):
@@ -25,6 +26,6 @@ def get_activation_function(name: str = 'ReLU'):
     else:
         return None
     
-    class Swish(nn.Module):
-        def forward(self, x):
-            return x * torch.sigmoid(x)
+class Swish(nn.Module):
+    def forward(self, x):
+        return x * torch.sigmoid(x)
