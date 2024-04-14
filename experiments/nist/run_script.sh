@@ -10,18 +10,52 @@
 
 # Run the NIST experiments
 
-# python crm_nist_single_run.py 0 "emnist_to_mnist_unet_OT" "Periodic" 6.0 0.05
-# python crm_nist_single_run.py 0 "emnist_to_mnist_unet_OT" "Periodic" 4.0 0.05
-# python crm_nist_single_run.py 0 "emnist_to_mnist_unet_OT" "Periodic" 2.0 0.05
-# python crm_nist_single_run.py 0 "emnist_to_mnist_unet_OT" "Periodic" 6.0 0.5
-# python crm_nist_single_run.py 0 "emnist_to_mnist_unet_OT" "Periodic" 4.0 0.5
-# python crm_nist_single_run.py 0 "emnist_to_mnist_unet_OT" "Periodic" 2.0 0.5
+python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_optimized" "Constant" 1.25 0.0
+python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_optimized" "Constant" 1.0 0.0
+python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_optimized" "Constant" 0.75 0.0
+python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_optimized" "Constant" 0.5 0.0
+python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_optimized" "Constant" 0.25 0.0
+python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_optimized" "Constant" 0.1 0.0
+python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_optimized" "Constant" 0.05 0.0
+python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_optimized" "Constant" 0.01 0.0
 
-python crm_nist_single_run.py 0 "fashion_to_mnist_unet_OT" "Constant" 1.25 0.0
-python crm_nist_single_run.py 0 "fashion_to_mnist_unet_OT" "Constant" 1.0 0.0
-python crm_nist_single_run.py 0 "fashion_to_mnist_unet_OT" "Constant" 0.75 0.0
-python crm_nist_single_run.py 0 "fashion_to_mnist_unet_OT" "Constant" 0.5 0.0
-python crm_nist_single_run.py 0 "fashion_to_mnist_unet_OT" "Constant" 0.25 0.0
-python crm_nist_single_run.py 0 "fashion_to_mnist_unet_OT" "Constant" 0.1 0.0
-python crm_nist_single_run.py 0 "fashion_to_mnist_unet_OT" "Constant" 0.05 0.0
-python crm_nist_single_run.py 0 "fashion_to_mnist_unet_OT" "Constant" 0.01 0.0
+python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 3.0 0.0
+python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 2.0 0.0
+python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 1.5 0.0
+# python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 1.25 0.0
+# python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 1.0 0.0
+# python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.75 0.0
+# python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.5 0.0
+# python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.25 0.0
+# python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.1 0.0
+# python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.05 0.0
+# python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.01 0.0
+python crm_nist_single_run.py 1 "noise_to_mnist_unet" "Constant" 0.005 0.0
+
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet" "Constant" 3.0 0.0
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet" "Constant" 2.0 0.0
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet" "Constant" 1.5 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 1.25 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 1.0 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.75 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.5 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.25 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.1 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.05 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.01 0.0
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet" "Constant" 0.005 0.0
+
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 3.0 0.0
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 2.0 0.0
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 1.5 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 1.25 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 1.0 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.75 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.5 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.25 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.1 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.05 0.0
+# python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.01 0.0
+python crm_nist_single_run.py 1 "fashion_to_mnist_unet_OT" "Constant" 0.005 0.0
+
+

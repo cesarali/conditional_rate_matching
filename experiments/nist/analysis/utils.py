@@ -13,6 +13,43 @@ import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
 
 
+def run_analysis(path,
+                 run="run",
+                 generative_model = "crm",
+                 num_timesteps = 100,
+                 time_epsilon = 0.01,
+                 num_img_bridge = 6, 
+                 num_intermediate_bridge = 20,
+                 device = "cpu"):
+    
+    experiment_dir = os.path.join(results_path, generative_model, path, run)
+
+    if not os.path.isfile(experiment_dir + "/sample_gen_x1.dat"):
+        x_0, x_1, x_test = generate_mnist_samples(path=experiment_dir,  
+                                                generative_model=generative_model,
+                                                num_timesteps=num_timesteps,
+                                                time_epsilon=time_epsilon,  
+                                                device=device)
+    else:
+        x_0 = torch.load(experiment_dir + "/sample_gen_x0.dat")
+        x_1 = torch.load(experiment_dir + "/sample_gen_x1.dat")
+        x_test = torch.load(experiment_dir + "/sample_gen_test.dat")
+
+    mnist_grid(x_1[:100], save_path=experiment_dir, num_img=100, nrow=10, figsize=(4, 4))
+    mnist_classifier(x_1, save_path=experiment_dir, plot_histogram=True)
+    get_fid(x_1, x_test, experiment_dir)
+    get_nist_metrics(x_1, x_test, experiment_dir)
+
+    if not os.path.isfile(experiment_dir + "/bridge_example.png") and generative_model == "crm":
+        mnist_noise_bridge(experiment_dir,
+                        x_0, 
+                        num_timesteps=num_timesteps,  
+                        time_epsilon=time_epsilon,
+                        num_img=num_img_bridge, 
+                        num_timesteps_displayed=num_intermediate_bridge, 
+                        save_path=experiment_dir) 
+
+
 def get_mnist_test_samples(trained_model, 
                            class_label=None, 
                            sample_size=800, 
