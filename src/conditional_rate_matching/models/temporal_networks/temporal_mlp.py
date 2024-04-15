@@ -549,7 +549,6 @@ class TemporalResidualConvBlock(nn.Module):
 class AttentionBlock(nn.Module):
     def __init__(self, in_ch):
         super().__init__()
-        # self.group_norm = nn.GroupNorm(32, in_ch)
         self.group_norm = normalization(in_ch, normalization='group', group_pref=32)
         self.proj_q = nn.Conv2d(in_ch, in_ch, 1, stride=1, padding=0)
         self.proj_k = nn.Conv2d(in_ch, in_ch, 1, stride=1, padding=0)
