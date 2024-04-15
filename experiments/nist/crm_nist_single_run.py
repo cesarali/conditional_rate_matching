@@ -375,7 +375,7 @@ if __name__ == "__main__":
         #        time_embed_dim=128,
         #        ema_decay=0.99933,
         #        gamma=10,
-        #        device="cuda:0")
+            #    device="cuda:0")
 
     
         CRM_single_run(dynamics="crm",
@@ -396,7 +396,7 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.01,
-               device="cuda:3")
+               device="cuda:2")
     
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_0.05",
@@ -416,7 +416,7 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.05,
-               device="cuda:3")
+               device="cuda:2")
 
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_0.1",
@@ -436,7 +436,7 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.1,
-               device="cuda:3")
+               device="cuda:2")
         
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_0.25",
@@ -456,7 +456,7 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.25,
-               device="cuda:3")
+               device="cuda:2")
 
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_0.5",
@@ -464,7 +464,7 @@ if __name__ == "__main__":
                epochs=100,
                thermostat=None,
                coupling_method='uniform',
-               dataset0=None,
+               dataset0="emnist",
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -476,7 +476,7 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.5,
-               device="cuda:3")
+               device="cuda:1")
         
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_0.75",
@@ -496,7 +496,7 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=0.75,
-               device="cuda:3")
+               device="cuda:2")
         
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_1",
@@ -516,7 +516,7 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=1,
-               device="cuda:3")
+               device="cuda:2")
     
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_5",
@@ -536,7 +536,7 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=5,
-               device="cuda:3")
+               device="cuda:2")
 
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_10",
@@ -556,4 +556,4 @@ if __name__ == "__main__":
                time_embed_dim=128,
                ema_decay=0.99933,
                gamma=10,
-               device="cuda:0")
+               device="cuda:2")
