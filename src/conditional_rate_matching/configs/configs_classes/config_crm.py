@@ -77,7 +77,6 @@ class TemporalNetworkToRateConfig:
                                             # if float is the percentage of output dimensions that is assigned as hidden 
                                             #otherwise hidden
 
-
 @dataclass
 class CRMConfig:
     # data

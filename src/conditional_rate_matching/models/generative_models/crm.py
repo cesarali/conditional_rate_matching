@@ -49,7 +49,7 @@ class CRM:
         # =====================================================
         # DATA STUFF
         # =====================================================
-        self.dataloader_0, self.dataloader_1,self.parent_dataloader = get_dataloaders_crm(config)
+        self.dataloader_0,self.dataloader_1,self.parent_dataloader = get_dataloaders_crm(config)
         # =========================================================
         # Initialize
         # =========================================================

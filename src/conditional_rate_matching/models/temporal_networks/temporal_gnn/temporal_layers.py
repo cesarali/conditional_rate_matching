@@ -163,7 +163,7 @@ class MLP(torch.nn.Module):
                 h = self.activate_func(h)
             return self.linears[self.num_layers - 1](h)
 
-class TemporalLinear(torch.nn.Module):
+class TemporalLinearDeprecated(torch.nn.Module):
 
     def __init__(self,input_dim,output_dim,time_embed_dim=19):
         super().__init__()
@@ -179,6 +179,30 @@ class TemporalLinear(torch.nn.Module):
         out = self.StaticLinear(x)
         out = out*weight_time[:,None,None,:] + bias_time[:,None,None,:]
         return out
+
+
+class TemporalLinear(torch.nn.Module):
+    def __init__(self, input_dim, output_dim, time_embed_dim=19, dropout_rate=0.3):
+        super().__init__()
+        self.StaticLinear = torch.nn.Linear(input_dim, output_dim)
+        self.BatchNorm = torch.nn.BatchNorm1d(output_dim)  # Assuming the output_dim corresponds to feature dimension
+        self.Dropout = torch.nn.Dropout(dropout_rate)
+
+        self.TimeTransformationWeight = torch.nn.Linear(time_embed_dim, output_dim)
+        self.TimeTransformationBias = torch.nn.Linear(time_embed_dim, output_dim)
+
+        self.time_embed_dim = time_embed_dim
+
+    def forward(self, x, t):
+        time_emb = transformer_timestep_embedding(t, embedding_dim=self.time_embed_dim)
+        weight_time = self.TimeTransformationWeight(time_emb)
+        bias_time = self.TimeTransformationBias(time_emb)
+        out = self.StaticLinear(x)
+        #out = self.BatchNorm(out)  # Adjust if necessary for your specific dimensions
+        out = self.Dropout(out)
+        out = out * weight_time + bias_time
+        return out
+
 
 class TemporalMLP(torch.nn.Module):
     def __init__(self, num_layers, input_dim, hidden_dim, output_dim, use_bn=False, activate_func=F.relu,temp_dim=19):
@@ -208,10 +232,10 @@ class TemporalMLP(torch.nn.Module):
             self.linear_or_not = False
             self.linears = torch.nn.ModuleList()
 
-            self.linears.append(TemporalLinear(input_dim, hidden_dim))
+            self.linears.append(TemporalLinear(input_dim, hidden_dim,temp_dim))
             for layer in range(num_layers - 2):
-                self.linears.append(TemporalLinear(hidden_dim, hidden_dim))
-            self.linears.append(TemporalLinear(hidden_dim, output_dim))
+                self.linears.append(TemporalLinear(hidden_dim, hidden_dim,temp_dim))
+            self.linears.append(TemporalLinear(hidden_dim, output_dim,temp_dim))
 
             if self.use_bn:
                 self.batch_norms = torch.nn.ModuleList()
