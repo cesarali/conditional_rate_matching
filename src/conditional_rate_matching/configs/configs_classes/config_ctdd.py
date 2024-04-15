@@ -47,6 +47,7 @@ class BasicPipelineConfig:
     number_of_steps:int = 20
     num_intermediates:int = 10
     sample_size:int=128
+    time_epsilon = 1e-3
 
     min_t:float = 0.01
     eps_ratio:float = 1e-9

@@ -29,15 +29,35 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
     D = x_0.size(1)
     S = config.data0.vocab_size
     num_steps = config.pipeline.number_of_steps
+    time_epsilon = config.pipeline.time_epsilon
     min_t = 1./num_steps
     device = x_0.device
 
+    #==========================================
+    # CONDITIONAL SAMPLING
+    #==========================================
+    conditional_tau_leaping = False
+    conditional_model = False
+    bridge_conditional = False
+    if hasattr(config.data1,"conditional_model"):
+        conditional_model = config.data1.conditional_model
+        conditional_dimension = config.data1.conditional_dimension
+        generation_dimension = config.data1.dimensions - conditional_dimension
+        bridge_conditional = config.data1.bridge_conditional
+
+    if conditional_model and not bridge_conditional:
+        conditional_tau_leaping = True
+
+    if conditional_tau_leaping:
+        conditioner = x_0[:,0:conditional_dimension]
+
     with torch.no_grad():
         x = x_0
-        ts = np.concatenate((np.linspace(1.0, min_t, num_steps), np.array([0])))
+
+        ts = np.concatenate((np.linspace(1.0 - time_epsilon, min_t, num_steps), np.array([0])))
 
         if return_path:
-            save_ts = np.concatenate((np.linspace(1.0, min_t, num_steps), np.array([0])))
+            save_ts = np.concatenate((np.linspace(1.0 - time_epsilon, min_t, num_steps), np.array([0])))
         else:
             save_ts = ts[np.linspace(0, len(ts)-2, config.pipeline.num_intermediates, dtype=int)]
 
@@ -72,8 +92,13 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
             x = x_new
 
         # last step
+        if conditional_tau_leaping:
+            x[:,0:conditional_dimension] = conditioner
+
         p_0gt = rate_model(x, min_t * torch.ones((number_of_paths,), device=device)) # (N, D, S)
         x_0max = torch.max(p_0gt, dim=2)[1]
+        if conditional_tau_leaping:
+            x_0max[:,0:conditional_dimension] = conditioner
 
         # save last step
         x_hist.append(x.clone().detach().unsqueeze(1))
@@ -83,6 +108,8 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
             x0_hist = torch.cat(x0_hist,dim=1).float()
 
         return x_0max.detach().float(), x_hist, x0_hist, torch.Tensor(save_ts.copy()).to(device)
+
+
 
 def TauLeapingRates(config:Union[DSBConfig,CTDDConfig,CRMConfig],
                     rate_model:Union[ClassificationForwardRate,SchrodingerBridgeRate],

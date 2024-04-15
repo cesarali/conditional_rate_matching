@@ -5,6 +5,55 @@ import torch.nn as nn
 # from conditional_rate_matching.configs_classes.config_oops import OopsConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
+from conditional_rate_matching.models.networks.mlp_config import MLPConfig
+
+class MLP(nn.Module):
+    def __init__(self, config:MLPConfig):
+        nn.Module.__init__(self)
+        self.input_dim = config.input_dim
+        self.output_dim = config.ouput_dim
+        self.layers_dim = config.layers_dim
+        self.dropout = config.dropout
+        self.normalization = config.normalization
+
+        self.layers_dim = [self.input_dim] + self.layers_dim + [self.output_dim]
+        self.num_layer = len(self.layers_dim)
+        self.output_transformation = config.ouput_transformation
+        self.define_deep_parameters()
+
+    def forward(self, x):
+        return self.perceptron(x)
+
+    def define_deep_parameters(self):
+        self.perceptron = nn.ModuleList([])
+        for layer_index in range(self.num_layer - 1):
+            self.perceptron.append(nn.Linear(self.layers_dim[layer_index], self.layers_dim[layer_index + 1]))
+            if self.dropout > 0 and layer_index != self.num_layer - 2:
+                self.perceptron.append(nn.Dropout(self.dropout))
+            # if self.normalization and layer_index < self.num_layer - 2:
+            #     self.perceptron.append(nn.BatchNorm1d(self.layers_dim[layer_index  1]))
+            if layer_index != self.num_layer - 2:
+                if layer_index < self.num_layer - 1 and self.num_layer > 2:
+                    self.perceptron.append(nn.ReLU())
+        if self.output_transformation == "relu":
+            self.perceptron.append(nn.ReLU())
+        elif self.output_transformation == "sigmoid":
+            self.perceptron.append(nn.Sigmoid())
+        elif self.output_transformation == "exp":
+            self.perceptron.append(Exp())
+
+        self.perceptron = nn.Sequential(*self.perceptron)
+
+    def init_parameters(self):
+        for layer in self.perceptron:
+            if hasattr(layer, "weight"):
+                if isinstance(layer, (nn.InstanceNorm2d, nn.LayerNorm)):
+                    nn.init.normal_(layer.weight, mean=1.0, std=0.02)
+                else:
+                    nn.init.xavier_normal_(layer.weight)
+            if hasattr(layer, "bias"):
+                nn.init.constant_(layer.bias, 0.0)
+
 
 
 class Swish(nn.Module):

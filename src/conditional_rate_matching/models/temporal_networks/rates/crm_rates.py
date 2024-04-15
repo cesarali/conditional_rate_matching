@@ -1,13 +1,15 @@
 import torch
 from torch import nn
 from torch.nn.functional import softmax
-from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,TemporalNetworkToRateConfig
 
 from conditional_rate_matching.models.pipelines.thermostat.thermostat_utils import load_thermostat
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
+from conditional_rate_matching.models.networks.conditional_networks_utils import get_conditional_network
 from conditional_rate_matching.utils.integration import integrate_quad_tensor_vec
 from conditional_rate_matching.models.temporal_networks.ema import EMA
 
+from typing import Union,Tuple,List
 from functools import reduce
 from torch.distributions import Categorical
 
@@ -17,9 +19,86 @@ def flip_rates(conditional_model,x_0,time):
     flip_rate = torch.gather(conditional_rate, 2, not_x_0.unsqueeze(2)).squeeze()
     return flip_rate
 
+class TemporalToRateLinear(nn.Module):
+    """
+    Assigns a linear Layer
+    """
+    def __init__(self, config:CRMConfig, temporal_output_total):
+        nn.Module.__init__(self)
+        self.vocab_size = config.data1.vocab_size
+        self.dimensions = config.data1.dimensions
+        self.temporal_output_total = temporal_output_total
+
+        if isinstance(config.temporal_network_to_rate,TemporalNetworkToRateConfig):
+            intermediate_to_rate = config.temporal_network_to_rate.linear_reduction
+        else:
+            intermediate_to_rate = config.temporal_network_to_rate
+        
+        if intermediate_to_rate is None:
+            self.temporal_to_rate = nn.Linear(temporal_output_total,self.dimensions*self.vocab_size)
+        else:
+
+            if isinstance(intermediate_to_rate,float):
+                assert intermediate_to_rate < 1.
+                intermediate_to_rate = int(self.dimensions * self.vocab_size * intermediate_to_rate)
+
+            self.temporal_to_rate = nn.Sequential(
+                nn.Linear(temporal_output_total, intermediate_to_rate),
+                nn.Linear(intermediate_to_rate, self.dimensions * self.vocab_size)
+            )
+
+    def forward(self,x):
+        return self.temporal_to_rate(x)
+
+class TemporalToRateBernoulli(nn.Module):
+    """
+    Takes the output of the temporal rate as bernoulli probabilities completing 
+    with 1 - p
+    """
+    def __init__(self, config:CRMConfig, temporal_output_total):
+        nn.Module.__init__(self)
+
+    def forward(self,x):
+        #here we expect len(x.shape) == 2
+        x_ = torch.zeros_like(x)
+        x = torch.cat([x[:,:,None],x_[:,:,None]],dim=2)
+        return x
+
+class TemporalToRateEmpty(nn.Module):
+    """
+    Directly Takes the Output and converts into a rate
+    """
+    def __init__(self,  config:CRMConfig):
+        nn.Module.__init__(self)
+
+    def forward(self,x):
+        return None
+
+def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
+
+    temporal_output_total = reduce(lambda x, y: x * y,expected_temporal_output_shape)
+    temporal_network_to_rate = config.temporal_network_to_rate
+
+    if isinstance(temporal_network_to_rate,TemporalNetworkToRateConfig):
+        type_of = temporal_network_to_rate.type_of 
+        if type_of == "bernoulli":
+             temporal_to_rate = TemporalToRateBernoulli(config,temporal_output_total)
+        elif type_of == "empty":
+            temporal_to_rate = TemporalToRateEmpty(config,temporal_output_total)
+        elif type_of == "linear":
+            temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
+        elif type_of is None:
+            config.temporal_network_to_rate.linear_reduction = None
+            temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
+    else:
+        temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
+
+    return temporal_to_rate
+
 class ClassificationForwardRate(EMA,nn.Module):
-    """
-    """
+    
+    temporal_to_rate:Union[TemporalToRateLinear,TemporalToRateBernoulli,TemporalToRateEmpty]
+
     def __init__(self, config:CRMConfig, device):
         EMA.__init__(self,config)
         nn.Module.__init__(self)
@@ -27,8 +106,10 @@ class ClassificationForwardRate(EMA,nn.Module):
         self.config = config
         self.vocab_size = config.data1.vocab_size
         self.dimensions = config.data1.dimensions
-        self.temporal_network_to_rate = config.temporal_network_to_rate
         self.expected_data_shape = config.data1.temporal_net_expected_shape
+
+        self.temporal_network_to_rate = config.temporal_network_to_rate
+
         self.define_deep_models(config,device)
         self.define_thermostat(config)
         self.to(device)
@@ -38,19 +119,7 @@ class ClassificationForwardRate(EMA,nn.Module):
         self.temporal_network = load_temporal_network(config,device=device)
         self.expected_temporal_output_shape = self.temporal_network.expected_output_shape
         if self.expected_temporal_output_shape != [self.dimensions,self.vocab_size]:
-            temporal_output_total = reduce(lambda x, y: x * y, self.expected_temporal_output_shape)
-            if self.temporal_network_to_rate is None:
-                self.temporal_to_rate = nn.Linear(temporal_output_total,self.dimensions*self.vocab_size)
-            else:
-                if isinstance(self.temporal_network_to_rate,float):
-                    assert self.temporal_network_to_rate < 1.
-                    intermediate_to_rate = int(self.dimensions * self.vocab_size * self.temporal_network_to_rate)
-                else:
-                    intermediate_to_rate =  self.temporal_network_to_rate
-                self.temporal_network_to_rate = nn.Sequential(
-                    nn.Linear(temporal_output_total, intermediate_to_rate),
-                    nn.Linear(intermediate_to_rate, self.dimensions * self.vocab_size)
-                )
+            self.temporal_to_rate = select_temporal_to_rate(config,self.expected_temporal_output_shape)
 
     def define_thermostat(self,config):
         self.thermostat = load_thermostat(config)
@@ -77,7 +146,7 @@ class ClassificationForwardRate(EMA,nn.Module):
             change_logits = change_logits.reshape(batch_size,self.dimensions,self.vocab_size)
         return change_logits
 
-    def forward(self, x, time):
+    def forward(self, x, time, conditional=None):
         """
         RATE
 
@@ -97,8 +166,8 @@ class ClassificationForwardRate(EMA,nn.Module):
         C = w_1t
 
         change_logits = self.classify(x, time)
-
         change_classifier = softmax(change_logits, dim=2)
+
         #x = x.reshape(batch_size,self.dimensions)
         where_iam_classifier = torch.gather(change_classifier, 2, x.long().unsqueeze(2))
 

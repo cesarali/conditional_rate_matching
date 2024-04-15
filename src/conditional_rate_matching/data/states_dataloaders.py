@@ -25,6 +25,7 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
     vocab_size = config.vocab_size
     test_split = config.test_split
     batch_size = config.batch_size
+    max_test_size = config.max_test_size
 
     # ensure we have the probabilites
     if probs is None:
@@ -46,6 +47,11 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
     test_size = int(test_split * categorical_samples.size(0))
     train_samples = categorical_samples[test_size:]
     test_samples = categorical_samples[:test_size]
+
+    if max_test_size is not None:
+        if test_samples.size(0) > max_test_size:
+            test_samples = test_samples[:max_test_size]
+
     train_dataset, test_dataset = TensorDataset(train_samples), TensorDataset(test_samples)
 
     training_data_size = len(train_dataset)

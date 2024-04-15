@@ -52,8 +52,6 @@ class TrainerState:
         self.number_of_test_step += 1
         self.test_loss.append(loss)
 
-
-
 # Assuming CTDDConfig, CTDD, and other necessary classes are defined elsewhere
 class Trainer(ABC):
     """
@@ -197,6 +195,7 @@ class Trainer(ABC):
                         results_ = self.save_results(training_state, epoch + 1, checkpoint=False)
                         self.best_metric = all_metrics[self.config.trainer.metric_to_save]
             training_state.finish_epoch()
+
         #=====================================================
         # BEST MODEL IS READ AND METRICS ARE STORED
         #=====================================================
@@ -205,6 +204,7 @@ class Trainer(ABC):
             self.generative_model = self.generative_model_class(experiment_dir=experiment_dir)
         all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best", writer=self.writer)
         self.writer.close()
+
         return results_,all_metrics
 
     def save_results(self,

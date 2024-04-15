@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from dataclasses import field,asdict
 from conditional_rate_matching import data_path
 
+from conditional_rate_matching.models.networks.mlp_config import MLPConfig
+
 # model config
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
@@ -16,7 +18,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
     DiffusersUnet2DConfig,
-    TemporalScoreNetworkAConfig
+    TemporalScoreNetworkAConfig,
+    SequenceTransformerConfig
 )
 
 # data config
@@ -24,10 +27,10 @@ from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRol
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
-from conditional_rate_matching.data.image_dataloader_config import DistortedNISTLoaderConfig
+from conditional_rate_matching.data.image_dataloaders_conditional_config import DistortedNISTLoaderConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
-from conditional_rate_matching.configs import temporal_network_configs
+from conditional_rate_matching.configs import temporal_network_configs,conditional_network_configs
 from conditional_rate_matching.configs import thermostat_configs
 from conditional_rate_matching.models.pipelines.pipelines_config import BasicPipelineConfig
 from conditional_rate_matching.data.graph_dataloaders_config import BridgeConfig
@@ -64,32 +67,35 @@ class BasicPipelineConfig:
     name:str="BasicPipeline"
     number_of_steps:int = 20
     num_intermediates:int = 10
+    time_epsilon = 0.05
+
+@dataclass
+class TemporalNetworkToRateConfig:
+    name:str = "TemporalNetworkToRate"
+    type_of:str = None # bernoulli, empty, linear, None
+    linear_reduction:Union[float,int] = 0.1 # if None full layer, 
+                                            # if float is the percentage of output dimensions that is assigned as hidden 
+                                            #otherwise hidden
 
 @dataclass
 class CRMConfig:
     # data
-    data0: StatesDataloaderConfig = StatesDataloaderConfig()
-    data1: NISTLoaderConfig = NISTLoaderConfig()
+    data0: Union[LakhPianoRollConfig,StatesDataloaderConfig] = StatesDataloaderConfig()
+    data1: Union[LakhPianoRollConfig,NISTLoaderConfig] = NISTLoaderConfig()
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal_to_rate
-    temporal_network_to_rate : Union[int,float] = None
+    temporal_network_to_rate : Union[int,float,TemporalNetworkToRateConfig] = None
     # temporal network
-    temporal_network: Union[TemporalMLPConfig, 
-                            TemporalDeepMLPConfig, 
-                            TemporalLeNet5Config, 
-                            TemporalLeNet5AutoencoderConfig, 
-                            TemporalUNetConfig,
-                            ConvNetAutoencoderConfig,
-                            DiffusersUnet2DConfig,
-                            TemporalScoreNetworkAConfig] = TemporalMLPConfig()
+    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig,SequenceTransformerConfig] = TemporalMLPConfig()
+    # conditional model
+    conditional_network: MLPConfig = None
     # ot
     optimal_transport:OptimalTransportSamplerConfig = OptimalTransportSamplerConfig()
     # training
     trainer: CRMTrainerConfig = CRMTrainerConfig()
     #pipeline
     pipeline : BasicPipelineConfig = BasicPipelineConfig()
-
 
     def __post_init__(self):
         if isinstance(self.data0,dict):
@@ -100,6 +106,9 @@ class CRMConfig:
 
         if isinstance(self.temporal_network,dict):
             self.temporal_network = temporal_network_configs[self.temporal_network["name"]](**self.temporal_network)
+
+        if isinstance(self.conditional_network,dict):
+            self.temporal_network = conditional_network_configs[self.conditional_network["name"]](**self.conditional_network)
 
         if isinstance(self.optimal_transport,dict):
             self.optimal_transport = OptimalTransportSamplerConfig(**self.optimal_transport)
@@ -112,3 +121,6 @@ class CRMConfig:
 
         if isinstance(self.pipeline,dict):
             self.pipeline = BasicPipelineConfig(**self.pipeline)
+
+        if isinstance(self.temporal_network_to_rate,dict):
+            self.temporal_network_to_rate = TemporalNetworkToRateConfig(**self.temporal_network_to_rate)

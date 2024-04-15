@@ -1,8 +1,8 @@
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
-from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, TemporalUNetConfig, ConvNetAutoencoderConfig
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig, ExponentialThermostatConfig,  InvertedExponentialThermostatConfig, PeriodicThermostatConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, TemporalUNetConfig, CFMUnetConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -16,7 +16,7 @@ def CRM_single_run(dynamics="crm",
                     thermostat=None,
                     coupling_method = 'uniform', # uniform, OTPlanSampler
                     model="unet_conv",
-                    dataset0=None,
+                    dataset0="fashion",
                     dataset1="mnist",
                     metrics=[MetricsAvaliable.mse_histograms,
                              MetricsAvaliable.mnist_plot,
@@ -30,11 +30,10 @@ def CRM_single_run(dynamics="crm",
                     time_embed_dim=128,
                     dropout=0.1,
                     num_layers=3,
-                    activation="ReLU",
-                    gamma=1.0,
-                    thermostat_time_exponential=3.,
-                    thermostat_time_base=1.0,
-                    num_timesteps=1000,
+                    activation="GELU",
+                    gamma =1.0,
+                    max=1.0,
+                    num_timesteps=50,
                     ema_decay=0.999
                     ):
 
@@ -81,7 +80,16 @@ def CRM_single_run(dynamics="crm",
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
         crm_config.temporal_network = TemporalUNetConfig(hidden_dim = hidden_dim,
                                                          time_embed_dim = hidden_dim,
-                                                         ema_decay=ema_decay)
+                                                         ema_decay=ema_decay,
+                                                         activation = activation,
+                                                         dropout = dropout)
+
+    if model=="unet_cfm":
+        if dataset0 is not None:
+            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
+        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
+        crm_config.temporal_network = CFMUnetConfig()
+
 
     if model=="unet_conv":
         if dataset0 is not None:
@@ -89,8 +97,20 @@ def CRM_single_run(dynamics="crm",
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
         crm_config.temporal_network = UConvNISTNetConfig()
 
-    if thermostat == "log": crm_config.thermostat = LogThermostatConfig(time_exponential=thermostat_time_exponential, time_base=thermostat_time_base,)
-    else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
+    if thermostat == "LogThermostat": 
+        crm_config.thermostat = LogThermostatConfig(time_exponential=gamma, time_base=1.0,)
+    
+    elif thermostat == "ExponentialThermostat":
+        crm_config.thermostat = ExponentialThermostatConfig(max=max, gamma=gamma,)
+    
+    elif thermostat == "InvertedExponentialThermostat":
+        crm_config.thermostat = InvertedExponentialThermostatConfig(max=max, gamma=gamma,)
+
+    elif thermostat == "PeriodicThermostat":
+        crm_config.thermostat = PeriodicThermostatConfig(max=max, gamma=gamma,)
+    
+    else: 
+        crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
 
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
                                           learning_rate=learning_rate,
@@ -112,171 +132,17 @@ def CRM_single_run(dynamics="crm",
 
 
 if __name__ == "__main__":
-
-    # CRM_single_run(dynamics="crm",
-    #                experiment_type="noise_to_mnist",
-    #                model="mlp",
-    #                epochs=2,
-    #                thermostat=None,
-    #                coupling_method="uniform", #'OTPlanSampler',
-    #                dataset0=None,
-    #                dataset1="mnist",
-    #                metrics = ["mse_histograms", 
-    #                           'fid_nist', 
-    #                           "mnist_plot", 
-    #                           "marginal_binary_histograms"],
-    #                batch_size=256,
-    #                learning_rate= 0.0001,
-    #                hidden_dim=256,
-    #                time_embed_dim=128,
-    #                activation="ReLU", 
-    #                num_layers=6,
-    #                dropout=0.15,
-    #                gamma=0.01,
-    #                device="cuda:0")
-
-    # CRM_single_run(dynamics="crm",
-    #                experiment_type="emnist_2_mnist_mlp",
-    #                model="mlp",
-    #                epochs=50,
-    #                thermostat=None,
-    #                coupling_method='uniform', #'OTPlanSampler',
-    #                dataset0='emnist',
-    #                dataset1="mnist",
-    #                metrics = ["mse_histograms", 
-    #                           'fid_nist', 
-    #                           "mnist_plot", 
-    #                           "marginal_binary_histograms"],
-    #                batch_size=256,
-    #                learning_rate= 0.0001,
-    #                hidden_dim=512,
-    #                time_embed_dim=512,
-    #                activation="GELU", 
-    #                num_layers=7,
-    #                dropout=0.15,
-    #                gamma=0.15,
-    #                device="cuda:1")
-
-    # CRM_single_run(dynamics="crm",
-    #            experiment_type="mnist_unetconv",
-    #            model="unet_conv",
-    #            epochs=10,
-    #            thermostat=None,
-    #            coupling_method="uniform", #"OTPlanSampler",
-    #            dataset0=None,
-    #            dataset1="mnist",
-    #            metrics = ["mse_histograms", 
-    #                       'fid_nist', 
-    #                       "mnist_plot", 
-    #                       "marginal_binary_histograms"],
-    #            batch_size=256,
-    #            learning_rate= 0.0001,
-    #            hidden_dim=256,
-    #            time_embed_dim=256,
-    #            gamma=0.15,
-    #            device="cuda:3")
-    
-        # CRM_single_run(dynamics="crm",
-    #                 experiment_type="mnist",
-    #                 model="lenet5",
-    #                 epochs=100,
-    #                 thermostat=None,
-    #                 coupling_method='uniform',
-    #                 dataset0=None,
-    #                 dataset1="mnist",
-    #                 metrics = ["mse_histograms", 
-    #                             'fid_nist', 
-    #                             "mnist_plot", 
-    #                             "marginal_binary_histograms"],
-    #                 batch_size=256,
-    #                 learning_rate= 0.0001,
-    #                 hidden_dim=256,
-    #                 time_embed_dim=256,
-    #                 gamma=0.15,
-    #                 device="cuda:2")
         
-    ### UNET EXPERIMENTS:
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="mnist_unet_128x128_0.01",
-        #        model="unet",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='uniform',
-        #        dataset0=None,
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.00029,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        ema_decay=0.99933,
-        #        gamma=0.01,
-        #        device="cuda:0")
-    
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="mnist_unet_128x128_0.05",
-        #        model="unet",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='uniform',
-        #        dataset0=None,
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.00029,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        ema_decay=0.99933,
-        #        gamma=0.05,
-        #        device="cuda:0")
+        import sys
 
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="mnist_unet_128x128_0.1",
-        #        model="unet",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='uniform',
-        #        dataset0=None,
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.00029,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        ema_decay=0.99933,
-        #        gamma=0.1,
-        #        device="cuda:0")
-        
-        # CRM_single_run(dynamics="crm",
-        #        experiment_type="mnist_unet_128x128_0.25",
-        #        model="unet",
-        #        epochs=100,
-        #        thermostat=None,
-        #        coupling_method='uniform',
-        #        dataset0=None,
-        #        dataset1="mnist",
-        #        metrics = ["mse_histograms", 
-        #                   'fid_nist', 
-        #                   "mnist_plot", 
-        #                   "marginal_binary_histograms"],
-        #        batch_size=256,
-        #        learning_rate= 0.00029,
-        #        hidden_dim=128,
-        #        time_embed_dim=128,
-        #        ema_decay=0.99933,
-        #        gamma=0.25,
-        #        device="cuda:0")
+        cuda = sys.argv[1]
+        experiment = sys.argv[2]
+        thermostat = sys.argv[3] + "Thermostat"
+        gamma = sys.argv[4]
+        max = sys.argv[5]
+        dataset0 = experiment.split('_')[0]
 
+<<<<<<< HEAD
         # CRM_single_run(dynamics="crm",
         #        experiment_type="mnist_unet_128x128_0.5",
         #        model="unet",
@@ -500,21 +366,29 @@ if __name__ == "__main__":
         
         CRM_single_run(dynamics="crm",
                experiment_type="emnist_to_mnist_unet_128x128_1",
+=======
+        print('experiment=',experiment, 'thermostat=',thermostat, 'gamma=',gamma, 'max=',max, 'dataset0=',dataset0, 'cuda=',cuda)
+
+        if dataset0 == 'noise': dataset0 = None
+        coupling = 'OTPlanSampler' if experiment.split('_')[-1] == 'OT' else 'uniform'
+
+        CRM_single_run(dynamics="crm",
+               experiment_type=experiment + '_' + thermostat + '_gamma_' + gamma + '_max_' + max,
+>>>>>>> e464eed95009e9e6188b51e294aafb3f1c33e293
                model="unet",
                epochs=100,
-               thermostat=None,
-               coupling_method='uniform',
-               dataset0="emnist",
+               thermostat=thermostat+"Thermostat",
+               coupling_method=coupling,
+               dataset0=dataset0,
                dataset1="mnist",
                metrics = ["mse_histograms", 
                           'fid_nist', 
                           "mnist_plot", 
                           "marginal_binary_histograms"],
                batch_size=256,
-               learning_rate= 0.00029,
-               hidden_dim=128,
-               time_embed_dim=128,
+               learning_rate=0.00029,
                ema_decay=0.99933,
+<<<<<<< HEAD
                gamma=1,
                device="cuda:2")
     
@@ -557,3 +431,13 @@ if __name__ == "__main__":
                ema_decay=0.99933,
                gamma=10,
                device="cuda:2")
+=======
+               dropout=0.1,
+               hidden_dim=128,
+               time_embed_dim=128,
+               gamma=float(gamma),
+               activation="GELU",
+               max=float(max),
+               num_timesteps=200,
+               device="cuda:" + cuda)
+>>>>>>> e464eed95009e9e6188b51e294aafb3f1c33e293

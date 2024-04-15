@@ -5,6 +5,7 @@ class BasicPipelineConfig:
     name:str="BasicPipeline"
     number_of_steps:int = 20
     num_intermediates:int = 10
+    time_epsilon = 1e-3
 
 @dataclass
 class DSBPipelineConfig:
@@ -13,7 +14,6 @@ class DSBPipelineConfig:
     num_intermediates:int = 10
     min_t = 0.1
     eps_ratio :float = 1e-9
-
 
 @dataclass
 class OopsPipelineConfig:

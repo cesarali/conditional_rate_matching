@@ -6,6 +6,7 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ExponentialThermostatConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import InvertedExponentialThermostatConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import PeriodicThermostatConfig
 
 
 class ConstantThermostat:
@@ -68,4 +69,17 @@ class InvertedExponentialThermostat:
         thermostat = torch.exp(-self.gamma*(t-0.5)) + torch.exp(self.gamma*(t-0.5))
         thermostat = thermostat/torch.exp(-self.gamma*(-torch.Tensor([0.5]))) + torch.exp(self.gamma*(-torch.Tensor([0.5])))
         thermostat = thermostat*self.max
+        return thermostat.to(device)
+    
+class PeriodicThermostat:
+
+    def __init__(self,config:PeriodicThermostatConfig):
+        self.max = config.max
+        self.gamma = config.gamma
+    def _integral_rate_scalar(self, t):
+        raise Exception
+
+    def __call__(self, t):
+        device = t.device
+        thermostat = torch.abs((torch.sin(math.pi*t*self.gamma))*self.max)
         return thermostat.to(device)

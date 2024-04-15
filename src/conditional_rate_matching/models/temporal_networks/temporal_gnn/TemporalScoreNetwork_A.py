@@ -126,6 +126,7 @@ class TemporalScoreNetworkA(BaselineNetwork):
         self.adim = temporal_config.adim
         self.num_heads = temporal_config.num_heads
         self.conv = temporal_config.conv
+        self.use_bn = temporal_config.use_bn
 
         self.time_embed_dim = temporal_config.time_embed_dim
 
@@ -145,20 +146,20 @@ class TemporalScoreNetworkA(BaselineNetwork):
         for _ in range(self.num_layers):
             if _ == 0:
                 self.layers.append(TemporalAttentionLayer(self.num_linears, self.nfeat, self.nhid, self.nhid, self.c_init,
-                                                          self.c_hid, self.num_heads, self.conv,time_embed_dim=self.time_embed_dim))
+                                                          self.c_hid, self.num_heads, self.conv,self.use_bn,time_embed_dim=self.time_embed_dim))
             elif _ == self.num_layers - 1:
                 self.layers.append(TemporalAttentionLayer(self.num_linears, self.nhid, self.adim, self.nhid, self.c_hid,
-                                                          self.c_final, self.num_heads, self.conv,time_embed_dim=self.time_embed_dim))
+                                                          self.c_final, self.num_heads, self.conv,self.use_bn,time_embed_dim=self.time_embed_dim))
             else:
                 self.layers.append(TemporalAttentionLayer(self.num_linears, self.nhid, self.adim, self.nhid, self.c_hid,
-                                                          self.c_hid, self.num_heads, self.conv,time_embed_dim=self.time_embed_dim))
+                                                          self.c_hid, self.num_heads, self.conv,self.use_bn,time_embed_dim=self.time_embed_dim))
 
         self.fdim = self.c_hid * (self.num_layers - 1) + self.c_final + self.c_init
         self.final = TemporalMLP(num_layers=3,
                                  input_dim=self.fdim,
                                  hidden_dim=2 * self.fdim,
                                  output_dim=1,
-                                 use_bn=False,
+                                 use_bn=self.use_bn,
                                  temp_dim=self.time_embed_dim,
                                  activate_func=F.elu)
 
