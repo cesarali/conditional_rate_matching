@@ -166,8 +166,9 @@ def mnist_classifier(img, save_path=None, plot_histogram=False):
     if plot_histogram:
         plt.subplots(figsize=(3,3))
         unique, counts = np.unique(classes, return_counts=True)
-        plt.bar(unique, counts)
+        plt.bar(unique, counts, color='darkred')
         plt.xticks(range(10))
+        plt.xlabel('digit ocurrence')
         plt.tight_layout()
         plt.savefig(save_path+'/class_ocurrence.png')
         plt.show()
