@@ -234,7 +234,6 @@ def get_nist_metrics(x_1, x_test, save_path=None):
     metrics["mse"] = marginal_histograms(x_1, x_test)
     print(metrics)
     if save_path:
-        fid_path = os.path.join(save_path, "fid.txt")
         metrics_path = os.path.join(save_path, "metrics.txt")
         with open(metrics_path, 'w') as f:
             f.write(str(metrics))

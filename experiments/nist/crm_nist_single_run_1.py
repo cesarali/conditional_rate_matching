@@ -137,9 +137,11 @@ if __name__ == "__main__":
 
         cuda = sys.argv[1]
         experiment = sys.argv[2]
-        thermostat = sys.argv[3] + "Thermostat"
-        gamma = sys.argv[4]
-        max = sys.argv[5]
+        dim_hidden = int(sys.argv[3])
+        act = sys.argv[4]
+        thermostat = sys.argv[5] + "Thermostat"
+        gamma = sys.argv[6]
+        max = sys.argv[7]
         dataset0 = experiment.split('_')[0]
 
         print('experiment=',experiment, 'thermostat=',thermostat, 'gamma=',gamma, 'max=',max, 'dataset0=',dataset0, 'cuda=',cuda)
@@ -148,7 +150,7 @@ if __name__ == "__main__":
         coupling = 'OTPlanSampler' if experiment.split('_')[-1] == 'OT' else 'uniform'
 
         CRM_single_run(dynamics="crm",
-               experiment_type=experiment + '_' + thermostat + '_gamma_' + gamma + '_max_' + max,
+               experiment_type=experiment + '_hiddim_' + str(dim_hidden) + '_' + act  +'_' + thermostat + '_gamma_' + gamma + '_max_' + max,
                model="unet",
                epochs=100,
                thermostat=thermostat+"Thermostat",
@@ -162,9 +164,10 @@ if __name__ == "__main__":
                batch_size=256,
                learning_rate=0.0004,
                ema_decay=0.9999,
-               hidden_dim=145,
-               time_embed_dim=145,
+               hidden_dim=dim_hidden,
+               time_embed_dim=dim_hidden,
                gamma=float(gamma),
                max=float(max),
+               activation=act,
                num_timesteps=200,
                device="cuda:" + cuda)

@@ -162,9 +162,11 @@ if __name__ == "__main__":
                batch_size=256,
                learning_rate=0.00029,
                ema_decay=0.99933,
+               dropout=0.1,
                hidden_dim=128,
                time_embed_dim=128,
                gamma=float(gamma),
+               activation="GELU",
                max=float(max),
                num_timesteps=200,
                device="cuda:" + cuda)
