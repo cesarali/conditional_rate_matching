@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
         
     CTDD_single_run(dynamics="ctdd",
-                    experiment_type="noise_to_mnist",
+                    experiment_type="mnist_unet_att_hiddim_145_Swish",
                     model="unet",
                     dataset0="mnist",
                     metrics = ['fid_nist', 
@@ -124,8 +124,11 @@ if __name__ == "__main__":
                                "marginal_binary_histograms"],
                     epochs=100,
                     batch_size=256,
-                    learning_rate= 0.0001,
-                    hidden_dim=128,
-                    time_embed_dim=128,
-                    ema_decay=0.9995,
-                    device='cuda:0')
+                    learning_rate= 0.0004,
+                    hidden_dim=145,
+                    time_embed_dim=145,
+                    ema_decay=0.9999,
+                    dropout=0.1,
+                    num_timesteps=200,
+                    activation="Swish",
+                    device='cuda:2')
