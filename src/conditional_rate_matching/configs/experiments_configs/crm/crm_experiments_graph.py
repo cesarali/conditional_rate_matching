@@ -119,11 +119,11 @@ def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", tempora
         crm_config.trainer.learning_rate = 1e-2
     else:
         crm_config.data1 = EnzymesConfig(flatten=True, as_image=False, full_adjacency=False, batch_size=20)
-        crm_config.temporal_network.hidden_dim = 200
-        crm_config.temporal_network.time_embed_dim = 200
-        crm_config.trainer.learning_rate = 1e-3
+        crm_config.temporal_network.hidden_dim = 128
+        crm_config.temporal_network.time_embed_dim = 128
+        crm_config.trainer.learning_rate = 3e-4
 
-    crm_config.pipeline.number_of_steps = 1000
+    crm_config.pipeline.number_of_steps = 500
 
     if temporal_to_rate == "linear":
         crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.5)
@@ -137,10 +137,10 @@ def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", tempora
 if __name__ == "__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-    config = experiment_comunity_small(number_of_epochs=10, network="gnn",temporal_to_rate=None)
+    # config = experiment_comunity_small(number_of_epochs=10, network="gnn",temporal_to_rate=None)
     # config = experiment_grid(number_of_epochs=10)
     # config = experiment_ego(number_of_epochs=10,network="gnn")
-    # config = experiment_enzymes(number_of_epochs=50,network="mlp")
+    config = experiment_enzymes(number_of_epochs=128, network="mlp")
 
     # config.trainer.orca_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_new_jersey/"
     config.trainer.orca_dir = "/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_new_jersey"
@@ -151,13 +151,13 @@ if __name__ == "__main__":
     #config.trainer.debug = True
     #config.temporal_network = TemporalScoreNetworkAConfig(num_layers=2,num_heads=4,depth=3)
     
-    config.thermostat.gamma = 1.
-    config.trainer.learning_rate = 1e-3
-    config.pipeline.number_of_steps = 100
+    config.thermostat.gamma = 0.75
+    config.trainer.learning_rate = 1e-4
+    config.pipeline.number_of_steps = 1000
     config.trainer.loss_regularize_variance = False
-    config.trainer.device = "cuda:0"
+    config.trainer.device = "cuda:2"
 
     results, metrics = call_trainer(config,
-                                    experiment_name="prenzlauer_experiment",
+                                    experiment_name="new_jersey_experiment",
                                     experiment_type="crm",
                                     experiment_indentifier=None)

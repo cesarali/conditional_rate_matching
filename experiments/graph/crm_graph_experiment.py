@@ -13,7 +13,7 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalScoreNetworkAConfig, TemporalDeepMLPConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
-from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig, EgoConfig, GridConfig
+from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig, EgoConfig, GridConfig, EnzymesConfig
 
 from crm_graph_single_run import CRM_single_run
 
@@ -40,11 +40,10 @@ class CRM_Scan_Optuna:
                  dropout=(0.0, 0.5),
                  gamma=(0.0, 2.0),
                  num_timesteps=3,
-                 metrics=["mse_histograms", 
-                          "binary_paths_histograms", 
-                          "marginal_binary_histograms", 
-                          "graphs_metrics", 
-                          "graphs_plot"]):
+                 metrics=[MetricsAvaliable.mse_histograms,
+                          MetricsAvaliable.graphs_plot, 
+                          MetricsAvaliable.graphs_metrics,
+                          MetricsAvaliable.marginal_binary_histograms]):
 
         #...params
         self.dynamics = dynamics
@@ -104,7 +103,9 @@ class CRM_Scan_Optuna:
         batch_size = self.def_param(trial, 'bach_size', self.batch_size, type="int")
         learning_rate = self.def_param(trial, 'lr', self.learning_rate, type="float")
         hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int")
+        num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int")
         time_embed_dim = self.def_param(trial, 'dim_t_emb', self.time_embed_dim, type="int")
+        dropout = self.def_param(trial, 'dropout', self.dropout, type="float") 
         gamma = self.def_param(trial, 'gamma', self.gamma, type="float") if self.gamma is not None else None
 
         #...run single experiment:
@@ -142,10 +143,11 @@ class CRM_Scan_Optuna:
                                  dataset1 = self.dataset1,
                                  device=self.device,
                                  batch_size=batch_size,
+                                 metrics=self.metrics,
                                  learning_rate=learning_rate, 
                                  hidden_dim=hidden_dim, 
                                  num_layers=num_layers,
-                                 activation=activation,
+                                #  activation=activation,
                                  time_embed_dim=time_embed_dim,
                                  dropout = dropout,
                                  gamma=gamma,
@@ -154,7 +156,7 @@ class CRM_Scan_Optuna:
         print('all metric: ', metrics)
 
         if "orbit" in metrics.keys():
-            self.graph_metric = (metrics["degree"] + metrics["cluster"]  + metrics["orbit"]) / 3.0
+            self.graph_metric = (metrics["degree"] + metrics["cluster"]  + 2*metrics["orbit"]) / 3.0
         else:
             self.graph_metric = (metrics["degree"] + metrics["cluster"]) / 2.0
 
@@ -166,23 +168,42 @@ class CRM_Scan_Optuna:
 
 if __name__ == "__main__":
                                    
+    # scan = CRM_Scan_Optuna(dynamics="crm",
+    #                        experiment_type="graph",
+    #                        experiment_indentifier="optuna_scan_trial",
+    #                        model="gnn",
+    #                        thermostat="ConstantThermostat",
+    #                        dataset0 = None,
+    #                        dataset1 = "grid",   
+    #                        n_trials=300,
+    #                        num_timesteps=100,
+    #                        epochs=(5,100),
+    #                        batch_size=(16, 100),
+    #                        learning_rate=(1e-7, 1e-2), 
+    #                        hidden_dim=(32, 256), 
+    #                        time_embed_dim=(32, 256), 
+    #                        gamma=(0.001, 20),
+    #                        device='cuda:0')
+    
     scan = CRM_Scan_Optuna(dynamics="crm",
                            experiment_type="graph",
                            experiment_indentifier="optuna_scan_trial",
-                           model="gnn",
+                           model="mlp",
                            thermostat="ConstantThermostat",
                            dataset0 = None,
-                           dataset1 = "grid",   
+                           dataset1 = "ego",   
                            n_trials=300,
-                           num_timesteps=100,
-                           epochs=(5,200),
-                           batch_size=(16, 100),
+                           num_timesteps=1000,
+                           epochs=(100,1000),
+                           batch_size=(16, 256),
                            learning_rate=(1e-7, 1e-2), 
+                           num_layers=(2, 6),
                            hidden_dim=(32, 256), 
-                           time_embed_dim=(32, 256), 
-                           gamma=(0.001, 20),
-                           device='cuda:0')
-    
+                           time_embed_dim=(32, 256),
+                           dropout=(0.001, 0.5), 
+                           gamma=(0.001, 2),
+                           device='cuda:2')
+
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
 
