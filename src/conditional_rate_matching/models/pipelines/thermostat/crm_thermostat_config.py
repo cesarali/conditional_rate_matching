@@ -28,3 +28,16 @@ class PeriodicThermostatConfig:
     name:str="PeriodicThermostat"
     max:float = 1.
     gamma:float = 1.
+
+@dataclass
+class PolynomialThermostatConfig:
+    name:str="PolynomialThermostat"
+    exponent:float = -1.0
+    gamma:float = -0.5
+
+@dataclass
+class PlateauThermostatConfig:
+    name:str="PlateauThermostat"
+    gamma:float = 1.0
+    slope:float = 10.0
+    shift:float = 0.5

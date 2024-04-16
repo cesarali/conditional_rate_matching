@@ -7,10 +7,10 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import InvertedExponentialThermostatConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import PeriodicThermostatConfig
-
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import PolynomialThermostatConfig
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import PlateauThermostatConfig
 
 class ConstantThermostat:
-
     def __init__(self,config:ConstantThermostatConfig):
         self.gamma = config.gamma
 
@@ -26,7 +26,6 @@ class ConstantThermostat:
 
 
 class LogThermostat:
-
     def __init__(self,config:LogThermostatConfig):
         self.time_base = config.time_base
         self.time_exponential = config.time_exponential
@@ -42,7 +41,6 @@ class LogThermostat:
 
 
 class ExponentialThermostat:
-
     def __init__(self,config:ExponentialThermostatConfig):
         self.max = config.max
         self.gamma = config.gamma
@@ -56,7 +54,6 @@ class ExponentialThermostat:
         return thermostat.to(device)
 
 class InvertedExponentialThermostat:
-
     def __init__(self,config:InvertedExponentialThermostatConfig):
         self.max = config.max
         self.gamma = config.gamma
@@ -72,7 +69,6 @@ class InvertedExponentialThermostat:
         return thermostat.to(device)
     
 class PeriodicThermostat:
-
     def __init__(self,config:PeriodicThermostatConfig):
         self.max = config.max
         self.gamma = config.gamma
@@ -82,4 +78,30 @@ class PeriodicThermostat:
     def __call__(self, t):
         device = t.device
         thermostat = torch.abs((torch.sin(math.pi*t*self.gamma))*self.max)
+        return thermostat.to(device)
+
+
+class PolynomialThermostat:
+    def __init__(self,config:PolynomialThermostatConfig):
+        self.gamma = config.gamma
+        self.exponent = config.exponent
+    def _integral_rate_scalar(self, t):
+        raise Exception
+
+    def __call__(self, t):
+        device = t.device
+        thermostat = self.gamma * torch.pow(1-t, self.exponent)
+        return thermostat.to(device)
+
+class PlateauThermostat:
+    def __init__(self,config:PlateauThermostatConfig):
+        self.gamma = config.gamma
+        self.slope = config.slope
+        self.shift = config.shift
+    def _integral_rate_scalar(self, t):
+        raise Exception
+
+    def __call__(self, t):
+        device = t.device
+        thermostat = self.gamma * (1 - 1 / (1 + torch.exp( -self.slope * (t - self.shift))))
         return thermostat.to(device)
