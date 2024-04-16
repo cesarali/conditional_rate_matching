@@ -47,14 +47,14 @@ class CRM_Scan_Optuna:
 
         #...params
         self.dynamics = dynamics
-        self.experiment_type = experiment_type + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S"))
+        self.dataset0 = dataset0
+        self.dataset1 = dataset1
+        self.experiment_type = experiment_type + "_" + model + "_" + str(datetime.datetime.now().strftime("%Y.%m.%d_%Hh%Ms%S")) + "_" + self.dataset1
         self.experiment_indentifier = experiment_indentifier
         self.workdir = "/home/df630/conditional_rate_matching/results/{}/{}".format(dynamics, self.experiment_type)
         self.model = model
         self.thermostat = thermostat
         self.coupling_method = coupling_method
-        self.dataset0 = dataset0
-        self.dataset1 = dataset1
         self.device = device
         self.epochs = epochs
         self.batch_size = batch_size
@@ -133,7 +133,7 @@ class CRM_Scan_Optuna:
         #                          num_timesteps=self.num_timesteps)
         
         metrics = CRM_single_run(dynamics=self.dynamics,
-                                 experiment_type=self.experiment_type + "_" + self.dataset1,
+                                 experiment_type=self.experiment_type,
                                  experiment_indentifier=exp_id,
                                  model=self.model,
                                  epochs=epochs,
@@ -160,8 +160,10 @@ class CRM_Scan_Optuna:
         else:
             self.graph_metric = (metrics["degree"] + metrics["cluster"]) / 2.0
 
+
         if self.graph_metric < self.metric: self.metric = self.graph_metric
         else: os.system("rm -rf {}/{}".format(self.workdir, exp_id))
+        print(self.workdir, exp_id)
         
         return self.graph_metric
 
@@ -191,18 +193,18 @@ if __name__ == "__main__":
                            model="mlp",
                            thermostat="ConstantThermostat",
                            dataset0 = None,
-                           dataset1 = "ego",   
+                           dataset1 = "comunity_small",   
                            n_trials=300,
                            num_timesteps=1000,
-                           epochs=(100,1000),
-                           batch_size=(16, 256),
+                           epochs=10,
+                           batch_size=(16, 64),
                            learning_rate=(1e-7, 1e-2), 
                            num_layers=(2, 6),
-                           hidden_dim=(32, 256), 
-                           time_embed_dim=(32, 256),
+                           hidden_dim=(16, 64), 
+                           time_embed_dim=(16, 64),
                            dropout=(0.001, 0.5), 
                            gamma=(0.001, 2),
-                           device='cuda:2')
+                           device='cuda:0')
 
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
