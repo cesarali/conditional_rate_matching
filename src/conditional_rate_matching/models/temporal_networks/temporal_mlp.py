@@ -297,7 +297,7 @@ class UnetUp(nn.Module):
         process and upscale the image feature maps
         '''
         layers = [
-            nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2),
+            nn.ConvTranspose2d(in_channels, out_channels, 2, 2),
             ResidualConvBlock(out_channels, out_channels),
             ResidualConvBlock(out_channels, out_channels),
         ]
@@ -313,7 +313,7 @@ class EmbedFC(nn.Module):
     def __init__(self, input_dim, emb_dim):
         super(EmbedFC, self).__init__()
         '''
-        generic one layer FC NN for embedding  
+        generic one layer FC NN for embedding things  
         '''
         self.input_dim = input_dim
         layers = [
@@ -327,199 +327,41 @@ class EmbedFC(nn.Module):
         x = x.view(-1, self.input_dim)
         return self.model(x)
 
-# class TemporalMLP(nn.Module):
-#     """
-#     """
-#     def __init__(self, config:CRMConfig, device):
-#         super().__init__()
-#         if hasattr(config,'data1'):
-#             config_data = config.data1
-#         else:
-#             config_data = config.data0
-
-#         self.dimensions = config_data.dimensions
-#         self.vocab_size = config_data.vocab_size
-#         self.define_deep_models(config)
-#         self.init_weights()
-#         self.to(device)
-#         self.expected_output_shape = [self.dimensions,self.vocab_size]
-
-#     def define_deep_models(self,config):
-#         self.time_embed_dim = config.temporal_network.time_embed_dim
-#         self.hidden_layer = config.temporal_network.hidden_dim
-#         self.f1 = nn.Linear(self.dimensions, self.hidden_layer)
-#         self.f2 = nn.Linear(self.hidden_layer + self.time_embed_dim, self.dimensions * self.vocab_size)
-
-#     def forward(self, x, times):
-#         batch_size = x.shape[0]
-#         time_embbedings = transformer_timestep_embedding(times,
-#                                                          embedding_dim=self.time_embed_dim)
-
-#         step_one = self.f1(x)
-#         step_two = torch.concat([step_one, time_embbedings], dim=1)
-#         rate_logits = self.f2(step_two)
-#         rate_logits = rate_logits.reshape(batch_size, self.dimensions, self.vocab_size)
-
-#         return rate_logits
-
-#     def init_weights(self):
-#         nn.init.xavier_uniform_(self.f1.weight)
-#         nn.init.xavier_uniform_(self.f2.weight)
-
-
-
-class TemporalUNet(nn.Module):
-
-    def __init__(self,
-                 config,
-                 device):
-
+class TemporalMLP(nn.Module):
+    """
+    """
+    def __init__(self, config:CRMConfig, device):
         super().__init__()
-        self.dimensions = config.data0.dimensions
-        self.vocab_size = config.data0.vocab_size
-        self.time_embed_dim = config.temporal_network.time_embed_dim
-        self.hidden_dim = config.temporal_network.hidden_dim
-        self.Encoder()
-        self.TimeEmbedding()
-        self.Decoder()
+        if hasattr(config,'data1'):
+            config_data = config.data1
+        else:
+            config_data = config.data0
+
+        self.dimensions = config_data.dimensions
+        self.vocab_size = config_data.vocab_size
+        self.define_deep_models(config)
+        self.init_weights()
         self.to(device)
-        self.expected_output_shape = [28, 28, self.vocab_size]
+        self.expected_output_shape = [self.dimensions,self.vocab_size]
 
-    def Encoder(self):
-        self.init_conv = ResidualConvBlock(1, self.hidden_dim , is_res=True)
-        self.down1 = Down(self.hidden_dim, self.hidden_dim)
-        self.down2 = Down(self.hidden_dim, 2 * self.hidden_dim)
-        self.to_vec = nn.Sequential(nn.AvgPool2d(7), nn.GELU())
-
-    def TimeEmbedding(self):
-        self.timeembed1 = EmbedFC(1, 2*self.hidden_dim)
-        self.timeembed2 = EmbedFC(1, 1*self.hidden_dim)
-
-    def Decoder(self):
-        self.up0 = nn.Sequential(
-            nn.ConvTranspose2d(2 * self.hidden_dim, 2 * self.hidden_dim, 7, 7), 
-            nn.GroupNorm(8, 2 * self.hidden_dim),
-            nn.GELU())
-
-        self.up1 = Up(4 * self.hidden_dim, self.hidden_dim)
-        self.up2 = Up(2 * self.hidden_dim, self.hidden_dim)
-        self.out = nn.Sequential(
-            nn.Conv2d(2 * self.hidden_dim, self.hidden_dim, 3, 1, 1),
-            nn.GroupNorm(8, self.hidden_dim),
-            nn.GELU(),
-            nn.Conv2d(self.hidden_dim, self.vocab_size, 3, 1, 1),
-        )
+    def define_deep_models(self,config):
+        self.time_embed_dim = config.temporal_network.time_embed_dim
+        self.hidden_layer = config.temporal_network.hidden_dim
+        self.f1 = nn.Linear(self.dimensions, self.hidden_layer)
+        self.f2 = nn.Linear(self.hidden_layer + self.time_embed_dim, self.dimensions * self.vocab_size)
 
     def forward(self, x, times):
-        x = self.init_conv(x)
-        
-        # encode:
-        down1 = self.down1(x)
-        down2 = self.down2(down1)
-        hiddenvec = self.to_vec(down2)
+        batch_size = x.shape[0]
+        time_embbedings = transformer_timestep_embedding(times,
+                                                         embedding_dim=self.time_embed_dim)
 
-        # embed:
-        temb = transformer_timestep_embedding(times, embedding_dim=self.time_embed_dim)
-        temb1 = self.timeembed1(temb).view(-1, self.time_embed_dim * 2, 1, 1)
-        temb2 = self.timeembed2(temb).view(-1, self.time_embed_dim, 1, 1)
-        
-        # decode:
-        up1 = self.up0(hiddenvec)
-        up2 = self.up1(up1 + temb1, down2) 
-        up3 = self.up2(up2 + temb2, down1)
-        out = self.out(torch.cat((up3, x), 1))
+        step_one = self.f1(x)
+        step_two = torch.concat([step_one, time_embbedings], dim=1)
+        rate_logits = self.f2(step_two)
+        rate_logits = rate_logits.reshape(batch_size, self.dimensions, self.vocab_size)
 
-        return out.permute(0, 2, 3, 1) 
+        return rate_logits
 
-<<<<<<< HEAD
-
-class ResidualConvBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, is_res=False):
-        super().__init__()
-        self.same_channels = in_channels == out_channels
-        self.is_res = is_res
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, 1, 1),
-            nn.BatchNorm2d(out_channels),
-            nn.GELU(),
-        )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(out_channels, out_channels, 3, 1, 1),
-            nn.BatchNorm2d(out_channels),
-            nn.GELU(),
-        )
-
-    def forward(self, x):
-        if self.is_res:
-            x1 = self.conv1(x)
-            x2 = self.conv2(x1)
-            if self.same_channels:
-                out = x + x2
-            else:
-                out = x1 + x2 
-            return out / 1.414
-        else:
-            x1 = self.conv1(x)
-            x2 = self.conv2(x1)
-            return x2
-
-
-class Down(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(Down, self).__init__()
-        self.downscale = nn.Sequential(ResidualConvBlock(in_channels, out_channels), 
-                                       nn.AvgPool2d(2))
-    def forward(self, x):
-        return self.downscale(x)
-
-
-class Up(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(Up, self).__init__()
-        self.upscale = nn.Sequential(nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2),
-                                     ResidualConvBlock(out_channels, out_channels))
-    def forward(self, x, x_skip):
-        x = torch.cat((x, x_skip), dim=1)
-        return self.upscale(x)
-
-
-# class EmbedFC(nn.Module):
-#     def __init__(self, input_dim, emb_dim):
-#         super(EmbedFC, self).__init__()
-#         '''
-#         generic one layer FC NN for embedding  
-#         '''
-#         self.input_dim = input_dim
-#         layers = [
-#             nn.Linear(input_dim, emb_dim),
-#             nn.GELU(),
-#             nn.Linear(emb_dim, emb_dim),
-#         ]
-#         self.model = nn.Sequential(*layers)
-
-#     def forward(self, x):
-#         x = x.view(-1, self.input_dim)
-#         return self.model(x)
-
-
-if __name__ == "__main__":
-
-    from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as CRMConfig
-    from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalUNetConfig
-
-    config = CRMConfig()
-    config.temporal_network = TemporalUNetConfig(hidden_dim = 64,
-                                                 time_embed_dim = 64,
-                                                 ema_decay=0.9999)
-    print(config)
-    device = 'cpu'
-    model = TemporalUNet(config, device)
-    print(model)
-    x = torch.randn(1, 1, 28, 28).to(device)
-    times = torch.randn(1, 1).to(device)
-    out = model(x, times)
-    print(out.shape)
-=======
     def init_weights(self):
         nn.init.xavier_uniform_(self.f1.weight)
         nn.init.xavier_uniform_(self.f2.weight)
@@ -789,5 +631,3 @@ def normalization(x, normalization='batch', group_pref=8):
         return nn.GroupNorm(get_num_groups(x), x, group_pref)
     else:
         return nn.Identity()
-
->>>>>>> e464eed95009e9e6188b51e294aafb3f1c33e293
