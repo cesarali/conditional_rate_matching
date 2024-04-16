@@ -92,7 +92,7 @@ class CTDD_Scan_Optuna:
 
         hidden_dim = self.def_param(trial, 'dim_hid', self.hidden_dim, type="int") if self.hidden_dim is not None else None
         num_layers = self.def_param(trial, 'num_layers', self.num_layers, type="int") if self.num_layers is not None else None
-        activation = self.def_param(trial, 'activation', list(self.activation), type="cat") if self.activation is not None else None
+        # activation = self.def_param(trial, 'activation', list(self.activation), type="cat") if self.activation is not None else None
         dropout = self.def_param(trial, 'dropout', self.dropout, type="float") if self.dropout is not None else None
 
         #...run single experiment:
@@ -109,7 +109,7 @@ class CTDD_Scan_Optuna:
                                   learning_rate=learning_rate, 
                                   hidden_dim=hidden_dim, 
                                   num_layers=num_layers,
-                                  activation=activation,
+                                  activation=self.activation,
                                   time_embed_dim=time_embed_dim,
                                   dropout=dropout,
                                   ema_decay=ema_decay,
@@ -232,24 +232,26 @@ if __name__ == "__main__":
     ############################
 
     scan = CTDD_Scan_Optuna(dynamics="ctdd",
-                           experiment_type="mnist_64x64",
+                           experiment_type="mnist",
                            experiment_indentifier="optuna_scan_trial",
-                           dataset0="mnist",
                            model="unet",
-                           metrics=["fid_nist", 
-                                    "mse_histograms",  
-                                    "mnist_plot", 
-                                    "marginal_binary_histograms"],
-                           n_trials=20,
-                           epochs=100,
+                           dataset0="mnist",
+                           metrics = ['fid_nist', 'mse_histograms',  "mnist_plot", "marginal_binary_histograms"],
+                           n_trials=3,
+                           epochs=2,
                            batch_size=256,
+                           hidden_dim=(32, 256),
+                           time_embed_dim=(32, 256),
                            learning_rate=(1e-6, 1e-2), 
-                           num_timesteps=1000,
-                           hidden_dim=64,
-                           time_embed_dim=64,
-                           ema_decay=(0.999, 0.9999),
-                           device='cuda:2')
+                           ema_decay=(0.999, 0.99999),
+                           num_timesteps=100,
+                           activation="Swish",
+                           dropout=(0.01, 0.5),
+                           device='cuda:3')
 
+
+
+                           
     df = scan.study.trials_dataframe()
     df.to_csv(scan.workdir + '/trials.tsv', sep='\t', index=False)
 

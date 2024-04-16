@@ -115,11 +115,7 @@ if __name__ == "__main__":
 
         
     CTDD_single_run(dynamics="ctdd",
-<<<<<<< HEAD:experiments/nist/ctdd_nist_single_run.py
-                    experiment_type="mnist_100epochs",
-=======
                     experiment_type="mnist_unet_att_hiddim_145_Swish",
->>>>>>> e464eed95009e9e6188b51e294aafb3f1c33e293:experiments/nist/ctdd/ctdd_nist_single_run.py
                     model="unet",
                     dataset0="mnist",
                     metrics = ['fid_nist', 
@@ -128,32 +124,6 @@ if __name__ == "__main__":
                                "marginal_binary_histograms"],
                     epochs=100,
                     batch_size=256,
-<<<<<<< HEAD:experiments/nist/ctdd_nist_single_run.py
-                    hidden_dim=128,
-                    time_embed_dim=128,
-                    learning_rate=0.00029, 
-                    num_timesteps=1000,
-                    ema_decay=0.99933,
-                    device='cuda:3')
-    
-        
-    CTDD_single_run(dynamics="ctdd",
-                    experiment_type="mnist_500epochs",
-                    model="unet",
-                    dataset0="mnist",
-                    metrics = ['fid_nist', 
-                               'mse_histograms', 
-                               "mnist_plot", 
-                               "marginal_binary_histograms"],
-                    epochs=500,
-                    batch_size=256,
-                    hidden_dim=128,
-                    time_embed_dim=128,
-                    learning_rate=0.00029, 
-                    num_timesteps=1000,
-                    ema_decay=0.99933,
-                    device='cuda:3')
-=======
                     learning_rate= 0.0004,
                     hidden_dim=145,
                     time_embed_dim=145,
@@ -162,4 +132,3 @@ if __name__ == "__main__":
                     num_timesteps=200,
                     activation="Swish",
                     device='cuda:2')
->>>>>>> e464eed95009e9e6188b51e294aafb3f1c33e293:experiments/nist/ctdd/ctdd_nist_single_run.py
