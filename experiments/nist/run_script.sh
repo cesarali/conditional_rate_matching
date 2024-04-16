@@ -11,12 +11,9 @@
 # Run the NIST experiments
 
 
-# python crm_nist_single_run_1.py 2 "emnist_to_mnist_unet_att" 145 "Swish" "Exponential" 5.0 0.1
-# python crm_nist_single_run_1.py 2 "emnist_to_mnist_unet_att" 145 "Swish" "Exponential" 10.0 0.1
-# python crm_nist_single_run_1.py 2 "emnist_to_mnist_unet_att" 145 "Swish" "Exponential" 20.0 0.1
-# python crm_nist_single_run_1.py 2 "emnist_to_mnist_unet_att" 145 "Swish" "Exponential" 5.0 0.5
-# python crm_nist_single_run_1.py 2 "emnist_to_mnist_unet_att" 145 "Swish" "Exponential" 10.0 0.5
-# python crm_nist_single_run_1.py 2 "emnist_to_mnist_unet_att" 145 "Swish" "Exponential" 20.0 0.5
+python crm_nist_single_run_1.py 2 "fashion_to_mnist_unet_att" 145 "Swish" "Exponential" 5.0 0.75
+python crm_nist_single_run_1.py 2 "fashion_to_mnist_unet_att" 145 "Swish" "Exponential" 20.0 0.75
+python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 5.0 0.75
+python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 20.0 0.75
 
-python crm_nist_single_run_1.py 2 "emnist_to_mnist_unet_att" 145 "Swish" "Plateau" 1.0 15.0
-python crm_nist_single_run_1.py 2 "emnist_to_mnist_unet_att" 145 "Swish" "Plateau" 0.1 15.0
+
