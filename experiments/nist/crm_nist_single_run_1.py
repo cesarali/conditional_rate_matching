@@ -1,8 +1,21 @@
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from conditional_rate_matching.models.trainers.crm_trainer import CRMTrainer
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig
-from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig, LogThermostatConfig, ExponentialThermostatConfig,  InvertedExponentialThermostatConfig, PeriodicThermostatConfig
-from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig, TemporalDeepMLPConfig, TemporalLeNet5Config, TemporalLeNet5AutoencoderConfig, TemporalUNetConfig, CFMUnetConfig
+
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import (ConstantThermostatConfig, 
+                                                                                         LogThermostatConfig, 
+                                                                                         ExponentialThermostatConfig,  
+                                                                                         InvertedExponentialThermostatConfig, 
+                                                                                         PeriodicThermostatConfig,
+                                                                                         PolynomialThermostatConfig,
+                                                                                         PlateauThermostatConfig)
+
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (UConvNISTNetConfig, 
+                                                                                         TemporalDeepMLPConfig, 
+                                                                                         TemporalLeNet5Config, 
+                                                                                         TemporalLeNet5AutoencoderConfig, 
+                                                                                         TemporalUNetConfig, 
+                                                                                         CFMUnetConfig)
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
@@ -97,18 +110,13 @@ def CRM_single_run(dynamics="crm",
         crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
         crm_config.temporal_network = UConvNISTNetConfig()
 
-    if thermostat == "LogThermostat": 
-        crm_config.thermostat = LogThermostatConfig(time_exponential=gamma, time_base=1.0,)
-    
-    elif thermostat == "ExponentialThermostat":
-        crm_config.thermostat = ExponentialThermostatConfig(max=max, gamma=gamma,)
-    
-    elif thermostat == "InvertedExponentialThermostat":
-        crm_config.thermostat = InvertedExponentialThermostatConfig(max=max, gamma=gamma,)
+    if thermostat == "LogThermostat": crm_config.thermostat = LogThermostatConfig(time_exponential=gamma, time_base=1.0,)
+    elif thermostat == "ExponentialThermostat": crm_config.thermostat = ExponentialThermostatConfig(max=max, gamma=gamma,)
+    elif thermostat == "InvertedExponentialThermostat": crm_config.thermostat = InvertedExponentialThermostatConfig(max=max, gamma=gamma,)
+    elif thermostat == "PeriodicThermostat": crm_config.thermostat = PeriodicThermostatConfig(max=max, gamma=gamma,)
+    elif thermostat == "PolynomialThermostat": crm_config.thermostat = PolynomialThermostatConfig(gamma=gamma, exponent=max)
+    elif thermostat == "PlateaulThermostat": crm_config.thermostat = PlateauThermostatConfig(gamma=gamma, slope=max, shift=0.65)
 
-    elif thermostat == "PeriodicThermostat":
-        crm_config.thermostat = PeriodicThermostatConfig(max=max, gamma=gamma,)
-    
     else: 
         crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
 
@@ -152,7 +160,7 @@ if __name__ == "__main__":
         CRM_single_run(dynamics="crm",
                experiment_type=experiment + '_hiddim_' + str(dim_hidden) + '_' + act  +'_' + thermostat + '_gamma_' + gamma + '_max_' + max,
                model="unet",
-               epochs=100,
+               epochs=10,
                thermostat=thermostat+"Thermostat",
                coupling_method=coupling,
                dataset0=dataset0,
