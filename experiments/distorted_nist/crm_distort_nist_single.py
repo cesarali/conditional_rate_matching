@@ -122,11 +122,11 @@ if __name__ == "__main__":
         CRM_single_run(dynamics="crm",
                experiment_type=experiment + '_hiddim_' + str(dim_hidden) + '_' + act  +'_' + thermostat + '_gamma_' + gamma + '_max_' + max,
                model="unet",
-               epochs=10,
+               epochs=100,
                thermostat=thermostat+"Thermostat",
                coupling_method=coupling,
                dataset1="mnist",
-               distortion="noise",
+               distortion="blackout",
                distortion_level=0.5,
                metrics = ["mse_histograms", 
                           'fid_nist', 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                gamma=float(gamma),
                max=float(max),
                activation=act,
-               num_timesteps=200,
+               num_timesteps=100,
                device="cuda:" + cuda)
 
     # CRM_single_run(dynamics="crm",

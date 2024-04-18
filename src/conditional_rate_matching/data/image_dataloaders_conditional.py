@@ -133,6 +133,10 @@ def get_conditional_data(config: DistortedNISTLoaderConfig):
         distortion_list.append(transforms.Lambda(lambda x: apply_half_mask(x)))
         distortion_list.append(transforms.ToTensor())
 
+    elif distortion == 'blackout':
+        distortion_list.append(transforms.ToTensor())
+        distortion_list.append(transforms.Lambda(lambda x: apply_blackout(x, fraction=distortion_level)))
+
     distortion_list.append(transforms.Lambda(lambda x: (x > threshold).float()))
 
     #...reshape images accordingly:
@@ -279,4 +283,21 @@ def apply_half_mask(image):
     black_img.paste(mask, (0, 0))  
     return Image.composite(image, black_img, black_img)
 
+def apply_blackout(tensor, fraction=0.1):
+    """
+    Randomly flips a fraction of 1s to 0s in a tensor of shape (1, 28, 28).
+    """
 
+    if not (0 <= fraction <= 1):
+        raise ValueError("Fraction must be between 0 and 1.")
+    
+    ones_indices = (tensor > 0.0).nonzero(as_tuple=True)
+    num_to_flip = int(fraction * len(ones_indices[0]))
+
+    if num_to_flip == 0:
+        return tensor
+    selected_indices = torch.randperm(len(ones_indices[0]))[:num_to_flip]
+    tensor[ones_indices[0][selected_indices], 
+           ones_indices[1][selected_indices], 
+           ones_indices[2][selected_indices]] = 0
+    return tensor

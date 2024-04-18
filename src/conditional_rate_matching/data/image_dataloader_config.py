@@ -103,7 +103,7 @@ class DistortedNISTLoaderConfig:
     batch_size: int= 23
     data_dir:str = image_data_path
     
-    distortion: str = 'noise' # noise, swirl, pixelate, half_mask
+    distortion: str = 'noise' # noise, swirl, pixelate, half_mask, blackout
     distortion_level: float = 0.4  # 0.4, 5, 0.7, None
     
     max_node_num: int = None

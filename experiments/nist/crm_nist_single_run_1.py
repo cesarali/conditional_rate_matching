@@ -160,7 +160,7 @@ if __name__ == "__main__":
         CRM_single_run(dynamics="crm",
                experiment_type=experiment + '_hiddim_' + str(dim_hidden) + '_' + act  +'_' + thermostat + '_gamma_' + gamma + '_max_' + max,
                model="unet",
-               epochs=2,
+               epochs=100,
                thermostat=thermostat+"Thermostat",
                coupling_method=coupling,
                dataset0=dataset0,
