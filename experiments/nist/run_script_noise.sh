@@ -10,14 +10,24 @@
 
 # Run the NIST experiments
 
+##############
+# Constant
+##############
 
-<<<<<<< HEAD
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.01 0.0
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.05 0.0
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.1 0.0
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.25 0.0
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.5 0.0
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.75 0.0
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 1.0 0.0
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 1.5 0.0
+# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 2.0 0.0
+
 ##############
 # Plateau
 ##############
 
-# python crm_nist_single_run_1.py 2 "fashion_to_mnist_unet_att" 145 "Swish" "Plateau" 1.0 15.0
-# python crm_nist_single_run_1.py 2 "fashion_to_mnist_unet_att" 145 "Swish" "Plateau" 0.5 15.0
 # python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att_shift_0.4" 145 "Swish" "Plateau" 1.0 15.0
 # python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att_shift_0.4" 145 "Swish" "Plateau" 0.5 15.0
 
@@ -45,11 +55,3 @@ python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponen
 python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 20 1.0
 python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 20 0.5
 python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 20 0.1
-=======
-python crm_nist_single_run_1.py 2 "fashion_to_mnist_unet_att" 145 "Swish" "Exponential" 5.0 0.75
-python crm_nist_single_run_1.py 2 "fashion_to_mnist_unet_att" 145 "Swish" "Exponential" 20.0 0.75
-python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 5.0 0.75
-python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 20.0 0.75
-
-
->>>>>>> 1f2898deabaa8061aca7b6904328f5d76cb3655c
