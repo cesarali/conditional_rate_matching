@@ -3,12 +3,51 @@ import torch
 import numpy as np
 
 from conditional_rate_matching.models.generative_models.crm import CRM
+from conditional_rate_matching.models.generative_models.ctdd import CTDD
 from conditional_rate_matching import results_path
 from conditional_rate_matching.models.metrics.fid_metrics import load_classifier
 from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
+from conditional_rate_matching.models.metrics.distances import marginal_histograms, kmmd 
 
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
+
+
+def run_nist_analysis(path,
+                 run="run",
+                 generative_model = "crm",
+                 num_timesteps = 100,
+                 time_epsilon = 0.01,
+                 num_img_bridge = 6, 
+                 num_intermediate_bridge = 20,
+                 device = "cpu"):
+    
+    experiment_dir = os.path.join(results_path, generative_model, path, run)
+
+    if not os.path.isfile(experiment_dir + "/sample_gen_x1.dat"):
+        x_0, x_1, x_test = generate_mnist_samples(path=experiment_dir,  
+                                                generative_model=generative_model,
+                                                num_timesteps=num_timesteps,
+                                                time_epsilon=time_epsilon,  
+                                                device=device)
+    else:
+        x_0 = torch.load(experiment_dir + "/sample_gen_x0.dat")
+        x_1 = torch.load(experiment_dir + "/sample_gen_x1.dat")
+        x_test = torch.load(experiment_dir + "/sample_gen_test.dat")
+
+    mnist_grid(x_1[:100], save_path=experiment_dir, num_img=100, nrow=10, figsize=(4, 4))
+    mnist_classifier(x_1, save_path=experiment_dir, plot_histogram=True)
+    get_fid(x_1, x_test, experiment_dir)
+    get_nist_metrics(x_1, x_test, experiment_dir)
+
+    if not os.path.isfile(experiment_dir + "/bridge_example.png") and generative_model == "crm":
+        mnist_noise_bridge(experiment_dir,
+                        x_0, 
+                        num_timesteps=num_timesteps,  
+                        time_epsilon=time_epsilon,
+                        num_img=num_img_bridge, 
+                        num_timesteps_displayed=num_intermediate_bridge, 
+                        save_path=experiment_dir) 
 
 
 def get_mnist_test_samples(trained_model, 
@@ -50,46 +89,69 @@ def generate_samples(path,
     x_t = x_t.view(-1, x_t.shape[1], 1, 28, 28)
     return x_1, x_t, t
 
-def generate_mnist_samples(path, 
+def generate_mnist_samples(path,
+                           generative_model='crm', 
                            num_timesteps=100,
                            time_epsilon=0.005, 
                            class_label=None, 
                            device="cpu"):
     
-    crm = CRM(experiment_dir=path, device=device)
-    crm.config.pipeline.time_epsilon = time_epsilon
-    crm.config.pipeline.num_intermediates = num_timesteps
-    crm.config.pipeline.number_of_steps = num_timesteps
+    if generative_model == 'ctdd':
 
-    x_1, x_0, x_test = [], [], []
+        ctdd = CTDD(experiment_dir=path, device=device)
+        target = ctdd.dataloader_1.test()
+     
+        x_0, x_1, x_test = [], [], []
 
-    #...get test/truth dataset:
+        for batch in target:
+            if len(batch) == 2: test_images, labels = batch[0], batch[1]
+            else: test_images = batch[0]
+            x_test.append(test_images)
+        
+        for _ in range(10):
+            input_images = ctdd.pipeline.get_x0_sample(train=False, sample_size=1000)
+            gen_images = ctdd.pipeline(ctdd.backward_rate, train=False, sample_size=1000) 
+            x_0.append(input_images)
+            x_1.append(gen_images.detach().cpu())
 
-    for batch in crm.dataloader_1.test():
-        if len(batch) == 2: test_images, labels = batch[0], batch[1]
-        else: test_images = batch[0]
-        x_test.append(test_images)
-    
-    x_test = torch.cat(x_test)
+        x_test = torch.cat(x_test).view(-1, 1, 28, 28)
+        x_0 = torch.cat(x_0).view(-1, 1, 28, 28)
+        x_1 = torch.cat(x_1).view(-1, 1, 28, 28)
 
-    #...generate target data from model:
+    if generative_model == 'crm':
 
-    for i, batch in enumerate(crm.dataloader_0.test()):
-        if len(batch) == 2:
-            sample, labels = batch[0], batch[1]
-            input_images = sample[labels == class_label] if class_label is not None else sample 
-        else:
-            input_images = batch[0]
-        gen_images = crm.pipeline(input_images.shape[0], return_intermediaries=False, train=False, x_0=input_images.to(device))
-        x_0.append(input_images)
-        x_1.append(gen_images.detach().cpu())
+        crm = CRM(experiment_dir=path, device=device)
+        crm.config.pipeline.time_epsilon = time_epsilon
+        crm.config.pipeline.num_intermediates = num_timesteps
+        crm.config.pipeline.number_of_steps = num_timesteps
+        source = crm.dataloader_0.test()
+        target = crm.dataloader_1.test()
 
-    x_0 = torch.cat(x_0, dim=0).view(-1, 1, 28, 28)
-    x_1 = torch.cat(x_1, dim=0).view(-1, 1, 28, 28)
+        x_1, x_0, x_test = [], [], []
+
+        for batch in target:
+            if len(batch) == 2: test_images, labels = batch[0], batch[1]
+            else: test_images = batch[0]
+            x_test.append(test_images)
+        
+        for batch in source:
+            if len(batch) == 2:
+                sample, labels = batch[0], batch[1]
+                input_images = sample[labels == class_label] if class_label is not None else sample 
+            else:
+                input_images = batch[0]
+                
+            gen_images = crm.pipeline(sample_size=input_images.shape[0], return_intermediaries=False, train=False, x_0=input_images.to(crm.device))
+            x_0.append(input_images)
+            x_1.append(gen_images.detach().cpu())
+
+        x_test = torch.cat(x_test)
+        x_0 = torch.cat(x_0, dim=0).view(-1, 1, 28, 28)
+        x_1 = torch.cat(x_1, dim=0).view(-1, 1, 28, 28)
 
     torch.save(x_0, os.path.join(path, "sample_gen_x0.dat"))      
     torch.save(x_1, os.path.join(path, "sample_gen_x1.dat"))      
-    torch.save(x_test, os.path.join(path, "sample_gen_x_test.dat"))
+    torch.save(x_test, os.path.join(path, "sample_gen_test.dat"))
     
     return x_0, x_1, x_test
 
@@ -104,8 +166,9 @@ def mnist_classifier(img, save_path=None, plot_histogram=False):
     if plot_histogram:
         plt.subplots(figsize=(3,3))
         unique, counts = np.unique(classes, return_counts=True)
-        plt.bar(unique, counts)
+        plt.bar(unique, counts, color='darkred')
         plt.xticks(range(10))
+        plt.xlabel('digit ocurrence')
         plt.tight_layout()
         plt.savefig(save_path+'/class_ocurrence.png')
         plt.show()
@@ -159,17 +222,20 @@ def mnist_noise_bridge(path,
     else: plt.savefig(save_path+'/bridge_example.png')
 
 
-def get_fid(path, x_1, x_test ):
-    fid_path = os.path.join(results_path, path, "fid.dat")
-    fids=fid_nist(x_1, x_test, 'mnist', x_1.device)
-    with open(fid_path, 'w') as f:
-        f.write(str(fids))
-
-
 def get_fid(x_1, x_test, save_path=None):
-    fid = fid_nist(x_1, x_test, 'mnist', x_1.device)
-    fid_avg = 0
-    for f in fid.values():
-        fid_avg+=f/3.0
-    fid['fid_avg'] = fid_avg
-    return fid
+    fids = fid_nist(x_1, x_test, 'mnist', x_1.device)
+    if save_path:
+        fid_path = os.path.join(save_path, "fid.txt")
+        with open(fid_path, 'w') as f:
+            f.write(str(fids))
+    return fids
+
+def get_nist_metrics(x_1, x_test, save_path=None):
+    metrics = fid_nist(x_1, x_test, 'mnist', x_1.device)
+    metrics["mse"] = marginal_histograms(x_1, x_test)
+    print(metrics)
+    if save_path:
+        metrics_path = os.path.join(save_path, "metrics.txt")
+        with open(metrics_path, 'w') as f:
+            f.write(str(metrics))
+    return metrics
