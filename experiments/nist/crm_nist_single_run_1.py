@@ -158,10 +158,11 @@ def CRM_single_run(dynamics="crm",
 
 if __name__ == "__main__":
 
-    #..Parse the arguments
-
     import argparse
-    import random
+    import datetime
+    date = datetime.datetime.now().strftime("%Hh%Ms%S_%Y.%m.%d")
+
+    #..Parse the arguments
 
     parser = argparse.ArgumentParser(description='Run the CRM training with specified configurations.')
     parser.add_argument('--cuda', type=str, required=True, help='CUDA device number')
@@ -192,13 +193,8 @@ if __name__ == "__main__":
             if vars(args)[p] is not None:
                 therm_params[p] = vars(args)[p]
 
-    # Determine dataset0 based on experiment name
-    import datetime
-    date = datetime.datetime.now().strftime("%Y.%m.%d_%H:%M:%S")
     full_experiment_type = f"{args.source}_to_{args.target}_{args.model}_dim_{args.dim}_{args.act}_{args.thermostat}Thermostat" + "_" + "_".join([f"{k}_{v}" for k,v in therm_params.items()]) + "__" + date 
 
-
-    # Call the CRM_single_run function with the parsed arguments
     CRM_single_run(dynamics="crm",
                    experiment_type=full_experiment_type,
                    model=args.model,
@@ -221,42 +217,3 @@ if __name__ == "__main__":
                    num_timesteps=args.timesteps,
                    device="cuda:" + args.cuda)
 
-
-    #     # import sys
-
-    #     # cuda = sys.argv[1]
-    #     # experiment = sys.argv[2]
-    #     # dim_hidden = int(sys.argv[3])
-    #     # act = sys.argv[4]
-    #     # thermostat = sys.argv[5] + "Thermostat"
-    #     # gamma = sys.argv[6]
-    #     # max = sys.argv[7]
-    #     # dataset0 = experiment.split('_')[0]
-
-    #     # print('experiment=',experiment, 'thermostat=',thermostat, 'gamma=',gamma, 'max=',max, 'dataset0=',dataset0, 'cuda=',cuda)
-
-    #     # if dataset0 == 'noise': dataset0 = None
-    #     # coupling = 'OTPlanSampler' if experiment.split('_')[-1] == 'OT' else 'uniform'
-
-    #     # CRM_single_run(dynamics="crm",
-    #     #        experiment_type=experiment + '_hiddim_' + str(dim_hidden) + '_' + act  +'_' + thermostat + '_gamma_' + gamma + '_max_' + max,
-    #     #        model="unet",
-    #     #        epochs=2,
-    #     #        thermostat=thermostat+"Thermostat",
-    #     #        coupling_method=coupling,
-    #     #        dataset0=dataset0,
-    #     #        dataset1="mnist",
-    #     #        metrics = ["mse_histograms", 
-    #     #                   'fid_nist', 
-    #     #                   "mnist_plot", 
-    #     #                   "marginal_binary_histograms"],
-    #     #        batch_size=256,
-    #     #        learning_rate=0.0004,
-    #     #        ema_decay=0.9999,
-    #     #        hidden_dim=dim_hidden,
-    #     #        time_embed_dim=dim_hidden,
-    #     #        gamma=float(gamma),
-    #     #        max=float(max),
-    #     #        activation=act,
-    #     #        num_timesteps=10,
-    #     #        device="cuda:" + cuda)
