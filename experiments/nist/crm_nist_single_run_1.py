@@ -30,8 +30,8 @@ def CRM_single_run(dynamics="crm",
                     experiment_indentifier="run",
                     thermostat=None,
                     coupling_method = 'uniform', # uniform, OTPlanSampler
-                    model="unet_conv",
-                    dataset0="fashion",
+                    model="unet",
+                    dataset0="noise",
                     dataset1="mnist",
                     metrics=[MetricsAvaliable.mse_histograms,
                              MetricsAvaliable.mnist_plot,
@@ -45,7 +45,7 @@ def CRM_single_run(dynamics="crm",
                     time_embed_dim=128,
                     dropout=0.1,
                     num_layers=3,
-                    activation="GELU",
+                    activation="Swish",
                     thermostat_params={'gamma': 1.0, 
                                        'max': 1.0, 
                                        'slope': 1.0, 
@@ -66,65 +66,33 @@ def CRM_single_run(dynamics="crm",
 
     crm_config = CRMConfig()
 
-    if dataset0 is None:
+    if dataset0 == "noise":
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
+    else:
+        crm_config.data0 = NISTLoaderConfig(flatten=True if model=='mlp' else False, 
+                                            as_image=False if model=='mlp' else True, 
+                                            batch_size=batch_size, 
+                                            dataset_name=dataset0)
+        
+    crm_config.data1 = NISTLoaderConfig(flatten=True if model=='mlp' else False, 
+                                        as_image=False if model=='mlp' else True, 
+                                        batch_size=batch_size, 
+                                        dataset_name=dataset1)
 
-    if model=="mlp":
-        if dataset0 is not None:
-            crm_config.data0 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset0)
-        crm_config.data1 = NISTLoaderConfig(flatten=True, as_image=False, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = TemporalDeepMLPConfig(hidden_dim = hidden_dim,
-                                                            time_embed_dim = time_embed_dim,
-                                                            num_layers = num_layers,
-                                                            activation = activation,
-                                                            dropout = dropout)
+    if model=="mlp": crm_config.temporal_network=TemporalDeepMLPConfig(hidden_dim=hidden_dim, time_embed_dim=time_embed_dim, num_layers=num_layers, activation=activation, dropout=dropout)
+    if model=="lenet5": crm_config.temporal_network=TemporalLeNet5Config(hidden_dim=hidden_dim,time_embed_dim=time_embed_dim,ema_decay=ema_decay)
+    if model=="lenet5Autoencoder": crm_config.temporal_network=TemporalLeNet5AutoencoderConfig(hidden_dim=hidden_dim,time_embed_dim=time_embed_dim,ema_decay=ema_decay)
+    if model=="unet": crm_config.temporal_network=TemporalUNetConfig(hidden_dim=hidden_dim, time_embed_dim=hidden_dim, ema_decay=ema_decay, activation=activation, dropout=dropout)
+    if model=="unet_cfm": crm_config.temporal_network=CFMUnetConfig()
+    if model=="unet_conv": crm_config.temporal_network=UConvNISTNetConfig()
 
-    if model=="lenet5":
-        if dataset0 is not None:
-            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = TemporalLeNet5Config(hidden_dim = hidden_dim,
-                                                           time_embed_dim = time_embed_dim,
-                                                           ema_decay=ema_decay)
-
-    if model=="lenet5Autoencoder":
-        if dataset0 is not None:
-            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = TemporalLeNet5AutoencoderConfig(hidden_dim = hidden_dim,
-                                                                      time_embed_dim = time_embed_dim,
-                                                                      ema_decay=ema_decay)
-
-    if model=="unet":
-        if dataset0 is not None:
-            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = TemporalUNetConfig(hidden_dim = hidden_dim,
-                                                         time_embed_dim = hidden_dim,
-                                                         ema_decay=ema_decay,
-                                                         activation = activation,
-                                                         dropout = dropout)
-
-    if model=="unet_cfm":
-        if dataset0 is not None:
-            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = CFMUnetConfig()
-
-
-    if model=="unet_conv":
-        if dataset0 is not None:
-            crm_config.data0 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset0)
-        crm_config.data1 = NISTLoaderConfig(flatten=False, as_image=True, batch_size=batch_size, dataset_name=dataset1)
-        crm_config.temporal_network = UConvNISTNetConfig()
-
-    if thermostat == "LogThermostat": crm_config.thermostat = LogThermostatConfig(time_exponential=thermostat_params['log_exponential'], time_base=thermostat_params['time_base'],)
-    elif thermostat == "ExponentialThermostat": crm_config.thermostat = ExponentialThermostatConfig(max=thermostat_params['max'], gamma=thermostat_params['gamma'],)
-    elif thermostat == "InvertedExponentialThermostat": crm_config.thermostat = InvertedExponentialThermostatConfig(max=thermostat_params['max'], gamma=thermostat_params['gamma'],)
-    elif thermostat == "PeriodicThermostat": crm_config.thermostat = PeriodicThermostatConfig(max=thermostat_params['max'], gamma=thermostat_params['gamma'],)
-    elif thermostat == "PolynomialThermostat": crm_config.thermostat = PolynomialThermostatConfig(gamma=thermostat_params['gamma'], exponent=thermostat_params['exponent'])
-    elif thermostat == "PlateaulThermostat": crm_config.thermostat = PlateauThermostatConfig(gamma=thermostat_params['gamma'], slope=thermostat_params['slope'], shift=thermostat_params['shift'])
-    else: crm_config.thermostat = ConstantThermostatConfig(gamma=thermostat_params['gamma'])
+    if thermostat=="LogThermostat": crm_config.thermostat = LogThermostatConfig(time_exponential=thermostat_params['log_exponential'], time_base=thermostat_params['time_base'],)
+    elif thermostat=="ExponentialThermostat": crm_config.thermostat = ExponentialThermostatConfig(max=thermostat_params['max'], gamma=thermostat_params['gamma'],)
+    elif thermostat=="InvertedExponentialThermostat": crm_config.thermostat = InvertedExponentialThermostatConfig(max=thermostat_params['max'], gamma=thermostat_params['gamma'],)
+    elif thermostat=="PeriodicThermostat": crm_config.thermostat = PeriodicThermostatConfig(max=thermostat_params['max'], gamma=thermostat_params['gamma'],)
+    elif thermostat=="PolynomialThermostat": crm_config.thermostat = PolynomialThermostatConfig(gamma=thermostat_params['gamma'], exponent=thermostat_params['exponent'])
+    elif thermostat=="PlateaulThermostat": crm_config.thermostat = PlateauThermostatConfig(gamma=thermostat_params['gamma'], slope=thermostat_params['slope'], shift=thermostat_params['shift'])
+    else: crm_config.thermostat=ConstantThermostatConfig(gamma=thermostat_params['gamma'])
 
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
                                           learning_rate=learning_rate,
@@ -147,7 +115,7 @@ def CRM_single_run(dynamics="crm",
        print('INFO: running analysis')
        run_nist_analysis(experiment_type,
                         run=experiment_indentifier,
-                        generative_model=dynamics,
+                        generative_model=dynamics + '_images',
                         num_timesteps=num_timesteps,
                         time_epsilon=time_embed_dim,
                         num_img_bridge=6, 
@@ -201,7 +169,7 @@ if __name__ == "__main__":
                    epochs=args.epochs,
                    thermostat=args.thermostat + "Thermostat",
                    coupling_method=args.coupling,
-                   dataset0=None if args.source == 'noise' else args.source,
+                   dataset0=args.source,
                    dataset1=args.target,
                    metrics=["mse_histograms", 
                             "fid_nist", 

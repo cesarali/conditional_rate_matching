@@ -21,7 +21,7 @@ from crm_nist_single_run import CRM_single_run
 
 class CRM_Scan_Optuna:
     def __init__(self, 
-                 dynamics="crm",
+                 dynamics="crm_images",
                  experiment_type="nist",
                  experiment_indentifier="optuna_scan",
                  dataset0=None,
