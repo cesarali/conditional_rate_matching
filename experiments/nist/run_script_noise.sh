@@ -55,3 +55,7 @@ python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att_shift_0.4" 145 "Swish
 # python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 20 1.0
 # python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 20 0.5
 # python crm_nist_single_run_1.py 2 "noise_to_mnist_unet_att" 145 "Swish" "Exponential" 20 0.1
+
+
+
+python crm_nist_single_run_1.py --cuda 0 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.1 --epochs 100 --timesteps 200
