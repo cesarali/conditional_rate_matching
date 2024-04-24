@@ -58,7 +58,7 @@ def CRM_single_run(dynamics="crm",
                     run_analysis=True,
                     ):
 
-    experiment_files = ExperimentFiles(experiment_name=dynamics,
+    experiment_files = ExperimentFiles(experiment_name=dynamics + '/images',
                                        experiment_type=experiment_type,
                                        experiment_indentifier=experiment_indentifier,
                                        delete=True)
@@ -115,7 +115,7 @@ def CRM_single_run(dynamics="crm",
        print('INFO: running analysis')
        run_nist_analysis(experiment_type,
                         run=experiment_indentifier,
-                        generative_model=dynamics + '_images',
+                        generative_model=dynamics,
                         num_timesteps=num_timesteps,
                         time_epsilon=time_embed_dim,
                         num_img_bridge=6, 

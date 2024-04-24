@@ -22,7 +22,9 @@ def run_nist_analysis(path,
                  num_intermediate_bridge = 20,
                  device = "cpu"):
     
-    experiment_dir = os.path.join(results_path, generative_model, path, run)
+    experiment_dir = os.path.join(results_path, generative_model, 'images', path, run)
+
+    print(1, experiment_dir)
 
     if not os.path.isfile(experiment_dir + "/sample_gen_x1.dat"):
         x_0, x_1, x_test = generate_mnist_samples(path=experiment_dir,  
@@ -96,6 +98,8 @@ def generate_mnist_samples(path,
                            class_label=None, 
                            device="cpu"):
     
+    print(2, path)
+
     if generative_model == 'ctdd':
 
         ctdd = CTDD(experiment_dir=path, device=device)
@@ -119,7 +123,6 @@ def generate_mnist_samples(path,
         x_1 = torch.cat(x_1).view(-1, 1, 28, 28)
 
     if generative_model == 'crm':
-
         crm = CRM(experiment_dir=path, device=device)
         crm.config.pipeline.time_epsilon = time_epsilon
         crm.config.pipeline.num_intermediates = num_timesteps
@@ -148,6 +151,8 @@ def generate_mnist_samples(path,
         x_test = torch.cat(x_test)
         x_0 = torch.cat(x_0, dim=0).view(-1, 1, 28, 28)
         x_1 = torch.cat(x_1, dim=0).view(-1, 1, 28, 28)
+    
+    print(3, os.path.join(path, "sample_gen_x0.dat"))
 
     torch.save(x_0, os.path.join(path, "sample_gen_x0.dat"))      
     torch.save(x_1, os.path.join(path, "sample_gen_x1.dat"))      
