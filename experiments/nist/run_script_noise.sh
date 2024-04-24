@@ -14,22 +14,11 @@
 # Constant
 ##############
 
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.01 0.0
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.05 0.0
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.1 0.0
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.25 0.0
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.5 0.0
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 0.75 0.0
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 1.0 0.0
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 1.5 0.0
-# python crm_nist_single_run_1.py 1 "noise_to_mnist_unet_att" 145 "Swish" "Constant" 2.0 0.0
 
-
-
-python crm_nist_single_run_1.py --cuda 0 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.1 --epochs 2 --timesteps 10
-python crm_nist_single_run_1.py --cuda 0 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.1 --epochs 2 --timesteps 10
-python crm_nist_single_run_1.py --cuda 0 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.1 --epochs 2 --timesteps 10
-python crm_nist_single_run_1.py --cuda 0 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.1 --epochs 2 --timesteps 10
+python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 2.0 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 2.5 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 3.0 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 4.0 --epochs 100 --timesteps 200
 
 ##############
 # Plateau
