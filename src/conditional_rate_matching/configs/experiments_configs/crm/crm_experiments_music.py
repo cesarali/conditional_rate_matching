@@ -23,7 +23,7 @@ def experiment_music_config(epochs=100, temporal_network_name="unet"):
     return config
 
 def experiment_music_conditional_config(epochs=100,temporal_network_name="transformer",bridge_conditional=False):
-    batch_size = 64
+    batch_size = 128
     config = CRMConfig()
     config.data0 = LakhPianoRollConfig(batch_size=batch_size,
                                        conditional_model=True,
@@ -54,11 +54,11 @@ if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     from conditional_rate_matching.models.temporal_networks.temporal_networks_config import SequenceTransformerConfig
 
-    config = experiment_music_conditional_config(10,temporal_network_name="transformer")
+    config = experiment_music_conditional_config(200, temporal_network_name="transformer")
 
-    config.temporal_network = SequenceTransformerConfig(num_layers=1,num_heads=1)
-    config.trainer.debug = True
-    config.trainer.device = "cpu"
+    config.temporal_network = SequenceTransformerConfig(num_layers=5,num_heads=4)
+    config.trainer.debug = False
+    config.trainer.device = "cuda:0"
 
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 
