@@ -75,7 +75,7 @@ def get_dataloaders_crm(config:CRMConfig):
     if isinstance(config.data1,NISTLoaderConfig):
         dataloader_1 = NISTLoader(config.data1)
     elif isinstance(config.data1,StatesDataloaderConfig):
-        dataloader_1 = StatesDataloader(config.data1)
+        pass
     elif isinstance(config.data1,GraphDataloaderConfig):
         dataloader_1 = GraphDataloaders(config.data1)
     elif isinstance(config.data1,GrayCodesDataloaderConfig):
@@ -115,6 +115,16 @@ def get_dataloaders_crm(config:CRMConfig):
             piano_dataloader = LankhPianoRollDataloader(config.data0)
             dataloader_0 = piano_dataloader
 
+    #============================================
+    # NOISE REQUIERES RESET
+    #============================================
+    if isinstance(config.data1,StatesDataloaderConfig):
+        config.data1.dimensions = config.data0.dimensions
+        config.data1.temporal_net_expected_shape = [config.data1.dimensions]
+        config.data1.sample_size = config.data0.total_data_size
+        config.data1.test_split = config.data0.test_split
+        dataloader_1 = StatesDataloader(config.data1)
+    
     # OTHER BRIDGE ENDS
     elif isinstance(config.data0,BridgeConfig):
         dataloader_0 = GraphDataloaders(config.data1,config.data0.dataset_name)

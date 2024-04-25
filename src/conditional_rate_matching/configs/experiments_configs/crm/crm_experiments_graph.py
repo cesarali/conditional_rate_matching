@@ -136,9 +136,10 @@ def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", tempora
     return crm_config
 
 if __name__ == "__main__":
+    from conditional_rate_matching.configs.configs_classes.config_crm import OptimalTransportSamplerConfig
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-    config = experiment_comunity_small(number_of_epochs=10, network="gnn",temporal_to_rate=None)
+    config = experiment_comunity_small(number_of_epochs=500, network="mlp",temporal_to_rate=None)
     # config = experiment_grid(number_of_epochs=10)
     # config = experiment_ego(number_of_epochs=10,network="gnn")
     # config = experiment_enzymes(number_of_epochs=50,network="mlp")
@@ -151,7 +152,9 @@ if __name__ == "__main__":
     #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
     #config.trainer.debug = True
     #config.temporal_network = TemporalScoreNetworkAConfig(num_layers=2,num_heads=4,depth=3)
-    
+
+    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
+
     config.thermostat.gamma = 1.
     config.trainer.learning_rate = 1e-3
     config.pipeline.number_of_steps = 100
@@ -162,3 +165,5 @@ if __name__ == "__main__":
                                     experiment_name="prenzlauer_experiment",
                                     experiment_type="crm",
                                     experiment_indentifier=None)
+    
+

@@ -20,6 +20,7 @@ from conditional_rate_matching.models.temporal_networks.rates.crm_rates import(
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 from conditional_rate_matching.models.metrics.optimal_transport import OTPlanSampler
 import numpy as np
+from torch.nn.functional import softmax
 
 @dataclass
 class CRM:
@@ -104,16 +105,30 @@ class CRM:
         x1 = x1.float()
         x0 = x0.float()
         if self.config.optimal_transport.name == "OTPlanSampler":
+
+            cost=None
+            if self.config.optimal_transport.cost == "log":
+                with torch.no_grad():
+                    time1 = torch.ones((x0.shape[0],))
+                    posterior_estimate = softmax(self.forward_rate.classify(x1,time1),dim=1)
+
+                    # we have to cross each x0 which each x1 so is an "outer probability per dimension"
+                    x0_ = x0.unsqueeze(-1).repeat((1,1,x0.shape[0])).permute(2,1,0).long()
+                    posterior_estimate_ = posterior_estimate.unsqueeze(-1).repeat((1,1,1,x0.shape[0]))
+                    cost = torch.gather(posterior_estimate_,2,x0_.unsqueeze(2)).squeeze()
+                    cost = cost.sum(axis=1)
+
             batch_size = x0.size(0)
             torch.manual_seed(seed)
             np.random.seed(seed)
+
             #pi = self.op_sampler.get_map(x0, x1)
             #indices_i, indices_j = crm.op_sampler.sample_map(pi, batch_size=batch_size, replace=True)
             #new_x0, new_x1 = x0[indices_i], x1[indices_j]
 
             torch.manual_seed(seed)
             np.random.seed(seed)
-            x0, x1 = self.op_sampler.sample_plan(x0, x1, replace=True)
+            x0, x1 = self.op_sampler.sample_plan(x0, x1, replace=True,cost=cost)
 
         x0 = x0.to(self.device)
         x1 = x1.to(self.device)
