@@ -68,3 +68,4 @@ src/conditional_rate_matching/models/metrics/fid_nist/models
 
 # PyTorch models
 *.pth
+scripts/slurm/*
