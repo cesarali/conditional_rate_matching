@@ -10,10 +10,18 @@
 # Constant
 ##############
 
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.01 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.05 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.1 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.25 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.5 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 0.75 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 1.0 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 1.5 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 2.0 --epochs 100 --timesteps 200
 python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 2.5 --epochs 100 --timesteps 200
 python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 3.0 --epochs 100 --timesteps 200
 python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 3.5 --epochs 100 --timesteps 200
-python crm_nist_single_run_1.py --cuda 2 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 3.5 --epochs 100 --timesteps 200
 python crm_nist_single_run_1.py --cuda 2 --source "fashion" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 4.0 --epochs 100 --timesteps 200
 
 
