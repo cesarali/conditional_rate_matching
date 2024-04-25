@@ -109,16 +109,8 @@ class CRM:
             cost=None
             if self.config.optimal_transport.cost == "log":
                 with torch.no_grad():
-                    time1 = torch.ones((x0.shape[0],))
-                    posterior_estimate = softmax(self.forward_rate.classify(x1,time1),dim=1)
+                    cost = self.forward_rate.log_cost(x0,x1)
 
-                    # we have to cross each x0 which each x1 so is an "outer probability per dimension"
-                    x0_ = x0.unsqueeze(-1).repeat((1,1,x0.shape[0])).permute(2,1,0).long()
-                    posterior_estimate_ = posterior_estimate.unsqueeze(-1).repeat((1,1,1,x0.shape[0]))
-                    cost = torch.gather(posterior_estimate_,2,x0_.unsqueeze(2)).squeeze()
-                    cost = cost.sum(axis=1)
-
-            batch_size = x0.size(0)
             torch.manual_seed(seed)
             np.random.seed(seed)
 
