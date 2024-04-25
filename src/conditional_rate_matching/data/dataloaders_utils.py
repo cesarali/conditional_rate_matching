@@ -77,7 +77,13 @@ def get_dataloaders_crm(config:CRMConfig):
     if isinstance(config.data1,NISTLoaderConfig):
         dataloader_1 = NISTLoader(config.data1)
     elif isinstance(config.data1,StatesDataloaderConfig):
+        # dataloader_1 = StatesDataloader(config.data1)
+        config.data1.dimensions = config.data1.dimensions
+        config.data1.temporal_net_expected_shape = [config.data1.dimensions]
+        config.data1.sample_size = config.data1.total_data_size
+        config.data1.test_split = config.data1.test_split
         dataloader_1 = StatesDataloader(config.data1)
+
     elif isinstance(config.data1,GraphDataloaderConfig):
         dataloader_1 = GraphDataloaders(config.data1)
     elif isinstance(config.data1,GrayCodesDataloaderConfig):

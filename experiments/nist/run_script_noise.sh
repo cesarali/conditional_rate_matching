@@ -15,10 +15,10 @@
 ##############
 
 
-python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 2.0 --epochs 100 --timesteps 200
-python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 2.5 --epochs 100 --timesteps 200
-python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 3.0 --epochs 100 --timesteps 200
-python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 4.0 --epochs 100 --timesteps 200
+python crm_nist_single_run_1.py --cuda 1 --source "mnist" --target "noise" --model "unet"  --thermostat "Constant" --gamma 0.75 --epochs 100 --timesteps 200
+# python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 2.5 --epochs 100 --timesteps 200
+# python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 3.0 --epochs 100 --timesteps 200
+# python crm_nist_single_run_1.py --cuda 1 --source "noise" --target "mnist" --model "unet"  --thermostat "Constant" --gamma 4.0 --epochs 100 --timesteps 200
 
 ##############
 # Plateau

@@ -74,10 +74,18 @@ def CRM_single_run(dynamics="crm",
                                             batch_size=batch_size, 
                                             dataset_name=dataset0)
         
-    crm_config.data1 = NISTLoaderConfig(flatten=True if model=='mlp' else False, 
-                                        as_image=False if model=='mlp' else True, 
-                                        batch_size=batch_size, 
-                                        dataset_name=dataset1)
+    # crm_config.data1 = NISTLoaderConfig(flatten=True if model=='mlp' else False, 
+    #                                     as_image=False if model=='mlp' else True, 
+    #                                     batch_size=batch_size, 
+    #                                     dataset_name=dataset1)
+    
+    if dataset1 == "noise":
+        crm_config.data1 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size)
+    else:
+        crm_config.data1 = NISTLoaderConfig(flatten=True if model=='mlp' else False, 
+                                            as_image=False if model=='mlp' else True, 
+                                            batch_size=batch_size, 
+                                            dataset_name=dataset0)
 
     if model=="mlp": crm_config.temporal_network=TemporalDeepMLPConfig(hidden_dim=hidden_dim, time_embed_dim=time_embed_dim, num_layers=num_layers, activation=activation, dropout=dropout)
     if model=="lenet5": crm_config.temporal_network=TemporalLeNet5Config(hidden_dim=hidden_dim,time_embed_dim=time_embed_dim,ema_decay=ema_decay)

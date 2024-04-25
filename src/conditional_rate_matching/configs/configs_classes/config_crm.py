@@ -81,7 +81,7 @@ class TemporalNetworkToRateConfig:
 class CRMConfig:
     # data
     data0: Union[LakhPianoRollConfig,StatesDataloaderConfig] = StatesDataloaderConfig()
-    data1: Union[LakhPianoRollConfig,NISTLoaderConfig] = NISTLoaderConfig()
+    data1: Union[LakhPianoRollConfig,NISTLoaderConfig,StatesDataloaderConfig] = NISTLoaderConfig()
     # process
     thermostat : Union[ConstantThermostatConfig, LogThermostatConfig] = ConstantThermostatConfig()
     # temporal_to_rate
