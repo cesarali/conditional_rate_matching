@@ -136,60 +136,70 @@ if __name__ == "__main__":
 
     import argparse
     import datetime
+    import os
+    import torch
+
     date = datetime.datetime.now().strftime("%Hh%Ms%S_%Y.%m.%d")
+    cuda_visible_devices = os.getenv('CUDA_VISIBLE_DEVICES', '0')  # Default to '0' if not set
+    device_id = cuda_visible_devices.split(',')[0]  # Take the first GPU in the allocated list
 
-    #..Parse the arguments
+    if torch.cuda.is_available():
+        print(f"INFO: working on cuda:{device_id}")
+        device = f"cuda:{device_id}"
+        print(f"INFO: device={device}")
 
-    parser = argparse.ArgumentParser(description='Run the CRM training with specified configurations.')
-    parser.add_argument('--cuda', type=str, required=True, help='CUDA device number')
-    parser.add_argument('--source', type=str, required=True, help='Source dataset')
-    parser.add_argument('--target', type=str, required=True, help='Target dataset')
-    parser.add_argument('--model', type=str, required=True, help='Model for the network')
-    parser.add_argument('--timesteps', type=int, required=False, help='Number of timesteps', default=100)
-    parser.add_argument('--coupling', type=str, required=False, help='Type of source-target coupling', default='uniform')
-    parser.add_argument('--epochs', type=int, required=False, help='Number of epochs', default=100)
-    parser.add_argument('--dim', type=int, required=False, help='Hidden dimension size', default=145)
-    parser.add_argument('--act', type=str, required=False, help='Activation function', default='Swish')
-    parser.add_argument('--lr', type=float, required=False, help='Learning rate', default=0.0004)
-    parser.add_argument('--ema', type=float, required=False, help='Exponential moving average decay', default=0.9999)
-    parser.add_argument('--thermostat', type=str, required=True, help='Type of thermostat', default='Constant')
-    parser.add_argument('--gamma', type=float, required=True, help='Gamma parameter for thermostat', default=None)
-    parser.add_argument('--max', type=float, required=False, help='Max parameter for thermostat', default=None)
-    parser.add_argument('--slope', type=float, required=False, help='Slope parameter for thermostat', default=None)
-    parser.add_argument('--shift', type=float, required=False, help='Shift parameter for thermostat', default=None)
-    parser.add_argument('--exponent', type=float, required=False, help='Exponent parameter for thermostat', default=None)
-    parser.add_argument('--logexp', type=float, required=False, help='Exponential parameter for thermostat', default=None)
-    parser.add_argument('--timebase', type=float, required=False, help='Time base parameter for thermostat', default=None)
-    args = parser.parse_args()
+        #..Parse the arguments
 
-    params = ['gamma', 'max', 'slope', 'shift', 'exponent', 'logexp', 'timebase']
-    therm_params = {}
-    for p in params:
-        if p in vars(args).keys():
-            if vars(args)[p] is not None:
-                therm_params[p] = vars(args)[p]
+        parser = argparse.ArgumentParser(description='Run the CRM training with specified configurations.')
+        # parser.add_argument('--cuda', type=str, required=True, help='CUDA device number')
+        parser.add_argument('--source', type=str, required=True, help='Source dataset')
+        parser.add_argument('--target', type=str, required=True, help='Target dataset')
+        parser.add_argument('--model', type=str, required=True, help='Model for the network')
+        parser.add_argument('--timesteps', type=int, required=False, help='Number of timesteps', default=100)
+        parser.add_argument('--coupling', type=str, required=False, help='Type of source-target coupling', default='uniform')
+        parser.add_argument('--epochs', type=int, required=False, help='Number of epochs', default=100)
+        parser.add_argument('--dim', type=int, required=False, help='Hidden dimension size', default=145)
+        parser.add_argument('--act', type=str, required=False, help='Activation function', default='Swish')
+        parser.add_argument('--lr', type=float, required=False, help='Learning rate', default=0.0004)
+        parser.add_argument('--ema', type=float, required=False, help='Exponential moving average decay', default=0.9999)
+        parser.add_argument('--thermostat', type=str, required=True, help='Type of thermostat', default='Constant')
+        parser.add_argument('--gamma', type=float, required=True, help='Gamma parameter for thermostat', default=None)
+        parser.add_argument('--max', type=float, required=False, help='Max parameter for thermostat', default=None)
+        parser.add_argument('--slope', type=float, required=False, help='Slope parameter for thermostat', default=None)
+        parser.add_argument('--shift', type=float, required=False, help='Shift parameter for thermostat', default=None)
+        parser.add_argument('--exponent', type=float, required=False, help='Exponent parameter for thermostat', default=None)
+        parser.add_argument('--logexp', type=float, required=False, help='Exponential parameter for thermostat', default=None)
+        parser.add_argument('--timebase', type=float, required=False, help='Time base parameter for thermostat', default=None)
+        args = parser.parse_args()
 
-    full_experiment_type = f"{args.source}_to_{args.target}_{args.model}_dim_{args.dim}_{args.act}_{args.thermostat}Thermostat" + "_" + "_".join([f"{k}_{v}" for k,v in therm_params.items()]) + "__" + date 
+        params = ['gamma', 'max', 'slope', 'shift', 'exponent', 'logexp', 'timebase']
+        therm_params = {}
+        for p in params:
+            if p in vars(args).keys():
+                if vars(args)[p] is not None:
+                    therm_params[p] = vars(args)[p]
 
-    CRM_single_run(dynamics="crm",
-                   experiment_type=full_experiment_type,
-                   model=args.model,
-                   epochs=args.epochs,
-                   thermostat=args.thermostat + "Thermostat",
-                   coupling_method=args.coupling,
-                   dataset0=args.source,
-                   dataset1=args.target,
-                   metrics=["mse_histograms", 
-                            "fid_nist", 
-                            "mnist_plot",
-                            "marginal_binary_histograms"],
-                   batch_size=256,
-                   learning_rate=args.lr,
-                   ema_decay=args.ema,
-                   hidden_dim=args.dim,
-                   time_embed_dim=args.dim,
-                   thermostat_params=therm_params,
-                   activation=args.act,
-                   num_timesteps=args.timesteps,
-                   device="cuda:" + args.cuda)
+        full_experiment_type = f"{args.source}_to_{args.target}_{args.model}_dim_{args.dim}_{args.act}_{args.thermostat}Thermostat" + "_" + "_".join([f"{k}_{v}" for k,v in therm_params.items()]) + "__" + date 
+
+        CRM_single_run(dynamics="crm",
+                    experiment_type=full_experiment_type,
+                    model=args.model,
+                    epochs=args.epochs,
+                    thermostat=args.thermostat + "Thermostat",
+                    coupling_method=args.coupling,
+                    dataset0=args.source,
+                    dataset1=args.target,
+                    metrics=["mse_histograms", 
+                                "fid_nist", 
+                                "mnist_plot",
+                                "marginal_binary_histograms"],
+                    batch_size=256,
+                    learning_rate=args.lr,
+                    ema_decay=args.ema,
+                    hidden_dim=args.dim,
+                    time_embed_dim=args.dim,
+                    thermostat_params=therm_params,
+                    activation=args.act,
+                    num_timesteps=args.timesteps,
+                    device=device)
 

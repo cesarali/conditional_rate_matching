@@ -94,7 +94,7 @@ class CRM:
         #save config
         config_as_dict = asdict(self.config)
         with open(self.experiment_files.config_path, "w") as file:
-            json.dump(config_as_dict, file)
+            json.dump(config_as_dict, file, indent=4)
 
     def align_configs(self):
         pass
