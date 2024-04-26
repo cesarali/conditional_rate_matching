@@ -180,7 +180,6 @@ class TemporalLinearDeprecated(torch.nn.Module):
         out = out*weight_time[:,None,None,:] + bias_time[:,None,None,:]
         return out
 
-
 class TemporalLinear(torch.nn.Module):
     def __init__(self, input_dim, output_dim, time_embed_dim=19, dropout_rate=0.3):
         super().__init__()
@@ -203,8 +202,8 @@ class TemporalLinear(torch.nn.Module):
         out = out * weight_time + bias_time
         return out
 
-
 class TemporalMLP(torch.nn.Module):
+
     def __init__(self, num_layers, input_dim, hidden_dim, output_dim, use_bn=False, activate_func=F.relu,temp_dim=19):
         """
             num_layers: number of layers in the neural networks (EXCLUDING the input layer). If num_layers=1, this reduces to linear model.
@@ -241,7 +240,6 @@ class TemporalMLP(torch.nn.Module):
                 self.batch_norms = torch.nn.ModuleList()
                 for layer in range(num_layers - 1):
                     self.batch_norms.append(torch.nn.BatchNorm1d(hidden_dim))
-
 
     def forward(self, x,time):
         """

@@ -257,7 +257,41 @@ class ClassificationForwardRate(EMA,nn.Module):
         x_to_go = x_to_go[None, None, :].repeat((x.size(0), self.dimensions, 1)).float()
         x_to_go = x_to_go.to(x.device)
         return x_to_go
+    
+    def log_cost(self,x0,x1):
+        """
+        Schrodinger transport cost 
 
+        params
+        ------
+        x0,x1: torch.Tensor(batch_size,dimensions) 
+
+        returns
+        -------
+        cost: torch.Tensor(batch_size,batch_size)
+        """
+        time1 = torch.ones((x0.shape[0],))
+        posterior_estimate = softmax(self.classify(x1,time1),dim=1)
+    
+        D = self.dimensions
+        S = self.vocab_size
+
+        right_time_size = lambda t: t if isinstance(t, torch.Tensor) else torch.full((x0.size(0),), t).to(x0.device)
+        beta_integral_ = self.beta_integral(right_time_size(1.), right_time_size(0.))
+        w_10 = torch.exp(- S* beta_integral_)
+        A = torch.log(1./S - w_10*(-1./S))
+        B = torch.log(1./S - w_10*(-1./S + 1.)) - A
+
+        # we have to cross each x0 with each x1 so is an "outer probability per dimension" and then sum
+        x0_ = x0.unsqueeze(-1).repeat((1,1,x0.shape[0])).permute(2,1,0).long()
+        posterior_estimate_ = posterior_estimate.unsqueeze(-1).repeat((1,1,1,x0.shape[0]))
+        cost = torch.gather(posterior_estimate_,2,x0_.unsqueeze(2)).squeeze()
+
+        #include constants
+        cost = A*D - B*cost
+
+        cost = cost.sum(axis=1)
+        return cost
     #======================================================================
     # VARIANCE
     #======================================================================

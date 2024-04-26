@@ -15,6 +15,7 @@ class OTPlanSampler:
         self,
         method: str,
         name: str = "OTPlanSampler",
+        cost: str = None,
         reg: float = 0.05,
         reg_m: float = 1.0,
         normalize_cost: bool = False,
@@ -56,7 +57,7 @@ class OTPlanSampler:
         self.normalize_cost = normalize_cost
         self.warn = warn
 
-    def get_map(self, x0, x1):
+    def get_map(self, x0, x1,cost=None):
         """Compute the OT plan (wrt squared Euclidean cost) between a source and a target
         minibatch.
 
@@ -78,9 +79,15 @@ class OTPlanSampler:
         if x1.dim() > 2:
             x1 = x1.reshape(x1.shape[0], -1)
         x1 = x1.reshape(x1.shape[0], -1)
-        M = torch.cdist(x0, x1) ** 2
+
+        if cost is None:
+            M = torch.cdist(x0, x1) ** 2
+        else:
+            M = cost
+
         if self.normalize_cost:
             M = M / M.max()  # should not be normalized when using minibatches
+
         p = self.ot_fn(a, b, M.detach().cpu().numpy())
         if not np.all(np.isfinite(p)):
             print("ERROR: p is not finite")
@@ -117,7 +124,7 @@ class OTPlanSampler:
         )
         return np.divmod(choices, pi.shape[1])
 
-    def sample_plan(self, x0, x1, replace=True):
+    def sample_plan(self, x0, x1, replace=True,cost=None):
         r"""Compute the OT plan $\pi$ (wrt squared Euclidean cost) between a source and a target
         minibatch and draw source and target samples from pi $(x,z) \sim \pi$
 
@@ -137,7 +144,7 @@ class OTPlanSampler:
         x1[j] : Tensor, shape (bs, *dim)
             represents the source minibatch drawn from $\pi$
         """
-        pi = self.get_map(x0, x1)
+        pi = self.get_map(x0, x1,cost)
         i, j = self.sample_map(pi, x0.shape[0], replace=replace)
         return x0[i], x1[j]
 

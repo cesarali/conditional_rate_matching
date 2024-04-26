@@ -93,6 +93,7 @@ class CRMTrainer(Trainer):
 
     def train_step(self,databatch, number_of_training_step,epoch):
         batch_0, batch_1 = databatch
+        
         # data pair and time sample
         x_1, x_0 = self.generative_model.sample_pair(batch_1,batch_0,self.device)
 

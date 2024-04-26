@@ -5,6 +5,9 @@ from torch.distributions import Categorical
 from torch.utils.data import TensorDataset,DataLoader
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
+import torch
+from torch.utils.data import Dataset, DataLoader
+import numpy as np
 
 def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tensor_samples=False):
     """
@@ -75,6 +78,7 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
 
         return train_loader, test_loader
 
+
 class StatesDataloader:
 
     name_ = "StatesDataloader"
@@ -91,6 +95,73 @@ class StatesDataloader:
 
     def test(self):
         return self.test_loader
+
+
+def set_probabilities(config:StatesDataloaderConfig,return_tensor_samples=False):
+    """
+
+    :param probs:
+    :param alpha:
+    :param sample_size:
+    :param dimensions:
+    :param vocab_size:
+    :param test_split:
+    :return:
+    """
+
+    probs = config.bernoulli_probability
+    alpha = config.dirichlet_alpha
+    sample_size = config.sample_size
+    dimensions = config.dimensions
+    vocab_size = config.vocab_size
+
+
+    # ensure we have the probabilites
+    if probs is None:
+        if isinstance(alpha, float):
+            alpha = torch.full((vocab_size,), alpha)
+        else:
+            assert len(alpha.shape) == 1
+            assert alpha.size(0) == vocab_size
+        # Sample from the Dirichlet distribution
+        probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
+    else:
+        assert probs.max() <= 1.
+        assert probs.max() >= 0.
+
+class CategoricalDataset(Dataset):
+    def __init__(self, total_samples, probabilities):
+        """
+        Args:
+            total_samples (int): Total number of samples to generate.
+            probabilities (list): List of probabilities for each category.
+        """
+        super().__init__()
+
+        self.total_samples = total_samples
+        self.probabilities = probabilities
+        self.num_categories = len(probabilities)
+        
+    def __len__(self):
+        return self.total_samples
+    
+    def __getitem__(self, idx):
+        # Generate a random sample from the categorical distribution
+        sample = torch.multinomial(torch.tensor(self.probabilities), 1).item()
+        return sample
+
+class StatesDataloaders2:
+
+    def __init__(self,config):
+        test_split = config.test_split
+        batch_size = config.batch_size
+        max_test_size = config.max_test_size
+
+    def train():
+        return None
+    
+    def test():
+        return None
 
 if __name__=="__main__":
     from  conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig

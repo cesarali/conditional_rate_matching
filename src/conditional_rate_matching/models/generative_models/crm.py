@@ -20,6 +20,7 @@ from conditional_rate_matching.models.temporal_networks.rates.crm_rates import(
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders_crm
 from conditional_rate_matching.models.metrics.optimal_transport import OTPlanSampler
 import numpy as np
+from torch.nn.functional import softmax
 
 @dataclass
 class CRM:
@@ -104,16 +105,22 @@ class CRM:
         x1 = x1.float()
         x0 = x0.float()
         if self.config.optimal_transport.name == "OTPlanSampler":
-            batch_size = x0.size(0)
+
+            cost=None
+            if self.config.optimal_transport.cost == "log":
+                with torch.no_grad():
+                    cost = self.forward_rate.log_cost(x0,x1)
+
             torch.manual_seed(seed)
             np.random.seed(seed)
+
             #pi = self.op_sampler.get_map(x0, x1)
             #indices_i, indices_j = crm.op_sampler.sample_map(pi, batch_size=batch_size, replace=True)
             #new_x0, new_x1 = x0[indices_i], x1[indices_j]
 
             torch.manual_seed(seed)
             np.random.seed(seed)
-            x0, x1 = self.op_sampler.sample_plan(x0, x1, replace=True)
+            x0, x1 = self.op_sampler.sample_plan(x0, x1, replace=True,cost=cost)
 
         x0 = x0.to(self.device)
         x1 = x1.to(self.device)
