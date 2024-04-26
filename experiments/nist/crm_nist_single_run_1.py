@@ -39,12 +39,12 @@ def CRM_single_run(dynamics="crm",
                              MetricsAvaliable.marginal_binary_histograms],
                     device="cpu",
                     epochs=100,
-                    batch_size=64,
-                    learning_rate=1e-3, 
+                    batch_size=256,
+                    learning_rate=2e-4, 
                     hidden_dim=256,
                     time_embed_dim=128,
                     dropout=0.1,
-                    num_layers=3,
+                    num_layers=6,
                     activation="Swish",
                     thermostat_params={'gamma': 1.0, 
                                        'max': 1.0, 
@@ -54,7 +54,7 @@ def CRM_single_run(dynamics="crm",
                                        'log_exponential': 0.1,
                                        'time_base': 1.0},
                     num_timesteps=100,
-                    ema_decay=0.999,
+                    ema_decay=0.9999,
                     run_analysis=True,
                     ):
 
@@ -85,7 +85,7 @@ def CRM_single_run(dynamics="crm",
         crm_config.data1 = NISTLoaderConfig(flatten=True if model=='mlp' else False, 
                                             as_image=False if model=='mlp' else True, 
                                             batch_size=batch_size, 
-                                            dataset_name=dataset0)
+                                            dataset_name=dataset1)
 
     if model=="mlp": crm_config.temporal_network=TemporalDeepMLPConfig(hidden_dim=hidden_dim, time_embed_dim=time_embed_dim, num_layers=num_layers, activation=activation, dropout=dropout)
     if model=="lenet5": crm_config.temporal_network=TemporalLeNet5Config(hidden_dim=hidden_dim,time_embed_dim=time_embed_dim,ema_decay=ema_decay)
@@ -190,7 +190,7 @@ if __name__ == "__main__":
                     dataset0=args.source,
                     dataset1=args.target,
                     metrics=["mse_histograms", 
-                                "fid_nist", 
+                                # "fid_nist", 
                                 "mnist_plot",
                                 "marginal_binary_histograms"],
                     batch_size=256,
