@@ -20,8 +20,8 @@ def experiment_nist(number_of_epochs=300,
                     berlin=True):
     crm_config = CRMConfig()
     if temporal_network_name == "mlp":
-        crm_config.data1 = NISTLoaderConfig(flatten=True,as_image=False,batch_size=128,dataset_name=dataset_name,max_test_size=None)
-        crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128,max_test_size=None)
+        crm_config.data1 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128,max_test_size=None)
+        crm_config.data0 = NISTLoaderConfig(flatten=True,as_image=False,batch_size=128,dataset_name=dataset_name,max_test_size=None)
         crm_config.temporal_network = TemporalMLPConfig()
     elif temporal_network_name == "unet_conv":
         crm_config.data1 = NISTLoaderConfig(flatten=False,as_image=True, batch_size=128,dataset_name=dataset_name)
@@ -51,7 +51,7 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(2,"emnist",temporal_network_name="cfm_unet")
+    config = experiment_nist(2,"emnist",temporal_network_name="mlp")
     config.trainer.debug = True
     config.trainer.device = "cpu"
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
