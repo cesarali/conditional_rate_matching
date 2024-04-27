@@ -100,16 +100,21 @@ class CRM:
     def align_configs(self):
         pass
 
-    def sample_pair(self,batch_1, batch_0,device:torch.device,seed=1980):
+    def sample_pair(self,batch_1, batch_0, device:torch.device, seed=1980):
+
+        # x1,x0 = uniform_pair_x0_x1(batch_1, batch_0, device=self.device)
         x1,x0 = uniform_pair_x0_x1(batch_1, batch_0, device=torch.device("cpu"))
-        x1 = x1.float()
-        x0 = x0.float()
+
+        x1 = x1.float().to(self.device)
+        x0 = x0.float().to(self.device)
         if self.config.optimal_transport.name == "OTPlanSampler":
 
             cost=None
             if self.config.optimal_transport.cost == "log":
                 with torch.no_grad():
                     cost = self.forward_rate.log_cost(x0,x1)
+                    cost = cost.to(self.device)
+                    
 
             torch.manual_seed(seed)
             np.random.seed(seed)

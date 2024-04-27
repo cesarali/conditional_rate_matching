@@ -29,7 +29,7 @@ def CRM_single_run(dynamics="crm",
                     experiment_type="nist",
                     experiment_indentifier="run",
                     thermostat=None,
-                    coupling_method = 'uniform', # uniform, OTPlanSampler
+                    coupling_method = 'uniform', # uniform, OTl2, OTlog
                     model="unet",
                     dataset0="noise",
                     dataset1="mnist",
@@ -110,7 +110,8 @@ def CRM_single_run(dynamics="crm",
                                           loss_regularize=False)
     
     crm_config.pipeline.number_of_steps = num_timesteps
-    crm_config.optimal_transport.name = coupling_method
+    crm_config.optimal_transport.name = 'OTPlanSampler' if 'OT' in coupling_method else 'uniform'
+    crm_config.optimal_transport.cost = 'log' if coupling_method == 'OTlog' else None
 
     #...train
 
@@ -151,7 +152,6 @@ if __name__ == "__main__":
         #..Parse the arguments
 
         parser = argparse.ArgumentParser(description='Run the CRM training with specified configurations.')
-        # parser.add_argument('--cuda', type=str, required=True, help='CUDA device number')
         parser.add_argument('--source', type=str, required=True, help='Source dataset')
         parser.add_argument('--target', type=str, required=True, help='Target dataset')
         parser.add_argument('--model', type=str, required=True, help='Model for the network')
@@ -179,7 +179,7 @@ if __name__ == "__main__":
                 if vars(args)[p] is not None:
                     therm_params[p] = vars(args)[p]
 
-        full_experiment_type = f"{args.source}_to_{args.target}_{args.model}_dim_{args.dim}_{args.act}_{args.thermostat}Thermostat" + "_" + "_".join([f"{k}_{v}" for k,v in therm_params.items()]) + "__" + date 
+        full_experiment_type = f"{args.source}_to_{args.target}_{args.model}_{args.coupling}_coupling_{args.thermostat}Thermostat" + "_" + "_".join([f"{k}_{v}" for k,v in therm_params.items()]) + "__" + date 
 
         CRM_single_run(dynamics="crm",
                     experiment_type=full_experiment_type,
@@ -190,9 +190,9 @@ if __name__ == "__main__":
                     dataset0=args.source,
                     dataset1=args.target,
                     metrics=["mse_histograms", 
-                                # "fid_nist", 
-                                "mnist_plot",
-                                "marginal_binary_histograms"],
+                            "fid_nist", 
+                            "mnist_plot",
+                            "marginal_binary_histograms"],
                     batch_size=256,
                     learning_rate=args.lr,
                     ema_decay=args.ema,
@@ -201,5 +201,5 @@ if __name__ == "__main__":
                     thermostat_params=therm_params,
                     activation=args.act,
                     num_timesteps=args.timesteps,
-                    device=device)
+                    device='cuda:3')
 
