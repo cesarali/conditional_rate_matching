@@ -18,16 +18,29 @@ class TemporalDeepMLPConfig:
     ema_decay: float = 0.999
     dropout : float = 0.2
 
+@dataclass
+class TemporalLeNet5Config:
+    name : str = "TemporalLeNet5"
+    time_embed_dim : int = 50
+    hidden_dim : int = 84
+    ema_decay: float = 0.999
 
 @dataclass
-class TemporalDeepSetsConfig:
-    name : str = "TemporalDeepSets"
-    time_embed_dim : int = 39
-    hidden_dim : int = 200
-    pool : str = "sum"
-    activation : str = 'ReLU'
-    num_layers : int = 2
+class TemporalLeNet5AutoencoderConfig:
+    name : str = "TemporalLeNet5Autoencoder"
+    time_embed_dim : int = 128
+    hidden_dim : int = 256
     ema_decay: float = 0.999
+
+@dataclass
+class TemporalUNetConfig:
+    name : str = "TemporalUNet"
+    time_embed_dim : int = 128
+    hidden_dim : int = 256
+    ema_decay: float = 0.999
+    dropout : float = 0.1
+    activation : str = 'GELU'
+
 
 @dataclass
 class TemporalGraphConvNetConfig:
@@ -145,4 +158,3 @@ class SequenceTransformerConfig:
     use_one_hot_input:bool = True
 
     ema_decay :float = 0.9999  # 0.9999
-

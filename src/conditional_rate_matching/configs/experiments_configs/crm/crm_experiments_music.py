@@ -54,7 +54,7 @@ if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     from conditional_rate_matching.models.temporal_networks.temporal_networks_config import SequenceTransformerConfig
 
-    config = experiment_music_conditional_config(10,temporal_network_name="transformer")
+    config = experiment_music_conditional_config(5,temporal_network_name="transformer")
 
     config.temporal_network = SequenceTransformerConfig(num_layers=1,num_heads=1)
     config.trainer.debug = True
@@ -65,4 +65,4 @@ if __name__=="__main__":
     call_trainer(config,
                  experiment_name="prenzlauer_experiment",
                  experiment_type="crm_music",
-                 experiment_indentifier=None)
+                 experiment_indentifier="dario")
