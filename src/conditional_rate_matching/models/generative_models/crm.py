@@ -104,6 +104,11 @@ class CRM:
         x1,x0 = uniform_pair_x0_x1(batch_1, batch_0, device=torch.device("cpu"))
         x1 = x1.float()
         x0 = x0.float()
+
+        batch_size = x0.shape[0]
+        x0 = x0.reshape(batch_size,-1)
+        x1 = x1.reshape(batch_size,-1)
+        
         if self.config.optimal_transport.name == "OTPlanSampler":
 
             cost=None

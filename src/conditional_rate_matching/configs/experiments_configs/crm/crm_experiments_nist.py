@@ -1,3 +1,4 @@
+from conditional_rate_matching.configs.configs_classes.config_crm import OptimalTransportSamplerConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMTrainerConfig
 
@@ -17,7 +18,8 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
 def experiment_nist(number_of_epochs=300,
                     dataset_name="emnist",
                     temporal_network_name="cfm_unet",
-                    berlin=True):
+                    berlin=True,
+                    transport=None):
     crm_config = CRMConfig()
     if temporal_network_name == "mlp":
         crm_config.data1 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128,max_test_size=None)
@@ -43,6 +45,13 @@ def experiment_nist(number_of_epochs=300,
         crm_config.data1 = NISTLoaderConfig(flatten=False,as_image=True, batch_size=128,dataset_name=dataset_name,unet_resize=False)  
         crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128)
         crm_config.temporal_network = TemporalUNetConfig()
+    elif temporal_network_name == "unet_bridge":
+        crm_config.data0 = NISTLoaderConfig(flatten=False,as_image=True, batch_size=128,dataset_name="fashion",unet_resize=False)  
+        crm_config.data1 = NISTLoaderConfig(flatten=False,as_image=True, batch_size=128,dataset_name="mnist",unet_resize=False)  
+        crm_config.temporal_network = TemporalUNetConfig()
+
+    if transport == "log":
+        crm_config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
 
     crm_config.pipeline.number_of_steps = 10
     crm_config.trainer = CRMTrainerConfig(number_of_epochs=number_of_epochs,
@@ -60,7 +69,7 @@ def experiment_nist(number_of_epochs=300,
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     
-    config = experiment_nist(2,"emnist",temporal_network_name="unet_final_reversed")
+    config = experiment_nist(2,"emnist",temporal_network_name="unet_bridge",transport="log")
     config.trainer.debug = True
     config.trainer.device = "cpu"
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)

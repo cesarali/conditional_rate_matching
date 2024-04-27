@@ -11,7 +11,6 @@ from conditional_rate_matching.models.networks.mlp_config import MLPConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
     TemporalMLPConfig,
     TemporalDeepMLPConfig,
-    TemporalDeepSetsConfig,
     TemporalGraphConvNetConfig,
     ConvNetAutoencoderConfig,
     DiffusersUnet2DConfig,
