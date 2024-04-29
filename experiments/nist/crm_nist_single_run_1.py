@@ -128,7 +128,7 @@ def CRM_single_run(dynamics="crm",
                         num_timesteps=num_timesteps,
                         time_epsilon=time_embed_dim,
                         num_img_bridge=6, 
-                        num_intermediate_bridge=5,
+                        num_intermediate_bridge=20,
                         device=device)
     return metrics
 
@@ -145,9 +145,7 @@ if __name__ == "__main__":
     device_id = cuda_visible_devices.split(',')[0]  # Take the first GPU in the allocated list
 
     if torch.cuda.is_available():
-        print(f"INFO: working on cuda:{device_id}")
         device = f"cuda:{device_id}"
-        print(f"INFO: device={device}")
 
         #..Parse the arguments
 
@@ -170,6 +168,8 @@ if __name__ == "__main__":
         parser.add_argument('--exponent', type=float, required=False, help='Exponent parameter for thermostat', default=None)
         parser.add_argument('--logexp', type=float, required=False, help='Exponential parameter for thermostat', default=None)
         parser.add_argument('--timebase', type=float, required=False, help='Time base parameter for thermostat', default=None)
+        parser.add_argument('--device', type=str, required=False, help='Selected device', default=device)
+
         args = parser.parse_args()
 
         params = ['gamma', 'max', 'slope', 'shift', 'exponent', 'logexp', 'timebase']
@@ -201,5 +201,5 @@ if __name__ == "__main__":
                     thermostat_params=therm_params,
                     activation=args.act,
                     num_timesteps=args.timesteps,
-                    device='cuda:3')
+                    device=args.device)
 

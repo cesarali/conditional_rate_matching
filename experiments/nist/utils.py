@@ -14,13 +14,13 @@ from torchvision.utils import make_grid
 
 
 def run_nist_analysis(path,
-                 run="run",
-                 generative_model = "crm",
-                 num_timesteps = 100,
-                 time_epsilon = 0.01,
-                 num_img_bridge = 6, 
-                 num_intermediate_bridge = 20,
-                 device = "cpu"):
+                        run="run",
+                        generative_model = "crm",
+                        num_timesteps = 100,
+                        time_epsilon = 0.01,
+                        num_img_bridge = 6, 
+                        num_intermediate_bridge = 20,
+                        device = "cpu"):
     
     experiment_dir = os.path.join(results_path, generative_model, 'images', path, run)
 
