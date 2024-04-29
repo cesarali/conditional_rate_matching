@@ -1,5 +1,4 @@
-from pprint import pprint
-
+from conditional_rate_matching.configs.configs_classes.config_crm import OptimalTransportSamplerConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMTrainerConfig
 
@@ -7,6 +6,8 @@ from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvalia
 from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
+
+from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalUNetConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import CFMUnetConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import UConvNISTNetConfig
@@ -17,7 +18,8 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
 def experiment_nist(number_of_epochs=300,
                     dataset_name="emnist",
                     temporal_network_name="cfm_unet",
-                    berlin=True):
+                    berlin=True,
+                    transport=None):
     crm_config = CRMConfig()
     if temporal_network_name == "mlp":
         crm_config.data1 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=128,max_test_size=None)
@@ -51,12 +53,12 @@ def experiment_nist(number_of_epochs=300,
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_nist(2,"emnist",temporal_network_name="mlp")
+    
+    config = experiment_nist(2,"emnist",temporal_network_name="unet_bridge",transport="log")
     config.trainer.debug = True
     config.trainer.device = "cpu"
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 
-    pprint(config)
     call_trainer(config,
                  experiment_name="pren_experiment",
                  experiment_type="crm",

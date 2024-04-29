@@ -31,6 +31,9 @@ class TemporalLeNet5AutoencoderConfig:
     time_embed_dim : int = 128
     hidden_dim : int = 256
     ema_decay: float = 0.999
+    dropout : float = 0.1
+    activation : str = 'GELU'
+
 
 @dataclass
 class TemporalUNetConfig:
@@ -158,4 +161,3 @@ class SequenceTransformerConfig:
     use_one_hot_input:bool = True
 
     ema_decay :float = 0.9999  # 0.9999
-

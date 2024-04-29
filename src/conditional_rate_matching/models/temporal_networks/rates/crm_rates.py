@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torch.nn.functional import softmax
+from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,TemporalNetworkToRateConfig
 
 from conditional_rate_matching.models.pipelines.thermostat.thermostat_utils import load_thermostat
@@ -104,9 +105,15 @@ class ClassificationForwardRate(EMA,nn.Module):
         nn.Module.__init__(self)
 
         self.config = config
-        self.vocab_size = config.data1.vocab_size
-        self.dimensions = config.data1.dimensions
-        self.expected_data_shape = config.data1.temporal_net_expected_shape
+
+        if isinstance(config.data1,StatesDataloaderConfig):
+            config_data = config.data0
+        else:
+            config_data = config.data1
+
+        self.vocab_size = config_data.vocab_size
+        self.dimensions = config_data.dimensions
+        self.expected_data_shape = config_data.temporal_net_expected_shape
 
         self.temporal_network_to_rate = config.temporal_network_to_rate
 

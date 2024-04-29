@@ -65,4 +65,4 @@ if __name__=="__main__":
     call_trainer(config,
                  experiment_name="test_piano_roll_transformer",
                  experiment_type="crm_music",
-                 experiment_indentifier=None)
+                 experiment_indentifier="dario")
