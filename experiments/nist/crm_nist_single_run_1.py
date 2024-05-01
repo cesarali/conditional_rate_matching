@@ -141,21 +141,20 @@ if __name__ == "__main__":
     import torch
 
     date = datetime.datetime.now().strftime("%Hh%Ms%S_%Y.%m.%d")
-    cuda_visible_devices = os.getenv('CUDA_VISIBLE_DEVICES', '0')  # Default to '0' if not set
-    device_id = cuda_visible_devices.split(',')[0]  # Take the first GPU in the allocated list
 
     if torch.cuda.is_available():
-        device = f"cuda:{device_id}"
 
         #..Parse the arguments
 
         parser = argparse.ArgumentParser(description='Run the CRM training with specified configurations.')
+        parser.add_argument('--id', type=str, required=False, help='Experiment indentifier', default='run')
         parser.add_argument('--source', type=str, required=True, help='Source dataset')
         parser.add_argument('--target', type=str, required=True, help='Target dataset')
         parser.add_argument('--model', type=str, required=True, help='Model for the network')
         parser.add_argument('--timesteps', type=int, required=False, help='Number of timesteps', default=100)
         parser.add_argument('--coupling', type=str, required=False, help='Type of source-target coupling', default='uniform')
         parser.add_argument('--epochs', type=int, required=False, help='Number of epochs', default=100)
+        parser.add_argument('--batch_size', type=int, required=False, help='Batch size', default=256)
         parser.add_argument('--dim', type=int, required=False, help='Hidden dimension size', default=145)
         parser.add_argument('--act', type=str, required=False, help='Activation function', default='Swish')
         parser.add_argument('--lr', type=float, required=False, help='Learning rate', default=0.0004)
@@ -168,7 +167,7 @@ if __name__ == "__main__":
         parser.add_argument('--exponent', type=float, required=False, help='Exponent parameter for thermostat', default=None)
         parser.add_argument('--logexp', type=float, required=False, help='Exponential parameter for thermostat', default=None)
         parser.add_argument('--timebase', type=float, required=False, help='Time base parameter for thermostat', default=None)
-        parser.add_argument('--device', type=str, required=False, help='Selected device', default=device)
+        parser.add_argument('--device', type=str, required=False, help='Selected device', default="cuda:0")
 
         args = parser.parse_args()
 
@@ -183,6 +182,7 @@ if __name__ == "__main__":
 
         CRM_single_run(dynamics="crm",
                     experiment_type=full_experiment_type,
+                    experiment_indentifier=args.id,
                     model=args.model,
                     epochs=args.epochs,
                     thermostat=args.thermostat + "Thermostat",
@@ -193,7 +193,7 @@ if __name__ == "__main__":
                             "fid_nist", 
                             "mnist_plot",
                             "marginal_binary_histograms"],
-                    batch_size=256,
+                    batch_size=args.batch_size,
                     learning_rate=args.lr,
                     ema_decay=args.ema,
                     hidden_dim=args.dim,
@@ -203,3 +203,6 @@ if __name__ == "__main__":
                     num_timesteps=args.timesteps,
                     device=args.device)
 
+    else:
+        print("ERROR: CUDA is not available")
+        exit(1)
