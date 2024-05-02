@@ -69,11 +69,11 @@ class TemporalToRateEmpty(nn.Module):
     """
     Directly Takes the Output and converts into a rate
     """
-    def __init__(self,  config:CRMConfig):
+    def __init__(self,  config:CRMConfig, temporal_output_total):
         nn.Module.__init__(self)
 
     def forward(self,x):
-        return None
+        return x
 
 def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
 
@@ -277,7 +277,7 @@ class ClassificationForwardRate(EMA,nn.Module):
         -------
         cost: torch.Tensor(batch_size,batch_size)
         """
-        time1 = torch.ones((x0.shape[0],), device=x1.device)
+        time1 = torch.ones((x0.shape[0],))
         posterior_estimate = softmax(self.classify(x1,time1),dim=1)
     
         D = self.dimensions
@@ -382,4 +382,3 @@ class ClassificationForwardRate(EMA,nn.Module):
         second_moment = self.compute_second_moment(t,x1,x0)
 
         return second_moment - mean**2
-
