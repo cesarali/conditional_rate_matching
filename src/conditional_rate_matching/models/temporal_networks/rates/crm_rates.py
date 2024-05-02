@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torch.nn.functional import softmax
+import torch.nn.functional as F
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,TemporalNetworkToRateConfig
 

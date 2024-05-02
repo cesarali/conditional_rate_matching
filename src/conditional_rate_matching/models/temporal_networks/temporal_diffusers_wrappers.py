@@ -43,11 +43,13 @@ class DiffusersUnet2D(nn.Module):
         super().__init__()
 
         in_chanels = config.temporal_network.input_channels
+        vocab_size = config.data1.vocab_size
+
         self.temp_net = UNet2DModel(in_channels=in_chanels,
-                                    out_channels=in_chanels,
+                                    out_channels=in_chanels*vocab_size,
                                     norm_num_groups=32).to(device)
 
-        self.expected_output_shape = [in_chanels,32,32]
+        self.expected_output_shape = [in_chanels*vocab_size,32,32]
 
         #ch = cfg.temp_network.ch
         #num_res_blocks = cfg.temp_network.num_res_blocks

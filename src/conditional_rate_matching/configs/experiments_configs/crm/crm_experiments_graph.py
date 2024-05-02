@@ -142,11 +142,7 @@ def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", tempora
 if __name__ == "__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-<<<<<<< HEAD
     config = experiment_comunity_small(number_of_epochs=200, network="mlp", temporal_to_rate='linear')
-=======
-    config = experiment_comunity_small(number_of_epochs=500, network="mlp",temporal_to_rate=None)
->>>>>>> origin/main
     # config = experiment_grid(number_of_epochs=10)
     # config = experiment_ego(number_of_epochs=10,network="gnn")
     # config = experiment_enzymes(number_of_epochs=128, network="mlp", temporal_to_rate='linear')
@@ -159,15 +155,13 @@ if __name__ == "__main__":
     config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
     #config.trainer.debug = True
     #config.temporal_network = TemporalScoreNetworkAConfig(num_layers=2,num_heads=4,depth=3)
-<<<<<<< HEAD
-    
+
     config.thermostat.gamma = 0.01
-=======
 
     config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
+    #config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
 
     config.thermostat.gamma = 1.
->>>>>>> origin/main
     config.trainer.learning_rate = 1e-3
     config.pipeline.number_of_steps = 1000
     config.trainer.loss_regularize_variance = False
