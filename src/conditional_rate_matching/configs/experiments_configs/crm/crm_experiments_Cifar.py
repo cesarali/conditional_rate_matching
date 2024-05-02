@@ -1,11 +1,12 @@
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.data.image_dataloader_config import DiscreteCIFAR10Config
-from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig, BasicPipelineConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig, BasicPipelineConfig,TemporalNetworkToRateConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import DiffusersUnet2DConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 
+
 def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
-    batch_size = 10
+    batch_size = 2
     config = CRMConfig()
     config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size, max_test_size=None)
     config.data1 = DiscreteCIFAR10Config(batch_size=batch_size)
@@ -27,6 +28,7 @@ def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
                                                     time_embed_dim=128,
                                                     time_scale_factor=1000,
                                                     ema_decay=0.9999)
+    config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="empty")
 
     return config
 

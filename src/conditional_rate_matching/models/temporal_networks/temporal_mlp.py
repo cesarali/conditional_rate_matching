@@ -62,7 +62,6 @@ class TemporalDeepMLP(nn.Module):
             if isinstance(layer, nn.Linear):
                 nn.init.xavier_uniform_(layer.weight)
 
-
 class TemporalLeNet5(nn.Module):
 
     def __init__(self,

@@ -32,14 +32,17 @@ class CRMTrainer(Trainer):
     generative_model_class = CRM
     name_ = "conditional_rate_matching_trainer"
 
-    def __init__(self,config,experiment_files):
+    def __init__(self,config,experiment_files,crm=None):
         self.config = config
         self.number_of_epochs = self.config.trainer.number_of_epochs
         device_str = self.config.trainer.device
 
         self.device = torch.device(device_str if torch.cuda.is_available() else "cpu")
-        self.generative_model = CRM(self.config, experiment_files=experiment_files, device=self.device)
-
+        if crm is None:
+            self.generative_model = CRM(self.config, experiment_files=experiment_files, device=self.device)
+        else:
+            self.generative_model = crm
+            
         if hasattr(config.data1, "conditional_model"):
             self.dataloader = self.generative_model.parent_dataloader
         else:

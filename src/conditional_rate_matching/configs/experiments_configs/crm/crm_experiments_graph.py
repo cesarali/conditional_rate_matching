@@ -153,8 +153,7 @@ if __name__ == "__main__":
     #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
     #config.trainer.debug = True
     #config.temporal_network = TemporalScoreNetworkAConfig(num_layers=2,num_heads=4,depth=3)
-
-    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
+    #config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
 
     config.thermostat.gamma = 1.
     config.trainer.learning_rate = 1e-3

@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torch.nn.functional import softmax
+import torch.nn.functional as F
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,TemporalNetworkToRateConfig
 
@@ -69,11 +70,54 @@ class TemporalToRateEmpty(nn.Module):
     """
     Directly Takes the Output and converts into a rate
     """
-    def __init__(self,  config:CRMConfig):
+    def __init__(self,  config:CRMConfig,temporal_output_total):
         nn.Module.__init__(self)
 
     def forward(self,x):
-        return None
+        return x
+
+class TemporalToRateLog(nn.Module):
+    """
+    # Truncated logistic output from https://arxiv.org/pdf/2107.03006.pdf
+    """
+    def __init__(self, config:CRMConfig,temporal_output_total):
+        nn.Module.__init__(self)
+        self.D = config.data1.dimensions
+        self.S = config.data1.vocab_size
+
+    def forward(self,net_out):
+        B = net_out.shape[0]
+        D = self.D
+        C = 3
+        S = self.S
+        
+        mu = net_out[:, 0:C, :, :].unsqueeze(-1)
+        log_scale = net_out[:, C:, :, :].unsqueeze(-1)
+
+        inv_scale = torch.exp(- (log_scale - 2))
+
+        bin_width = 2. / self.S
+        bin_centers = torch.linspace(start=-1. + bin_width/2,
+            end=1. - bin_width/2,
+            steps=self.S,
+            device=self.device).view(1, 1, 1, 1, self.S)
+
+        sig_in_left = (bin_centers - bin_width/2 - mu) * inv_scale
+        bin_left_logcdf = F.logsigmoid(sig_in_left)
+        sig_in_right = (bin_centers + bin_width/2 - mu) * inv_scale
+        bin_right_logcdf = F.logsigmoid(sig_in_right)
+
+        logits_1 = self._log_minus_exp(bin_right_logcdf, bin_left_logcdf)
+        logits_2 = self._log_minus_exp(-sig_in_left + bin_left_logcdf, -sig_in_right + bin_right_logcdf)
+        if self.fix_logistic:
+            logits = torch.min(logits_1, logits_2)
+        else:
+            logits = logits_1
+
+        logits = logits.view(B,D,S)
+
+        return logits
+
 
 def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
 
