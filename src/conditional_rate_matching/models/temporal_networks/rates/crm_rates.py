@@ -65,15 +65,25 @@ class TemporalToRateBernoulli(nn.Module):
         x = torch.cat([x[:,:,None],x_[:,:,None]],dim=2)
         return x
 
+# class TemporalToRateEmpty(nn.Module):
+#     """
+#     Directly Takes the Output and converts into a rate
+#     """
+#     def __init__(self,  config:CRMConfig):
+#         nn.Module.__init__(self)
+
+#     def forward(self,x):
+#         return None
+    
 class TemporalToRateEmpty(nn.Module):
     """
     Directly Takes the Output and converts into a rate
     """
-    def __init__(self,  config:CRMConfig):
+    def __init__(self,  config:CRMConfig,temporal_output_total):
         nn.Module.__init__(self)
 
     def forward(self,x):
-        return None
+        return x
 
 def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
 
