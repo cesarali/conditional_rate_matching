@@ -151,7 +151,7 @@ class Trainer(ABC):
                 loss_ = loss.item() if isinstance(loss, torch.Tensor) else loss
                 training_state.update_training_batch(loss_)
                 self.tqdm_object.set_description(f"Epoch {epoch + 1}, Loss: {loss.item():.4f}")
-                self.tqdm_object.refresh()  # to show immediately the update
+                # self.tqdm_object.refresh()  # to show immediately the update
                 if self.config.trainer.debug:
                     break
             training_state.set_average_train_loss()

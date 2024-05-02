@@ -19,14 +19,14 @@ def load_classifier(dataset_name,device,fid_models_dir=fid_models_dir):
         model = LeNet5(num_classes=10)
         model_path = os.path.join(fid_models_dir,'LeNet5_BinaryMNIST.pth')
         model.load_state_dict(torch.load(model_path, map_location=device))
-    elif dataset_name == "emnist":
-        model = LeNet5(num_classes=27)
-        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryEMNIST_Letters.pth')
-        model.load_state_dict(torch.load(model_path, map_location=device))
-    elif dataset_name == "fashion":
-        model = LeNet5(num_classes=10)
-        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryFashionMNIST.pth')
-        model.load_state_dict(torch.load(model_path, map_location=device))
+    # elif dataset_name == "emnist":
+    #     model = LeNet5(num_classes=27)
+    #     model_path = os.path.join(fid_models_dir,'LeNet5_BinaryEMNIST_Letters.pth')
+    #     model.load_state_dict(torch.load(model_path, map_location=device))
+    # elif dataset_name == "fashion":
+    #     model = LeNet5(num_classes=10)
+    #     model_path = os.path.join(fid_models_dir,'LeNet5_BinaryFashionMNIST.pth')
+    #     model.load_state_dict(torch.load(model_path, map_location=device))
     else:
         raise Exception
     model.eval()
@@ -41,14 +41,14 @@ def fid_nist(generative_sample,test_sample,dataset_name="mnist",device="cpu"):
         model = LeNet5(num_classes=10)
         model_path = os.path.join(fid_models_dir,'LeNet5_BinaryMNIST.pth')
         model.load_state_dict(torch.load(model_path, map_location=device))
-    elif dataset_name == "emnist":
-        model = LeNet5(num_classes=27)
-        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryEMNIST_Letters.pth')
-        model.load_state_dict(torch.load(model_path, map_location=device))
-    elif dataset_name == "fashion":
-        model = LeNet5(num_classes=10)
-        model_path = os.path.join(fid_models_dir,'LeNet5_BinaryFashionMNIST.pth')
-        model.load_state_dict(torch.load(model_path, map_location=device))
+    # elif dataset_name == "emnist":
+    #     model = LeNet5(num_classes=27)
+    #     model_path = os.path.join(fid_models_dir,'LeNet5_BinaryEMNIST_Letters.pth')
+    #     model.load_state_dict(torch.load(model_path, map_location=device))
+    # elif dataset_name == "fashion":
+    #     model = LeNet5(num_classes=10)
+    #     model_path = os.path.join(fid_models_dir,'LeNet5_BinaryFashionMNIST.pth')
+    #     model.load_state_dict(torch.load(model_path, map_location=device))
     else:
         raise Exception
     model.eval()

@@ -64,7 +64,7 @@ class ExperimentFiles:
                                                  self.experiment_indentifier,
                                                  self.experiment_dir)
 
-        self.current_git_commit = str(get_git_revisions_hash()[0])
+        # self.current_git_commit = str(get_git_revisions_hash()[0])
         self.config_path = os.path.join(self.experiment_dir,"config.json")
         self.best_model_path_checkpoint = os.path.join(self.experiment_dir, "model_checkpoint_{0}.tr")
         self.best_model_path = os.path.join(self.experiment_dir, "best_model.tr")
