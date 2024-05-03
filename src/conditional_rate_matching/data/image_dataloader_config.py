@@ -10,6 +10,7 @@ NUMBER_OF_LABELS = {"mnist":10,"fashion":10,"emnist":27}
 
 @dataclass
 class DiscreteCIFAR10Config:
+    name: str = "DiscreteCIFAR10"
     dataset_name: str = "Cifar10"
     data_dir: Path=image_data_path
     batch_size: int= 128
