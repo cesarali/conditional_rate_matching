@@ -54,6 +54,7 @@ def CRM_single_run(dynamics="crm",
                                        'log_exponential': 0.1,
                                        'time_base': 1.0},
                     num_timesteps=100,
+                    time_epsilon=0.0,
                     ema_decay=0.9999,
                     run_analysis=True,
                     ):
@@ -126,8 +127,8 @@ def CRM_single_run(dynamics="crm",
                         run=experiment_indentifier,
                         generative_model=dynamics,
                         num_timesteps=num_timesteps,
-                        time_epsilon=time_embed_dim,
-                        num_img_bridge=6, 
+                        time_epsilon=time_epsilon,
+                        num_img_bridge=10, 
                         num_intermediate_bridge=20,
                         device=device)
     return metrics
@@ -152,6 +153,7 @@ if __name__ == "__main__":
         parser.add_argument('--target', type=str, required=True, help='Target dataset')
         parser.add_argument('--model', type=str, required=True, help='Model for the network')
         parser.add_argument('--timesteps', type=int, required=False, help='Number of timesteps', default=100)
+        parser.add_argument('--timepsilon', type=float, required=False, help='Stop at time t=1-epsilon from target', default=None)        
         parser.add_argument('--coupling', type=str, required=False, help='Type of source-target coupling', default='uniform')
         parser.add_argument('--epochs', type=int, required=False, help='Number of epochs', default=100)
         parser.add_argument('--batch_size', type=int, required=False, help='Batch size', default=256)

@@ -1,15 +1,22 @@
-import os
-import torch
-from conditional_rate_matching import results_path
+
+import argparse
 from utils import run_nist_analysis
 
+parser = argparse.ArgumentParser(description='Run MNIST results analysis')
+parser.add_argument('--experiment', type=str, required=True, help='Experiment to analyze')
+parser.add_argument('--overwrite', type=str, required=False, help='Overwrite existing analysis', default='False')
+parser.add_argument('--num_timesteps', type=int, required=False, help='Number of generation time-steps', default=100)
+parser.add_argument('--time_epsilon', type=float, required=False, help='Stop at time t=1-epsilon from target', default=None)        
+parser.add_argument('--device', type=str, required=False, help='GPU device', default='cuda:0')
 
-experiment = "fashion_to_mnist_unet_uniform_coupling_ConstantThermostat_gamma_0.75__14h12s22_2024.04.29"
-device = "cuda:2"
+arg = parser.parse_args()
 
-run_nist_analysis(experiment,
-                  num_timesteps=100,
-                  time_epsilon=0.01,
-                  num_img_bridge=6, 
+overwrite = True if arg.overwrite.lower() in ['true', '1', 't', 'y', 'yes'] else False
+
+run_nist_analysis(arg.experiment,
+                  num_timesteps=arg.num_timesteps,
+                  time_epsilon=arg.time_epsilon,
+                  num_img_bridge=10, 
                   num_intermediate_bridge=20,
-                  device=device)
+                  device=arg.device,
+                  overwrite=overwrite)

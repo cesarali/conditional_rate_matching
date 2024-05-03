@@ -6,13 +6,13 @@ from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvalia
 
 
 def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
-    batch_size = 32
+    batch_size = 128
     config = CRMConfig()
     config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size, max_test_size=None)
     config.data1 = DiscreteCIFAR10Config(batch_size=batch_size)
     config.trainer = CRMTrainerConfig(
         number_of_epochs=epochs,
-        learning_rate=1e-4,
+        learning_rate=2e-4,
         metrics=[]
     )
     config.pipeline = BasicPipelineConfig(number_of_steps=1000)
@@ -35,10 +35,10 @@ def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_cifar10_config(10,temporal_network_name="unet")
+    config = experiment_cifar10_config(200,temporal_network_name="unet")
 
     config.trainer.debug = False
-    config.trainer.device = "cuda:1"
+    config.trainer.device = "cuda:0"
 
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 

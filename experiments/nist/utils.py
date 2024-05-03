@@ -17,14 +17,41 @@ def run_nist_analysis(path,
                      run="run",
                      generative_model = "crm",
                      num_timesteps = 100,
-                     time_epsilon = 0.01,
+                     time_epsilon = None,
                      num_img_bridge = 6, 
                      num_intermediate_bridge = 20,
-                     device = "cpu"):
+                     device = "cpu",
+                     overwrite=False):
     
     experiment_dir = os.path.join(results_path, generative_model, 'images', path, run)
+    
+    #...set epsilon time shift as function of gamma value
 
-    print(1, experiment_dir)
+    run = path.split('_')
+    for i,r in enumerate(run):
+        if r == 'gamma':
+            gamma = run[i+1]
+            break
+
+    if time_epsilon is None:
+        print(gamma)
+        time_epsilon_default = {'0.001' : 0.25,  '0.005' : 0.2,  '0.01' : 0.1, '0.05' : 0.05, '0.1' : 0.05,
+                                '0.25': 0.05, '0.5': 0.01, '0.75': 0.01, '1.0': 0.005, '1.25': 0.005,
+                                '1.5': 0.001, '1.75': 0.001, '2.0': 0.0, '2.5': 0.0, '3.0': 0.0, '3.5': 0.0,
+                                '4.0': 0.0, '4.5': 0.0, '5.0': 0.0}
+        time_epsilon = time_epsilon_default[gamma]
+        print(f"Time epsilon set to {time_epsilon}")
+
+
+    if overwrite:
+        if os.path.isfile(experiment_dir + "/sample_gen_x0.dat"): os.remove(experiment_dir + "/sample_gen_x0.dat")
+        if os.path.isfile(experiment_dir + "/sample_gen_x1.dat"): os.remove(experiment_dir + "/sample_gen_x1.dat")
+        if os.path.isfile(experiment_dir + "/sample_gen_test.dat"): os.remove(experiment_dir + "/sample_gen_test.dat")
+        if os.path.isfile(experiment_dir + "/bridge_example.png"): os.remove(experiment_dir + "/bridge_example.png")
+        if os.path.isfile(experiment_dir + "/class_ocurrence.png"): os.remove(experiment_dir + "/class_ocurrence.png")
+        if os.path.isfile(experiment_dir + "/selected_sample.png"): os.remove(experiment_dir + "/selected_sample.png")
+        if os.path.isfile(experiment_dir + "/fid.txt"): os.remove(experiment_dir + "/fid.txt")
+        if os.path.isfile(experiment_dir + "/metrics.txt"): os.remove(experiment_dir + "/metrics.txt")
 
     if not os.path.isfile(experiment_dir + "/sample_gen_x1.dat"):
         x_0, x_1, x_test = generate_mnist_samples(path=experiment_dir,  
@@ -41,9 +68,7 @@ def run_nist_analysis(path,
     mnist_classifier(x_1, save_path=experiment_dir, plot_histogram=True)
     get_fid(x_1, x_test, experiment_dir)
     get_nist_metrics(x_1, x_test, experiment_dir)
-
-    if not os.path.isfile(experiment_dir + "/bridge_example.png") and generative_model == "crm":
-        mnist_noise_bridge(experiment_dir,
+    mnist_noise_bridge(experiment_dir,
                         x_0, 
                         num_timesteps=num_timesteps,  
                         time_epsilon=time_epsilon,
