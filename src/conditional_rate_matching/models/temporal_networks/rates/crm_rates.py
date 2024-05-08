@@ -89,6 +89,8 @@ def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
             temporal_to_rate = TemporalToRateEmpty(config,temporal_output_total)
         elif type_of == "linear":
             temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
+        elif type_of == "logistic":
+            temporal_to_rate = TemporalToRateLogistic(config,temporal_output_total)
         elif type_of is None:
             config.temporal_network_to_rate.linear_reduction = None
             temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
