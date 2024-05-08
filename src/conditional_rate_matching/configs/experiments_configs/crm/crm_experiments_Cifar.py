@@ -5,7 +5,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
 
 
-def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
+def experiment_cifar10_config(epochs=100):
     batch_size = 2
     config = CRMConfig()
     config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size, max_test_size=None)
@@ -35,7 +35,7 @@ def experiment_cifar10_config(epochs=100,temporal_network_name="unet"):
 
 if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_cifar10_config(10,temporal_network_name="mlp")
+    config = experiment_cifar10_config(10)
 
     config.trainer.debug = True
     config.trainer.device = "cpu"

@@ -69,7 +69,7 @@ class BasicPipelineConfig:
 @dataclass
 class TemporalNetworkToRateConfig:
     name:str = "TemporalNetworkToRate"
-    type_of:str = None # bernoulli, empty, linear, None
+    type_of:str = None # bernoulli, empty, linear,logistic, None
     linear_reduction:Union[float,int] = 0.1 # if None full layer, 
                                             # if float is the percentage of output dimensions that is assigned as hidden 
                                             #otherwise hidden

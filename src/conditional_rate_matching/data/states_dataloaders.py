@@ -40,9 +40,12 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
         # Sample from the Dirichlet distribution
         probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
     else:
+        probs = probs.squeeze()
+        assert len(probs.shape) == 1
         assert probs.max() <= 1.
         assert probs.max() >= 0.
-
+        probs = probs.unsqueeze(0)
+        
     # Sample from the categorical distribution using the Dirichlet samples as probabilities
     distribution_per_dimension = Categorical(probs)
     categorical_samples = distribution_per_dimension.sample([sample_size]).float()
@@ -67,7 +70,7 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
     config.training_proportion = float(training_data_size) / total_data_size
 
     if return_tensor_samples:
-        return train_samples,test_samples
+        return train_samples,test_samples,probs
     else:
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
@@ -76,7 +79,7 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
             test_dataset,
             batch_size=batch_size, shuffle=True)
 
-        return train_loader, test_loader
+        return train_loader, test_loader,probs
 
 
 class StatesDataloader:
@@ -87,7 +90,7 @@ class StatesDataloader:
         self.config = config
         self.batch_size = config.batch_size
 
-        self.train_loader,self.test_loader = sample_categorical_from_dirichlet(self.config)
+        self.train_loader,self.test_loader,self.probs = sample_categorical_from_dirichlet(self.config)
         self.dimensions = config.dimensions
 
     def train(self):

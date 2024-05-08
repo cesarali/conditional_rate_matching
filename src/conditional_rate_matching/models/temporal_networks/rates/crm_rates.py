@@ -76,7 +76,7 @@ class TemporalToRateEmpty(nn.Module):
     def forward(self,x):
         return x
 
-class TemporalToRateLog(nn.Module):
+class TemporalToRateLogistic(nn.Module):
     """
     # Truncated logistic output from https://arxiv.org/pdf/2107.03006.pdf
     """
@@ -90,6 +90,7 @@ class TemporalToRateLog(nn.Module):
         D = self.D
         C = 3
         S = self.S
+        net_out = net_out.view(B,C,32,32)
         
         mu = net_out[:, 0:C, :, :].unsqueeze(-1)
         log_scale = net_out[:, C:, :, :].unsqueeze(-1)
@@ -113,11 +114,9 @@ class TemporalToRateLog(nn.Module):
             logits = torch.min(logits_1, logits_2)
         else:
             logits = logits_1
-
         logits = logits.view(B,D,S)
 
         return logits
-
 
 def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
 
@@ -132,6 +131,8 @@ def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
             temporal_to_rate = TemporalToRateEmpty(config,temporal_output_total)
         elif type_of == "linear":
             temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
+        elif type_of == "logistic":
+            temporal_to_rate = TemporalToRateLogistic(config,temporal_output_total)
         elif type_of is None:
             config.temporal_network_to_rate.linear_reduction = None
             temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)

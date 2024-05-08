@@ -36,17 +36,25 @@ class DiffusersUnetTau(nn.Module):
     def forward(self, x, times):
         return self.temp_net(x, times)
 
-
+from conditional_rate_matching.configs.configs_classes.config_crm import TemporalNetworkToRateConfig
 class DiffusersUnet2D(nn.Module):
 
     def __init__(self,config:CRMConfig,device):
         super().__init__()
 
+        vocab_size = config.data1.vocab_size
         in_chanels = config.temporal_network.input_channels
+        out_channels = in_chanels
+        if isinstance(config.temporal_network_to_rate,TemporalNetworkToRateConfig):
+            if config.temporal_network_to_rate.type_of == "empty":
+                out_channels = in_chanels*vocab_size
+            if config.temporal_network_to_rate.type_of == "logistic":
+                out_channels = in_chanels*2
+            
         vocab_size = config.data1.vocab_size
 
         self.temp_net = UNet2DModel(in_channels=in_chanels,
-                                    out_channels=in_chanels*vocab_size,
+                                    out_channels=out_channels,
                                     norm_num_groups=32).to(device)
 
         self.expected_output_shape = [in_chanels*vocab_size,32,32]

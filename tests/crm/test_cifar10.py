@@ -5,8 +5,8 @@ from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_C
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig,TemporalNetworkToRateConfig
 
 if __name__=="__main__":
-    config = experiment_cifar10_config(epochs=100,temporal_network_name="unet")
-    config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="empty")
+    config = experiment_cifar10_config(epochs=100)
+    config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="logistic")
 
     crm = CRM(config)
     databatch = next(crm.dataloader_1.train().__iter__())

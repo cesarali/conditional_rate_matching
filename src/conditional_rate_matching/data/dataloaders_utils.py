@@ -67,7 +67,7 @@ def get_dataloaders_crm(config:CRMConfig):
 
     :param config:
 
-    :return: dataloader_0,dataloader_1
+    :return: dataloader_0,dataloader_1,parent_dataloader
     """
     #=====================================================
     # DATA 1
@@ -103,6 +103,7 @@ def get_dataloaders_crm(config:CRMConfig):
         config.data0.temporal_net_expected_shape = [config.data0.dimensions]
         config.data0.sample_size = config.data1.total_data_size
         config.data0.test_split = config.data1.test_split
+        config.data0.vocab_size = config.data1.vocab_size
         dataloader_0 = StatesDataloader(config.data0)
     elif isinstance(config.data0,GraphDataloaderConfig):
         dataloader_0 = GraphDataloaders(config.data0)

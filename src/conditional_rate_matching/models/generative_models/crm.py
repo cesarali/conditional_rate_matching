@@ -125,7 +125,7 @@ class CRM:
 
             torch.manual_seed(seed)
             np.random.seed(seed)
-            x0, x1 = self.op_sampler.sample_plan(x0, x1, replace=True,cost=cost)
+            x0, x1 = self.op_sampler.sample_plan(x0, x1, replace=False,cost=cost)
 
         x0 = x0.to(self.device)
         x1 = x1.to(self.device)
