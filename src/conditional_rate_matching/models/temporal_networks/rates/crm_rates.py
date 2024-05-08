@@ -278,7 +278,7 @@ class ClassificationForwardRate(EMA,nn.Module):
         -------
         cost: torch.Tensor(batch_size,batch_size)
         """
-        time1 = torch.ones((x0.shape[0],))
+        time1 = torch.ones((x0.shape[0],), device=x1.device)
         posterior_estimate = softmax(self.classify(x1,time1),dim=1)
     
         D = self.dimensions

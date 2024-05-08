@@ -64,7 +64,7 @@ def run_nist_analysis(path,
         x_1 = torch.load(experiment_dir + "/sample_gen_x1.dat")
         x_test = torch.load(experiment_dir + "/sample_gen_test.dat")
 
-    mnist_grid(x_1[:100], save_path=experiment_dir, num_img=100, nrow=10, figsize=(4, 4))
+    mnist_grid(x_1[:100], title=f'generated samples (t={1-time_epsilon})', save_path=experiment_dir, num_img=100, nrow=10, figsize=(4, 4))
     mnist_classifier(x_1, save_path=experiment_dir, plot_histogram=True)
     get_fid(x_1, x_test, experiment_dir)
     get_nist_metrics(x_1, x_test, experiment_dir)
@@ -205,13 +205,14 @@ def mnist_classifier(img, save_path=None, plot_histogram=False):
     else:
         return torch.Tensor(classes)
     
-def mnist_grid(sample, save_path='.', num_img=5, nrow=8, figsize=(10,10)):
+def mnist_grid(sample, title='', save_path='.', num_img=5, nrow=8, figsize=(10,10)):
     _, _= plt.subplots(1,1, figsize=figsize)
     sample = sample[:num_img]
     img = make_grid(sample, nrow=nrow)
     npimg = np.transpose(img.detach().cpu().numpy(),(1,2,0))
     plt.imshow(npimg)
     plt.axis('off')
+    plt.title(title)
     plt.savefig(save_path+'/selected_sample.png')
     plt.show()
 
@@ -229,6 +230,7 @@ def mnist_noise_bridge(path,
     dt = N // num_timesteps_displayed
     
     for j, idx in enumerate(np.arange(0, N+1, dt)):
+        
         if j<num_timesteps_displayed:
             tau = time_steps[idx]
             images = img_hist[:, idx, :]
