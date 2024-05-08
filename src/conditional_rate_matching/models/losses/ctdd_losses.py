@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 
 class GenericAux():
     def __init__(self, cfg:CTDDConfig,device:torch.device,rank=None):

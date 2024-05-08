@@ -3,20 +3,19 @@ from torch import nn
 import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 
 from typing import Union, Tuple
 from torchtyping import TensorType
-from conditional_rate_matching.models.temporal_networks.embedding_utils import transformer_timestep_embedding
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import GaussianTargetRate
 
+from functools import reduce
 from dataclasses import dataclass
+from abc import ABC,abstractmethod
 from diffusers.utils import BaseOutput
 from conditional_rate_matching.models.temporal_networks.ema import EMA
 from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
-from abc import ABC,abstractmethod
-
+from conditional_rate_matching.models.temporal_networks.temporal_convnet import UConvNISTNet
 @dataclass
 class BackwardRateOutput(BaseOutput):
     """
@@ -40,8 +39,8 @@ class BackwardRate(nn.Module,ABC):
         self.config = config
 
         # DATA
-        self.dimension = config.data0.dimensions
-        self.num_states = config.data0.vocab_size
+        self.dimensions = config.data0.dimensions
+        self.vocab_size = config.data0.vocab_size
         self.data_min_max = config.data0.data_min_max
 
         # TIME
@@ -175,17 +174,21 @@ class ImageX0PredBase(BackwardRate):
 
 class BackRateMLP(EMA,BackwardRate,GaussianTargetRate):
 
-    def __init__(self,config,device,rank=None):
+    def __init__(self,config:CTDDConfig,device,rank=None):
         EMA.__init__(self,config)
         BackwardRate.__init__(self,config,device,rank)
 
+        self.device = device
         self.define_deep_models(device)
         self.init_ema()
         self.to(device)
 
     def define_deep_models(self,device):
         self.net = load_temporal_network(config=self.config,device=device)
-
+        self.expected_temporal_output_shape = self.net.expected_output_shape
+        if self.expected_temporal_output_shape != [self.dimensions,self.vocab_size]:
+            temporal_output_total = reduce(lambda x, y: x * y, self.expected_temporal_output_shape)
+            self.temporal_to_rate = nn.Linear(temporal_output_total,self.dimensions*self.vocab_size)
 
     def _forward(self,
                 x: TensorType["batch_size", "dimension"],
@@ -195,10 +198,15 @@ class BackRateMLP(EMA,BackwardRate,GaussianTargetRate):
         if len(x.shape) == 4:
             B, C, H, W = x.shape
             x = x.view(B, C*H*W)
-
         x = self._center_data(x)
+        batch_size = x.size(0)
+        if isinstance(self.net,UConvNISTNet):
+            x = x.view(-1,1,28,28)
         rate_logits = self.net(x,times)
-
+        if self.net.expected_output_shape != [self.dimensions,self.vocab_size]:
+            rate_logits = rate_logits.reshape(batch_size, -1)
+            rate_logits = self.temporal_to_rate(rate_logits)
+            rate_logits = rate_logits.reshape(batch_size,self.dimensions,self.vocab_size)
         return rate_logits
 
     def init_parameters(self):
@@ -223,7 +231,7 @@ class BackRateConstant(EMA,BackwardRate,GaussianTargetRate):
         x = self._center_data(x)
         batch_size = x.shape[0]
 
-        return torch.full(torch.Size([batch_size,self.dimension,self.num_states]),self.constant)
+        return torch.full(torch.Size([batch_size, self.dimensions, self.vocab_size]), self.constant)
 
 
 

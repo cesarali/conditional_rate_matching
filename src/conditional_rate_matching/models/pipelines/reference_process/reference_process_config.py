@@ -3,7 +3,7 @@ import torch
 from pathlib import Path
 from typing import List,Union
 from dataclasses import dataclass
-from conditional_rate_matching.data.spin_glass_dataloaders_config import SpinGlassVariablesConfig
+from conditional_rate_matching.models.generative_models.spin_glass.spin_glasses_configs import SpinGlassVariablesConfig
 
 @dataclass
 class GaussianTargetRateConfig:

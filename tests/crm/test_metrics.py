@@ -1,25 +1,8 @@
-import os
-import torch
 import unittest
-import numpy as np
-import os
-import unittest
-from matplotlib import pyplot as plt
 
-import torch
-from torch import nn
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig as ConditionalRateMatchingConfig
 
-import torch.nn.functional  as F
-from conditional_rate_matching.configs.config_crm import CRMConfig as ConditionalRateMatchingConfig
-
-from conditional_rate_matching.models.generative_models.crm import uniform_pair_x0_x1
-from conditional_rate_matching.models.generative_models.crm import conditional_probability
-from conditional_rate_matching.models.generative_models.crm import telegram_bridge_probability
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
-from torch.utils.data import DataLoader, TensorDataset
-from conditional_rate_matching.models.generative_models.crm import (
-    ClassificationForwardRate
-)
 from conditional_rate_matching.utils.plots.histograms_plots import kHistogramPlot
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
 
@@ -43,8 +26,7 @@ class TestGraphsMetrics(unittest.TestCase):
     def test_graph(self):
         from experiments.testing_graphs import small_community
         from conditional_rate_matching.models.generative_models.crm import CRM
-        from conditional_rate_matching.models.pipelines.samplers_utils import sample_from_dataloader
-        from conditional_rate_matching.utils.plots.graph_plots import plot_graphs_list2
+        from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
         from conditional_rate_matching.models.metrics.graphs_metrics import eval_graph_list
 
         config = small_community()

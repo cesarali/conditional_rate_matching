@@ -1,113 +1,104 @@
-import numpy as np
 import torch
-from tqdm import tqdm
+import numpy as np
 from torch.optim.adam import Adam
-from torch.utils.tensorboard import SummaryWriter
-
-from typing import List
-from dataclasses import dataclass,field
 from conditional_rate_matching.configs.config_files import ExperimentFiles
-from conditional_rate_matching.models.metrics.crm_metrics_utils import log_metrics
+from conditional_rate_matching.models.temporal_networks.ema import EMA
 
 from conditional_rate_matching.models.generative_models.crm import (
-    CRM,
-    sample_x,
-    uniform_pair_x0_x1
+    CRM
 )
 
-@dataclass
-class CRMTrainerState:
-    crm: CRM
-    best_loss : float = np.inf
+from conditional_rate_matching.models.trainers.abstract_trainer import Trainer
+from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
+from conditional_rate_matching.data.music_dataloaders import LankhPianoRollDataloader
+from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
 
-    average_train_loss : float = 0.
-    average_test_loss : float = 0.
+class CRMDataloder:
 
-    test_loss: List[float] = field(default_factory=lambda:[])
-    train_loss: List[float] = field(default_factory=lambda:[])
+    def __init__(self,data0,data1):
+        self.data0 = data0
+        self.data1 = data1
 
-    number_of_test_step:int = 0
-    number_of_training_steps:int = 0
+    def train(self):
+        return zip(self.data0.train(),self.data1.train())
 
-    def set_average_test_loss(self):
-        self.average_test_loss = np.asarray(self.test_loss).mean()
+    def test(self):
+        return zip(self.data0.test(),self.data1.test())
 
-    def set_average_train_loss(self):
-        self.average_test_loss = np.asarray(self.test_loss).mean()
+class CRMTrainer(Trainer):
 
-    def finish_epoch(self):
-        self.test_loss = []
-        self.train_loss = []
+    config: CRMConfig
+    generative_model: CRM
+    generative_model_class = CRM
+    name_ = "conditional_rate_matching_trainer"
 
-    def update_training_batch(self,loss):
-        self.train_loss.append(loss)
-        self.number_of_training_steps += 1
+    def __init__(self,config,experiment_files,crm=None):
+        self.config = config
+        self.number_of_epochs = self.config.trainer.number_of_epochs
+        device_str = self.config.trainer.device
 
-    def update_test_batch(self,loss):
-        self.number_of_test_step += 1
-        self.test_loss.append(loss)
+        self.device = torch.device(device_str if torch.cuda.is_available() else "cpu")
+        if crm is None:
+            self.generative_model = CRM(self.config, experiment_files=experiment_files, device=self.device)
+        else:
+            self.generative_model = crm
+            
+        if hasattr(config.data1, "conditional_model"):
+            self.dataloader = self.generative_model.parent_dataloader
+        else:
+            self.dataloader = CRMDataloder(self.generative_model.dataloader_0,self.generative_model.dataloader_1)
 
+    def preprocess_data(self, databatch):
+        return databatch
 
-def save_results(crm_state:CRMTrainerState,
-                 experiment_files:ExperimentFiles,
-                 epoch: int = 0,
-                 checkpoint: bool = False):
-    RESULTS = {
-        "model": crm_state.crm.forward_rate,
-        "best_loss": crm_state.best_loss,
-        "training_loss":crm_state.average_train_loss,
-        "test_loss":crm_state.average_test_loss,
-    }
-    if checkpoint:
-        torch.save(RESULTS, experiment_files.best_model_path_checkpoint.format(epoch))
-    else:
-        torch.save(RESULTS, experiment_files.best_model_path)
+    def get_model(self):
+        return self.generative_model.forward_rate
 
-    return RESULTS
+    def initialize(self):
+        """
+        Obtains initial loss to know when to save, restart the optimizer
+        :return:
+        """
+        if isinstance(self.generative_model.forward_rate,EMA) and self.config.trainer.do_ema:
+            self.do_ema = True
 
-def train_step(config,model,loss_fn,batch_1,batch_0,optimizer,device):
-    # data pair and time sample
-    x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
+        self.generative_model.start_new_experiment()
+        #DEFINE OPTIMIZERS
+        self.optimizer = Adam(self.generative_model.forward_rate.parameters(),
+                              lr=self.config.trainer.learning_rate,
+                              weight_decay=self.config.trainer.weight_decay)
 
-    x_0 = x_0.float().to(device)
-    x_1 = x_1.float().to(device)
+        self.scheduler = None
 
-    if len(x_0.shape) > 2:
-        batch_size = x_0.size(0)
-        x_0 = x_0.reshape(batch_size,-1)
+        self.loss_stats = {}
+        self.loss_stats_variance = {}
 
-    if len(x_1.shape) > 2:
-        batch_size = x_1.size(0)
-        x_1 = x_1.reshape(batch_size,-1)
+        self.loss_variance_times = torch.linspace(0.001,1.,20)
 
-    # time selection
-    batch_size = x_0.size(0)
-    time = torch.rand(batch_size).to(device)
+        if self.config.trainer.lr_decay:
+            self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer,
+                                                                    gamma=self.config.trainer.lr_decay)
 
-    # sample x from z
-    sampled_x = sample_x(config, x_1, x_0, time)
+        self.conditional_tau_leaping = False
+        self.conditional_model = False
+        if hasattr(self.config.data1, "conditional_model"):
+            self.conditional_model = self.config.data1.conditional_model
+            self.conditional_dimension = self.config.data1.conditional_dimension
+            self.generation_dimension = self.config.data1.dimensions - self.conditional_dimension
 
-    #LOSS
-    model_classification = model.classify(x_1, time)
-    model_classification_ = model_classification.view(-1, config.vocab_size)
-    sampled_x = sampled_x.view(-1)
-    loss = loss_fn(model_classification_,sampled_x)
+        if hasattr(self.config.data1, "conditional_model"):
+            self.bridge_conditional = self.config.data1.bridge_conditional
 
-    # optimization
-    optimizer.zero_grad()
-    loss = loss.mean()
-    loss.backward()
-    optimizer.step()
+        if self.conditional_model and not self.bridge_conditional:
+            self.conditional_tau_leaping = True
 
-    return loss
+        return np.inf
 
-def test_step(config,model,loss_fn,batch_1,batch_0,device):
-    with torch.no_grad():
+    def train_step(self,databatch, number_of_training_step,epoch):
+        batch_0, batch_1 = databatch
+        
         # data pair and time sample
-        x_1, x_0 = uniform_pair_x0_x1(batch_1, batch_0)
-
-        x_0 = x_0.float().to(device)
-        x_1 = x_1.float().to(device)
+        x_1, x_0 = self.generative_model.sample_pair(batch_1,batch_0,self.device)
 
         if len(x_0.shape) > 2:
             batch_size = x_0.size(0)
@@ -117,9 +108,14 @@ def test_step(config,model,loss_fn,batch_1,batch_0,device):
             batch_size = x_1.size(0)
             x_1 = x_1.reshape(batch_size,-1)
 
+        # conditional model
+        if self.conditional_tau_leaping:
+            conditioner = x_0[:, 0:self.conditional_dimension]
+            noise = x_0[:, self.conditional_dimension:]
+
         # time selection
         batch_size = x_0.size(0)
-        time = torch.rand(batch_size).to(device)
+        time = torch.rand(batch_size).to(self.device)
 
         # sample x from z
         sampled_x = sample_x(config, x_1, x_0, time)

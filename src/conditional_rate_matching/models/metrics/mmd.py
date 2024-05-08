@@ -16,7 +16,7 @@ def exp_avg_hamming(x, y):
     return (-diffs).exp()
 
 
-def scaled_exp_avg_hamming(x, y, s):
+def scaled_exp_avg_hamming(x, y, s=0.1):
     diffs = avg_hamming(x, y) * s
     return (-diffs).exp()
 

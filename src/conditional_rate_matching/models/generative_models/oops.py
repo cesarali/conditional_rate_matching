@@ -1,105 +1,103 @@
-from dataclasses import dataclass
-from graph_bridges.configs.config_sb import get_sb_config_from_file
-from pathlib import Path
-
+import json
 import torch
+from typing import Union
+from dataclasses import asdict
 
-from graph_bridges.data.dataloaders_utils import load_dataloader
-from graph_bridges.data.graph_dataloaders import BridgeGraphDataLoaders
+from conditional_rate_matching.configs.configs_classes.config_oops import OopsConfig
+from conditional_rate_matching.configs.config_files import ExperimentFiles
 
-from graph_bridges.models.metrics.metrics_utils import read_metric
+from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
+from conditional_rate_matching.data.dataloaders_utils import get_dataloader_oops
 
-from graph_bridges.configs.config_oops import OopsConfig
-from graph_bridges.models.networks_arquitectures.rbf import RBM
-from graph_bridges.models.pipelines.oops.pipeline_oops import OopsPipeline
-from graph_bridges.models.networks_arquitectures.network_utils import load_model_network
+from conditional_rate_matching.models.losses.oops_losses import OopsEBMLoss
+from conditional_rate_matching.models.pipelines.pipeline_oops import OopsPipeline
+from conditional_rate_matching.models.pipelines.mc_samplers.oops_samplers import PerDimGibbsSampler,DiffSampler
+from conditional_rate_matching.models.pipelines.mc_samplers.oops_samplers_utils import get_oops_samplers
+from conditional_rate_matching.models.networks.ebm import EBM
 
-import shutil
-import re
+from dataclasses import dataclass
 
 
 @dataclass
-class OOPS:
+class Oops:
     """
-    This class integrates all the objects requiered to train and generate data
-    from a CTDD model
+    This class integrates all the objects required to train and generate data
 
+    from a CTDD model, it also provides the functionality to load the models
+
+    from the experiment files.
     """
     config: OopsConfig = None
+    experiment_dir:str = None
 
-    dataloader: BridgeGraphDataLoaders = None
-    model: RBM = None
+    experiment_files: ExperimentFiles = None
+    dataloader_0: Union[GraphDataloaders] = None
+
+    model: EBM = None
+    sampler:Union[PerDimGibbsSampler,DiffSampler] = None
+
+    loss: OopsEBMLoss = None
     pipeline: OopsPipeline = None
+    device: torch.device = None
 
-    # metrics_registered = ["mse_histograms"]
-    metrics_registered = []
+    def __post_init__(self):
+        if self.experiment_dir is not None:
+            self.load_from_experiment(self.experiment_dir,self.device)
+        elif self.config is not None:
+            self.initialize_from_config(config=self.config,device=self.device)
+        else:
+            raise Exception("Not Initialized")
 
-    def create_new_from_config(self, config: OopsConfig, device):
-        self.config = config
-        self.config.initialize_new_experiment()
-        self.dataloader = load_dataloader(config, type="data", device=device)
-        self.model = load_model_network(config, device)
-        self.pipeline = OopsPipeline(config, model=self.model, data=self.dataloader, device=device)
+    def initialize_from_config(self,config,device):
+        # =====================================================
+        # DATA STUFF
+        # =====================================================
+        self.dataloader_0 = get_dataloader_oops(config)
+        # =========================================================
+        # Initialize
+        # =========================================================
+        if device is None:
+            self.device = torch.device(self.config.trainer.device) if torch.cuda.is_available() else torch.device("cpu")
+        else:
+            self.device = device
 
-    def load_from_results_folder(self,
-                                 experiment_name="oops",
-                                 experiment_type="mnist",
-                                 experiment_indentifier="test",
-                                 experiment_dir=None,
-                                 checkpoint=None,
-                                 any=False,
-                                 device=None):
-        """
-        :param experiment_name:
-        :param experiment_type:
-        :param experiment_indentifier:
-        :param sinkhorn_iteration_to_load:
-        :param checkpoint:
-        :param device:
-        :return: results_,all_metrics,device
-        """
-        from graph_bridges.configs.utils import get_config_from_file
+        self.model = EBM(self.config,device=device)
+        self.sampler = get_oops_samplers(self.config)
+        self.loss = OopsEBMLoss(self.config, device)
+        self.pipeline = OopsPipeline(self.config,self.sampler,self.dataloader_0,self.experiment_files)
+        self.pipeline.initialize(device)
 
-        results_ = None
-        all_metrics = {}
-        device = None
+    def load_from_experiment(self,experiment_dir,device=None):
+        self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
+        results_ = self.experiment_files.load_results()
+        self.model = results_["model"]
+        config_path_json = json.load(open(self.experiment_files.config_path, "r"))
+        if hasattr(config_path_json,"delete"):
+            config_path_json["delete"] = False
+        self.config = OopsConfig(**config_path_json)
 
-        config_ready = get_config_from_file(experiment_name=experiment_name,
-                                            experiment_type=experiment_type,
-                                            experiment_indentifier=experiment_indentifier,
-                                            results_dir=experiment_dir)
+        if device is None:
+            self.device = torch.device(self.config.trainer.device) if torch.cuda.is_available() else torch.device("cpu")
+        else:
+            self.device = device
 
-        if config_ready is not None:
-            # DEVICE
-            if device is None:
-                device = torch.device(config_ready.trainer.device)
+        self.model.to(self.device)
+        self.loss = OopsEBMLoss(self.config, self.device)
+        self.sampler = get_oops_samplers(self.config)
 
-            # LOADS RESULTS
-            results_ = config_ready.experiment_files.load_results(checkpoint=checkpoint)
+        self.dataloader_0 = get_dataloader_oops(self.config)
+        self.pipeline = OopsPipeline(self.config,self.sampler,self.dataloader_0,self.experiment_files)
+        self.pipeline.initialize(self.device)
 
-            # SETS MODELS
-            if results_ is not None:
-                self.config = config_ready
+    def start_new_experiment(self):
+        #create directories
+        self.experiment_files.create_directories()
+        #align configs
+        self.align_configs()
+        #save config
+        config_as_dict = asdict(self.config)
+        with open(self.experiment_files.config_path, "w") as file:
+            json.dump(config_as_dict, file)
 
-                self.model = results_["model"].to(device)
-                self.dataloader = load_dataloader(self.config, type="data", device=device)
-                self.model = load_model_network(self.config, device)
-                self.pipeline = OopsPipeline(self.config, model=self.model, data=self.dataloader)
-
-            # READ METRICS IF AVAILABLE
-            """
-            # JUST READs
-            config_ready.align_configurations()
-            self.set_classes_from_config(config_ready, device)
-
-            #READ METRICS IF AVAILABLE
-            for metric_string_identifier in self.metrics_registered:
-                all_metrics.update(read_metric(self.config,
-                                               metric_string_identifier,
-                                               checkpoint=checkpoint))
-            """
-        return results_, all_metrics, device
-
-    def sample_graphs(self):
-        return None
-
+    def align_configs(self):
+        pass

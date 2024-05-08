@@ -12,8 +12,8 @@ class StatesDataloaderConfig:
     batch_size: int= 23
     data_dir:str = image_data_path
 
-    max_test_size: int = 300
-    sample_size :int = 1000
+    max_test_size: int = None
+    sample_size :int = None
     dirichlet_alpha :float = 100.
     bernoulli_probability:float = None
 
@@ -21,9 +21,9 @@ class StatesDataloaderConfig:
     vocab_size: int = 2
     as_image: bool = False
 
-    total_data_size: int = None
-    training_size: int = None
-    test_size: int = None
+    total_data_size: int = 60000
+    training_size: int = 50000
+    test_size: int = 10000
     test_split: float = 0.2
 
     temporal_net_expected_shape : List[int] = None

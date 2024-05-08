@@ -23,7 +23,7 @@ from diffusers.utils import BaseOutput
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers, SchedulerMixin
 
-from conditional_rate_matching.configs.config_ctdd import CTDDConfig
+from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDConfig
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import ReferenceProcess
 
 

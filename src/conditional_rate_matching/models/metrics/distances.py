@@ -10,7 +10,6 @@ def marginal_histograms(generative_sample,test_sample):
     :return: backward_histogram,forward_histogram,forward_time
 
     """
-
     #================================
     # HISTOGRAMS OF DATA
     #================================
@@ -24,6 +23,6 @@ def marginal_histograms(generative_sample,test_sample):
     return mse
 
 def kmmd(samples_0,sample_1):
-    kmmd = mmd.MMD(mmd.exp_avg_hamming, False)
+    kmmd = mmd.MMD(mmd.scaled_exp_avg_hamming, False)
     opt_stat = kmmd.compute_mmd(samples_0.cpu(),sample_1.cpu())
     return opt_stat

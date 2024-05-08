@@ -1,49 +1,29 @@
 import os
-import sys
-import unittest
-
-from conditional_rate_matching.models.generative_models.crm import CRM
-
 import torch
-from torch import nn
+import pytest
+from pprint import pprint
 
-from conditional_rate_matching.configs.config_crm import CRMConfig
-from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
 from conditional_rate_matching.models.generative_models.crm import CRM
-from conditional_rate_matching.models.generative_models.crm import ClassificationForwardRate
-from conditional_rate_matching.models.generative_models.crm import ConditionalBackwardRate
-from conditional_rate_matching.models.pipelines.pipeline_crm import CRMPipeline
+from conditional_rate_matching.data.music_dataloaders import LankhPianoRollDataloader
+from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
+from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_music import experiment_music_conditional_config
+from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import load_temporal_network
 
-class TestCRMPipeline(unittest.TestCase):
+def test_conditional_pipeline():
+    bridge_conditional = False
+    config = experiment_music_conditional_config(bridge_conditional=bridge_conditional)
+    crm = CRM(config)
 
-    def test_pipeline_classifier(self):
-        device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+    databatch = next(crm.dataloader_0.train().__iter__())
+    x = databatch[0]
+    batch_size = x.size(0)
+    ts = torch.rand((batch_size,))
+    print(x.shape)
 
-        config = CRMConfig()
-        dataloader_0, dataloader_1 = get_dataloaders(config)
-        config.loss = "classifier"
-        model = ClassificationForwardRate(config, device).to(device)
+    logits = crm.forward_rate.temporal_network(x,ts)
+    print(logits.shape)
 
-        pipeline = CRMPipeline(config,model,dataloader_0,dataloader_1)
-        x_f = pipeline(sample_size=132)
-        print(x_f.shape)
-
-    def test_pipeline_naive(self):
-        device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-
-        config = CRMConfig()
-        config.num_intermediates = 5
-
-        dataloader_0, dataloader_1 = get_dataloaders(config)
-        config.loss = "naive"
-        model = ConditionalBackwardRate(config, device)
-
-        pipeline = CRMPipeline(config, model, dataloader_0, dataloader_1)
-        x_f = pipeline(sample_size=132)
-
-        x_f, x_hist, ts = pipeline(sample_size=132,return_intermediaries=True)
-        print(ts)
+    generative_sample,original_sample = crm.pipeline(32,origin=True)
+    print(generative_sample.shape)
 
 
-if __name__=="__main__":
-    unittest.main()

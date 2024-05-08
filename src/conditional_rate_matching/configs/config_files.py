@@ -144,20 +144,20 @@ class ExperimentFiles:
             all_metrics.update(self.load_metric(metric_string_identifier, checkpoint=checkpoint))
         return all_metrics
 
-    def load_results(self, checkpoint=None, any=True):
+    def load_results(self, checkpoint=None, any=True,device=torch.device("cpu")):
         # LOADS RESULTS
         loaded_path = None
         if checkpoint is None:
             best_model_to_load_path = Path(self.best_model_path)
 
             if best_model_to_load_path.exists():
-                results_ = torch.load(best_model_to_load_path)
+                results_ = torch.load(best_model_to_load_path,map_location=device)
                 loaded_path = best_model_to_load_path
                 return results_
 
             elif any:
                 best_model_path_checkpoint = self.best_model_path_checkpoint
-                extract_digits = lambda s: int(re.search(r'\d+', s).group()) if re.search(r'\d+', s) else None
+                #extract_digits = lambda s: int(re.search(r'\d+', s).group()) if re.search(r'\d+', s) else None
 
                 generic_metric_path_ = best_model_path_checkpoint.format("*")
                 generic_metric_path_to_fill = best_model_path_checkpoint.format("{0}")
@@ -167,20 +167,20 @@ class ExperimentFiles:
                 numbers_available = []
                 available_files = list(generic_metric_path_.parent.glob(generic_metric_path_.name))
                 for file_ in available_files:
-                    digits = extract_digits(str(file_.name))
+                    digits = self.extract_digits(str(file_.name))
                     numbers_available.append(digits)
 
                 if len(numbers_available) > 0:
                     max_checkpoint = max(numbers_available)
                     generic_metric_path_to_fill = generic_metric_path_to_fill.format(max_checkpoint)
-                    results_ = torch.load(generic_metric_path_to_fill)
+                    results_ = torch.load(generic_metric_path_to_fill,map_location=device)
                     loaded_path = generic_metric_path_to_fill
                     return results_
 
         else:
             check_point_to_load_path = Path(self.best_model_path_checkpoint.format(checkpoint))
             if check_point_to_load_path.exists():
-                results_ = torch.load(check_point_to_load_path)
+                results_ = torch.load(check_point_to_load_path,map_location=device)
                 loaded_path = check_point_to_load_path
                 return results_
 
@@ -188,9 +188,8 @@ class ExperimentFiles:
             print("Experiment Empty")
             return None
 
-        # self.model = results_['current_model'].to(device)
-        # SETS ALL OTHER CLASSES FROM CONFIG AND START NEW EXPERIMENT IF REQUIERED
-        # self.config.align_configurations()
-        # self.set_classes_from_config(self.config, device)
-
-
+    def extract_digits(self,s):
+        if re.search(r'\d+', s):
+            return int(re.search(r'\d+', s).group())
+        else:
+            return None

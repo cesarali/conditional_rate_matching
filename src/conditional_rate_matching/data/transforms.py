@@ -2,8 +2,12 @@ import os
 import torch
 import numpy as np
 from torchvision import transforms
+from PIL import Image
 
 # Create a custom transformation class
+class CorrectEMNISTOrientation(object):
+    def __call__(self, img):
+        return transforms.functional.rotate(img, -90).transpose(Image.FLIP_LEFT_RIGHT)
 
 class ToUpperDiagonalIndicesTransform:
 

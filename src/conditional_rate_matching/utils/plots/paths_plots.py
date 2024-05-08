@@ -132,3 +132,58 @@ def histograms_per_time_step(histograms,histograms_2,time_grid,save_path=None):
         plt.show()
     else:
         plt.savefig(save_path)
+
+def rates_plot(states_histogram_at_0,
+               states_histogram_at_1,
+               rates_histogram,
+               time_,
+               save_path=None,
+               title="Average Rate Per Dimension",
+               log_scale=False):
+    """
+    Forward is the direction of the past model
+
+    :param is_past_forward:
+    :param time_:
+    :param states_histogram_at_0:
+    :param states_histogram_at_1:
+    :param histogram_from_rate:
+    :param states_legends:
+    :return:
+    """
+    states_histogram_at_0 = states_histogram_at_0.cpu().numpy()
+    states_histogram_at_1 = states_histogram_at_1.cpu().numpy()
+    rates_histogram = rates_histogram.cpu().numpy()
+    time_ = time_.cpu().numpy()
+
+    number_of_total_states = states_histogram_at_0.shape[0]
+    # create the layout with GridSpec
+    fig, axs = plt.subplots(figsize=(12, 3),
+                            nrows=1, ncols=3,
+                            gridspec_kw={'width_ratios': [1, 5, 1]},)
+    fig.subplots_adjust(left=0.05, right=0.95, bottom=0.35, top=0.8, hspace=0.1)
+
+    ax1 = axs[0]
+    ax1.set_title(r"$P^d_0(x)$")
+    ax2 = axs[1]
+    ax2.set_title(title)
+    ax3 = axs[2]
+    ax3.set_title(r"$P^d_1(x)$")
+
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    for spin_state_index in range(number_of_total_states):
+        color = colors[0]
+        # create the main plot
+        ax2.plot(time_, rates_histogram[:, spin_state_index], "-", alpha=0.2, color="r")
+    if log_scale:
+        ax2.set_yscale('log')
+    ax1.bar(range(number_of_total_states), states_histogram_at_0.tolist(),alpha=0.4,color=colors[0])
+    ax3.bar(range(number_of_total_states), states_histogram_at_1.tolist(),alpha=0.4,color=colors[0])
+
+    ax1.set_ylim(0.,1.)
+    ax3.set_ylim(0.,1.)
+
+    if save_path is None:
+        plt.show()
+    else:
+        plt.savefig(save_path)

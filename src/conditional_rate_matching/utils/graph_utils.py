@@ -156,26 +156,18 @@ def pad_adjs(ori_adj, node_number):
 
 
 def graphs_to_tensor(graph_list, max_node_num):
-    adjs_list = []
-    max_node_num = max_node_num
+    # Preallocate the numpy array for efficiency
+    adjs_np = np.empty((len(graph_list), max_node_num, max_node_num), dtype=np.float32)
 
-    for g in graph_list:
+    for i, g in enumerate(graph_list):
         assert isinstance(g, nx.Graph)
-        node_list = []
-        for v, feature in g.nodes.data('feature'):
-            node_list.append(v)
-
+        node_list = [v for v, _ in g.nodes.data('feature')]
         adj = nx.to_numpy_array(g, nodelist=node_list)
         padded_adj = pad_adjs(adj, node_number=max_node_num)
-        adjs_list.append(padded_adj)
+        adjs_np[i] = padded_adj
 
-    del graph_list
-
-    adjs_np = np.asarray(adjs_list)
-    del adjs_list
-
+    # Convert directly to a PyTorch tensor
     adjs_tensor = torch.tensor(adjs_np, dtype=torch.float32)
-    del adjs_np
 
     return adjs_tensor
 
