@@ -40,8 +40,10 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
         # Sample from the Dirichlet distribution
         probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
     else:
+        if isinstance(probs,(np.ndarray,list)):
+            probs = torch.Tensor(probs)
         probs = probs.squeeze()
-        assert len(probs.shape) == 1
+        #assert len(probs.shape) == 1
         assert probs.max() <= 1.
         assert probs.max() >= 0.
         probs = probs.unsqueeze(0)
@@ -91,6 +93,7 @@ class StatesDataloader:
         self.batch_size = config.batch_size
 
         self.train_loader,self.test_loader,self.probs = sample_categorical_from_dirichlet(self.config)
+        self.config.bernoulli_probability = self.probs.numpy().tolist()
         self.dimensions = config.dimensions
 
     def train(self):
