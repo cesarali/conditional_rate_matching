@@ -144,7 +144,4 @@ def get_log_likelihood_states_dataloader(crm:CRM):
     LOG = LOG/sample_size
     return LOG
 
-if __name__=="__main__":
-    print("Hey!")
 
-    

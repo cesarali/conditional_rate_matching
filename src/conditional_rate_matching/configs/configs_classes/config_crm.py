@@ -73,6 +73,7 @@ class TemporalNetworkToRateConfig:
     linear_reduction:Union[float,int] = 0.1 # if None full layer, 
                                             # if float is the percentage of output dimensions that is assigned as hidden 
                                             #otherwise hidden
+    fix_logistic = True
 
 @dataclass
 class CRMConfig:

@@ -25,11 +25,12 @@ class TemporalToRateLinear(nn.Module):
     """
     Assigns a linear Layer
     """
-    def __init__(self, config:CRMConfig, temporal_output_total):
+    def __init__(self, config:CRMConfig, temporal_output_total,device):
         nn.Module.__init__(self)
         self.vocab_size = config.data1.vocab_size
         self.dimensions = config.data1.dimensions
         self.temporal_output_total = temporal_output_total
+        self.device = device
 
         if isinstance(config.temporal_network_to_rate,TemporalNetworkToRateConfig):
             intermediate_to_rate = config.temporal_network_to_rate.linear_reduction
@@ -57,8 +58,9 @@ class TemporalToRateBernoulli(nn.Module):
     Takes the output of the temporal rate as bernoulli probabilities completing 
     with 1 - p
     """
-    def __init__(self, config:CRMConfig, temporal_output_total):
+    def __init__(self, config:CRMConfig, temporal_output_total,device):
         nn.Module.__init__(self)
+        self.device = device
 
     def forward(self,x):
         #here we expect len(x.shape) == 2
@@ -70,8 +72,9 @@ class TemporalToRateEmpty(nn.Module):
     """
     Directly Takes the Output and converts into a rate
     """
-    def __init__(self,  config:CRMConfig,temporal_output_total):
+    def __init__(self,  config:CRMConfig,temporal_output_total,device):
         nn.Module.__init__(self)
+        self.device = device
 
     def forward(self,x):
         return x
@@ -80,17 +83,19 @@ class TemporalToRateLogistic(nn.Module):
     """
     # Truncated logistic output from https://arxiv.org/pdf/2107.03006.pdf
     """
-    def __init__(self, config:CRMConfig,temporal_output_total):
+    def __init__(self, config:CRMConfig,temporal_output_total,device):
         nn.Module.__init__(self)
         self.D = config.data1.dimensions
         self.S = config.data1.vocab_size
-
+        self.device = device
+        self.fix_logistic = config.temporal_network_to_rate.fix_logistic
+        
     def forward(self,net_out):
         B = net_out.shape[0]
         D = self.D
         C = 3
         S = self.S
-        net_out = net_out.view(B,C,32,32)
+        net_out = net_out.view(B,2*C,32,32)
         
         mu = net_out[:, 0:C, :, :].unsqueeze(-1)
         log_scale = net_out[:, C:, :, :].unsqueeze(-1)
@@ -117,8 +122,15 @@ class TemporalToRateLogistic(nn.Module):
         logits = logits.view(B,D,S)
 
         return logits
+    
+    def _log_minus_exp(self, a, b, eps=1e-6):
+        """ 
+            Compute log (exp(a) - exp(b)) for (b<a)
+            From https://arxiv.org/pdf/2107.03006.pdf
+        """
+        return a + torch.log1p(-torch.exp(b-a) + eps)
 
-def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
+def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape,device=torch.device("cpu")):
 
     temporal_output_total = reduce(lambda x, y: x * y,expected_temporal_output_shape)
     temporal_network_to_rate = config.temporal_network_to_rate
@@ -126,18 +138,21 @@ def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
     if isinstance(temporal_network_to_rate,TemporalNetworkToRateConfig):
         type_of = temporal_network_to_rate.type_of 
         if type_of == "bernoulli":
-             temporal_to_rate = TemporalToRateBernoulli(config,temporal_output_total)
+             temporal_to_rate = TemporalToRateBernoulli(config,temporal_output_total,device)
         elif type_of == "empty":
-            temporal_to_rate = TemporalToRateEmpty(config,temporal_output_total)
+            temporal_to_rate = TemporalToRateEmpty(config,temporal_output_total,device)
         elif type_of == "linear":
-            temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
+            temporal_to_rate = TemporalToRateLinear(config,temporal_output_total,device)
         elif type_of == "logistic":
-            temporal_to_rate = TemporalToRateLogistic(config,temporal_output_total)
+            temporal_to_rate = TemporalToRateLogistic(config,temporal_output_total,device)
         elif type_of is None:
             config.temporal_network_to_rate.linear_reduction = None
-            temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
+            temporal_to_rate = TemporalToRateLinear(config,temporal_output_total,device)
     else:
-        temporal_to_rate = TemporalToRateLinear(config,temporal_output_total)
+        temporal_to_rate = TemporalToRateLinear(config,temporal_output_total,device)
+
+    temporal_to_rate.device = device
+    temporal_to_rate = temporal_to_rate.to(device)
 
     return temporal_to_rate
 
@@ -171,7 +186,7 @@ class ClassificationForwardRate(EMA,nn.Module):
         self.temporal_network = load_temporal_network(config,device=device)
         self.expected_temporal_output_shape = self.temporal_network.expected_output_shape
         if self.expected_temporal_output_shape != [self.dimensions,self.vocab_size]:
-            self.temporal_to_rate = select_temporal_to_rate(config,self.expected_temporal_output_shape)
+            self.temporal_to_rate = select_temporal_to_rate(config,self.expected_temporal_output_shape,device=device)
 
     def define_thermostat(self,config):
         self.thermostat = load_thermostat(config)

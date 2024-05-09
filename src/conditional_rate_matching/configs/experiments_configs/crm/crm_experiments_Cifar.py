@@ -28,7 +28,7 @@ def experiment_cifar10_config(epochs=100):
                                                     time_embed_dim=128,
                                                     time_scale_factor=1000,
                                                     ema_decay=0.9999)
-    config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="empty")
+    config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="logistic")
 
     return config
 
