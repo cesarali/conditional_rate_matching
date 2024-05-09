@@ -24,7 +24,7 @@ def rate_to_probabilities(rate_f,x_0,x_1,delta_t):
     rate_f[batch_index_equal,dimension_equal,who_equal] = 1. + rate_f[batch_index_equal,dimension_equal,who_equal]
     return rate_f 
 
-def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ignore_=1):
+def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ignore_=1, device='cpu'):
     """
     Parameters
     ----------
@@ -51,9 +51,9 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
         (torch.Tensor) from backward process x_0
         (torch.Tensor) log_likelihood per batch (dimensions sum out)
     """
-    x_1 = databatch1[0]
+    
+    x_1 = databatch1[0].to(device)
     batch_size = x_1.shape[0]
-
     # we simulate the path backwards
     x_f, x_path_b, t_path_b = crm_b.pipeline(return_path=True,x_0=x_1)
     sample_size, number_of_time_steps, dimensions = x_path_b.shape[0],x_path_b.shape[1],x_path_b.shape[2]
@@ -100,7 +100,8 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
 
     return x_0,log_1_0
 
-def get_log_likelihood(crm,crm_b,delta_t=None,ignore_=1):
+@torch.no_grad()
+def get_log_likelihood(crm,crm_b,delta_t=None,ignore_=1, device='cpu'):
     """
     """
     dimensions = crm.config.data0.dimensions
@@ -112,8 +113,7 @@ def get_log_likelihood(crm,crm_b,delta_t=None,ignore_=1):
     LOG = 0.
     sample_size = 0
     for databatch1 in crm.dataloader_1.test():#<----------------------
-
-        x_0, log_10 = calculate_batch_log_likelihood(crm,crm_b,databatch1,delta_t=delta_t,ignore_=ignore_)
+        x_0, log_10 = calculate_batch_log_likelihood(crm,crm_b,databatch1,delta_t=delta_t,ignore_=ignore_, device=device)
         log_0 = x0_distribution.log_prob(x_0).sum(axis=-1)
         
         log_1 = log_10 - log_0
