@@ -183,7 +183,7 @@ def plot_time_series_histograms(data, data2=None,num_timesteps_to_plot=10,figsiz
             ax = axes[i, j]
             ax.bar(range(vocab_size), data[idx, i].numpy(), color='blue',alpha=0.4)
             if data2 is not None:
-                ax.bar(range(vocab_size), data2[j, i].numpy(), color='red',alpha=0.4)
+                ax.bar(range(vocab_size), data2[idx, i].numpy(), color='red',alpha=0.4)
             ax.set_title(f"t = {idx+1}")
             ax.set_xticks([])  # Remove x-axis ticks
             ax.set_yticks([])  # Remove y-axis ticks

@@ -123,4 +123,28 @@ def get_log_likelihood(crm,crm_b,delta_t=None,ignore_=1, device='cpu'):
         sample_size += batch_size
         LOG = log_1.sum()
     LOG = LOG/sample_size
+    return -LOG
+
+def get_log_likelihood_states_dataloader(crm:CRM):
+    """
+    Log probabilities of known categorical probabilities
+    """
+    probabilities_1 = torch.tensor(crm.config.data1.bernoulli_probability).squeeze()
+    x1_distribution = Categorical(probabilities_1)
+    sample_size = 0
+    LOG = 0.
+    for databatch1 in crm.dataloader_1.test():
+        x1 = databatch1[0]
+        log_1 = x1_distribution.log_prob(x1).sum(axis=-1)
+
+        # average overall data set
+        batch_size = x1.size(0)
+        sample_size += batch_size
+        LOG = log_1.sum()
+    LOG = LOG/sample_size
     return LOG
+
+if __name__=="__main__":
+    print("Hey!")
+
+    
