@@ -3,19 +3,20 @@ from conditional_rate_matching.data.image_dataloader_config import DiscreteCIFAR
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig, BasicPipelineConfig,TemporalNetworkToRateConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import DiffusersUnet2DConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig
+                                                                                         
 
-
-def experiment_cifar10_config(epochs=100):
-    batch_size = 2
+def experiment_cifar10_config(epochs=100, gamma=0.01):
+    batch_size = 128
     config = CRMConfig()
     config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size, max_test_size=None)
     config.data1 = DiscreteCIFAR10Config(batch_size=batch_size)
-    config.trainer = CRMTrainerConfig(
-        number_of_epochs=epochs,
-        learning_rate=1e-4,
-        metrics=[]
-    )
+    config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
+                                      learning_rate=2e-4,
+                                      metrics=[]
+                                      )
     config.pipeline = BasicPipelineConfig(number_of_steps=1000)
+
     config.temporal_network = DiffusersUnet2DConfig(num_res_blocks=2,
                                                     num_scales=4,
                                                     ch=128,
@@ -29,20 +30,29 @@ def experiment_cifar10_config(epochs=100):
                                                     time_scale_factor=1000,
                                                     ema_decay=0.9999)
     config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="logistic")
+    config.thermostat=ConstantThermostatConfig(gamma=gamma)
 
     return config
 
 
 if __name__=="__main__":
+    
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
-    config = experiment_cifar10_config(10)
-
-    config.trainer.debug = True
-    config.trainer.device = "cpu"
-
-    #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
-
+    
+    config = experiment_cifar10_config(epochs=50, gamma=0.01)
+    config.trainer.debug = False
+    config.trainer.device = "cuda:0"
     call_trainer(config,
-                 experiment_name="prenzlauer_experiment",
-                 experiment_type="crm_cifar10",
+                 experiment_name="cifar10_gamma_0.01",
+                 experiment_type="crm",
+                 experiment_indentifier=None)
+    
+
+
+    config = experiment_cifar10_config(epochs=50, gamma=0.001)
+    config.trainer.debug = False
+    config.trainer.device = "cuda:0"
+    call_trainer(config,
+                 experiment_name="cifar10_gamma_0.001",
+                 experiment_type="crm",
                  experiment_indentifier=None)
