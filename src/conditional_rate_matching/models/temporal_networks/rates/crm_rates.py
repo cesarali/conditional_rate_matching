@@ -72,14 +72,65 @@ class TemporalToRateEmpty(nn.Module):
     """
     Directly Takes the Output and converts into a rate
     """
-    def __init__(self,  config:CRMConfig, temporal_output_total):
+    def __init__(self,  config:CRMConfig,temporal_output_total,device):
         nn.Module.__init__(self)
         self.device = device
 
     def forward(self,x):
         return x
 
-def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape):
+class TemporalToRateLogistic(nn.Module):
+    """
+    # Truncated logistic output from https://arxiv.org/pdf/2107.03006.pdf
+    """
+    def __init__(self, config:CRMConfig,temporal_output_total,device):
+        nn.Module.__init__(self)
+        self.D = config.data1.dimensions
+        self.S = config.data1.vocab_size
+        self.device = device
+        self.fix_logistic = config.temporal_network_to_rate.fix_logistic
+        
+    def forward(self,net_out):
+        B = net_out.shape[0]
+        D = self.D
+        C = 3
+        S = self.S
+        net_out = net_out.view(B,2*C,32,32)
+        
+        mu = net_out[:, 0:C, :, :].unsqueeze(-1)
+        log_scale = net_out[:, C:, :, :].unsqueeze(-1)
+
+        inv_scale = torch.exp(- (log_scale - 2))
+
+        bin_width = 2. / self.S
+        bin_centers = torch.linspace(start=-1. + bin_width/2,
+            end=1. - bin_width/2,
+            steps=self.S,
+            device=self.device).view(1, 1, 1, 1, self.S)
+
+        sig_in_left = (bin_centers - bin_width/2 - mu) * inv_scale
+        bin_left_logcdf = F.logsigmoid(sig_in_left)
+        sig_in_right = (bin_centers + bin_width/2 - mu) * inv_scale
+        bin_right_logcdf = F.logsigmoid(sig_in_right)
+
+        logits_1 = self._log_minus_exp(bin_right_logcdf, bin_left_logcdf)
+        logits_2 = self._log_minus_exp(-sig_in_left + bin_left_logcdf, -sig_in_right + bin_right_logcdf)
+        if self.fix_logistic:
+            logits = torch.min(logits_1, logits_2)
+        else:
+            logits = logits_1
+        logits = logits.view(B,D,S)
+
+        return logits
+    
+    def _log_minus_exp(self, a, b, eps=1e-6):
+        """ 
+            Compute log (exp(a) - exp(b)) for (b<a)
+            From https://arxiv.org/pdf/2107.03006.pdf
+        """
+        return a + torch.log1p(-torch.exp(b-a) + eps)
+
+def select_temporal_to_rate(config:CRMConfig, expected_temporal_output_shape,device=torch.device("cpu")):
 
     temporal_output_total = reduce(lambda x, y: x * y,expected_temporal_output_shape)
     temporal_network_to_rate = config.temporal_network_to_rate
@@ -286,7 +337,7 @@ class ClassificationForwardRate(EMA,nn.Module):
         -------
         cost: torch.Tensor(batch_size,batch_size)
         """
-        time1 = torch.ones((x0.shape[0],), device=x1.device)
+        time1 = torch.ones((x0.shape[0],))
         posterior_estimate = softmax(self.classify(x1,time1),dim=1)
     
         D = self.dimensions

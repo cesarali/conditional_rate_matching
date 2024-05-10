@@ -26,7 +26,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 from conditional_rate_matching.data.music_dataloaders_config import LakhPianoRollConfig
 from conditional_rate_matching.data.graph_dataloaders_config import GraphDataloaderConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
-from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
+from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig, DiscreteCIFAR10Config
 from conditional_rate_matching.data.image_dataloaders_conditional_config import DistortedNISTLoaderConfig
 from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig
 from conditional_rate_matching.models.trainers.trainers_config import BasicTrainerConfig
@@ -38,6 +38,7 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
 
 data_configs = {"NISTLoader":NISTLoaderConfig,
                 "DistortedNISTLoader":DistortedNISTLoaderConfig,
+                "DiscreteCIFAR10":DiscreteCIFAR10Config,
                 "LakhPianoRoll":LakhPianoRollConfig,
                 "GraphDataloader":GraphDataloaderConfig,
                 "BridgeConfig":BridgeConfig,

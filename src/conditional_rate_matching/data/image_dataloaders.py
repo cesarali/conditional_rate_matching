@@ -112,6 +112,7 @@ class NISTLoader:
         return self.test_loader
 
 class DiscreteCIFAR10(torchvision.datasets.CIFAR10):
+
     def __init__(self, data_root,train=True,download=True,random_flips=False):
         super().__init__(root=data_root,
                          train=train,
@@ -157,6 +158,9 @@ class DiscreteCIFAR10Dataloader():
     """
 
     """
+
+    name = "DiscreteCIFAR10"
+
     def __init__(self,cfg:DiscreteCIFAR10Config,device=torch.device("cpu")):
         train_dataset = DiscreteCIFAR10(data_root=DiscreteCIFAR10Config.data_dir,train=True)
         test_dataset =  DiscreteCIFAR10(data_root=DiscreteCIFAR10Config.data_dir,train=False)
