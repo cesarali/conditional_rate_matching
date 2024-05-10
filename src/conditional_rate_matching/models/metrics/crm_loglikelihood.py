@@ -24,7 +24,41 @@ def rate_to_probabilities(rate_f,x_0,x_1,delta_t):
     rate_f[batch_index_equal,dimension_equal,who_equal] = 1. + rate_f[batch_index_equal,dimension_equal,who_equal]
     return rate_f 
 
-def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ignore_=1):
+def evaluate_rate_in_batches(crm,crm_b,x_path_b_0,x_path_b_1,time_b_0,time_f_1,batch_size=10,shapes=(32,10,2)):
+    """
+    """
+    sample_size,number_of_time_steps,dimensions = shapes
+    total_batches = (sample_size * (number_of_time_steps - 1) + batch_size - 1) // batch_size
+
+    # Initialize empty lists to store batch results if necessary
+    rates_b = []
+    rates_f = []
+    for batch_index in range(total_batches):
+        start_idx = batch_index * batch_size
+        end_idx = min((batch_index + 1) * batch_size, sample_size * (number_of_time_steps - 1))
+
+        # Extracting batches for input to the neural network
+        x_path_b_0_batch = x_path_b_0[start_idx:end_idx]
+        x_path_b_1_batch = x_path_b_1[start_idx:end_idx]
+        time_b_0_batch = time_b_0[start_idx:end_idx]
+        time_f_1_batch = time_f_1[start_idx:end_idx]
+
+        # Evaluating forward and backward rates for each batch
+        rate_b_batch = crm_b.forward_rate(x_path_b_0_batch, time_b_0_batch)
+        rate_f_batch = crm.forward_rate(x_path_b_1_batch, time_f_1_batch)
+
+        # Storing the batch results if necessary for further processing
+        rates_b.append(rate_b_batch)
+        rates_f.append(rate_f_batch)
+    
+    # Concatenate all batch results into a single tensor
+    rates_b = torch.cat(rates_b, dim=0)
+    rates_f = torch.cat(rates_f, dim=0)
+    
+    return rates_b,rates_f
+
+@torch.no_grad
+def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ignore_=1,in_batches=False,batch_size=100):
     """
     Parameters
     ----------
@@ -77,9 +111,15 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
         delta_t = (t_path_b[:,1:] -  t_path_b[:,:-1])[0,3]
 
     # we evaluate forward and backward rate in backward process
-    rate_b = crm_b.forward_rate(x_path_b_0,time_b_0)
-    rate_f = crm.forward_rate(x_path_b_1,time_f_1)
+    if in_batches:
+        shapes = (sample_size,number_of_time_steps,dimensions)
+        rate_b,rate_f = evaluate_rate_in_batches(crm,crm_b,x_path_b_0,x_path_b_1,time_b_0,time_f_1,
+                                                 batch_size=batch_size,shapes=shapes)
+    else:
+        rate_b = crm_b.forward_rate(x_path_b_0,time_b_0)
+        rate_f = crm.forward_rate(x_path_b_1,time_f_1)
 
+    
     # we convert to probabilities based on the rule for the rates diagonal
     rate_f = rate_to_probabilities(rate_f,x_path_b_0,x_path_b_1,delta_t)
     rate_b = rate_to_probabilities(rate_b,x_path_b_0,x_path_b_1,delta_t)
@@ -100,7 +140,7 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
 
     return x_0,log_1_0
 
-def get_log_likelihood(crm,crm_b,delta_t=None,ignore_=1):
+def get_log_likelihood(crm:CRM,crm_b:CRM,delta_t=None,ignore_=1,in_batches=False):
     """
     """
     dimensions = crm.config.data0.dimensions
@@ -113,7 +153,7 @@ def get_log_likelihood(crm,crm_b,delta_t=None,ignore_=1):
     sample_size = 0
     for databatch1 in crm.dataloader_1.test():#<----------------------
 
-        x_0, log_10 = calculate_batch_log_likelihood(crm,crm_b,databatch1,delta_t=delta_t,ignore_=ignore_)
+        x_0, log_10 = calculate_batch_log_likelihood(crm,crm_b,databatch1,delta_t=delta_t,ignore_=ignore_,in_batches=in_batches)
         log_0 = x0_distribution.log_prob(x_0).sum(axis=-1)
         
         log_1 = log_10 - log_0
