@@ -101,7 +101,7 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
     return x_0,log_1_0
 
 @torch.no_grad()
-def get_log_likelihood(crm,crm_b,delta_t=None,ignore_=1, device='cpu'):
+def get_log_likelihood(crm,crm_b, delta_t=None, ignore_=1, device='cpu'):
     """
     """
     dimensions = crm.config.data0.dimensions
@@ -120,6 +120,7 @@ def get_log_likelihood(crm,crm_b,delta_t=None,ignore_=1, device='cpu'):
 
         # average overall data set
         batch_size = x_0.size(0)
+        print(batch_size)
         sample_size += batch_size
         LOG = log_1.sum()
     LOG = LOG/sample_size
