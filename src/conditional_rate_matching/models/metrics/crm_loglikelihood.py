@@ -77,9 +77,15 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
         delta_t = (t_path_b[:,1:] -  t_path_b[:,:-1])[0,3]
 
     # we evaluate forward and backward rate in backward process
-    rate_b = crm_b.forward_rate(x_path_b_0,time_b_0)
-    rate_f = crm.forward_rate(x_path_b_1,time_f_1)
+    if in_batches:
+        shapes = (sample_size,number_of_time_steps,dimensions)
+        rate_b,rate_f = evaluate_rate_in_batches(crm,crm_b,x_path_b_0,x_path_b_1,time_b_0,time_f_1,
+                                                 batch_size=batch_size,shapes=shapes)
+    else:
+        rate_b = crm_b.forward_rate(x_path_b_0,time_b_0)
+        rate_f = crm.forward_rate(x_path_b_1,time_f_1)
 
+    
     # we convert to probabilities based on the rule for the rates diagonal
     rate_f = rate_to_probabilities(rate_f,x_path_b_0,x_path_b_1,delta_t)
     rate_b = rate_to_probabilities(rate_b,x_path_b_0,x_path_b_1,delta_t)
@@ -145,7 +151,4 @@ def get_log_likelihood_states_dataloader(crm:CRM):
     LOG = LOG/sample_size
     return LOG
 
-if __name__=="__main__":
-    print("Hey!")
 
-    
