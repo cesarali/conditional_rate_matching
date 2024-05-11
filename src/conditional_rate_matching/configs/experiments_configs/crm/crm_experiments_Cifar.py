@@ -7,7 +7,7 @@ from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config
                                                                                          
 
 def experiment_cifar10_config(epochs=100, gamma=0.01):
-    batch_size = 64
+    batch_size = 128
     config = CRMConfig()
     config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size, max_test_size=None)
     config.data1 = DiscreteCIFAR10Config(batch_size=batch_size)
@@ -40,7 +40,7 @@ if __name__=="__main__":
     
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     
-    config = experiment_cifar10_config(epochs=50, gamma=0.01)
+    config = experiment_cifar10_config(epochs=500, gamma=0.005)
     config.trainer.debug = False
     config.trainer.device = "cuda:0"
     call_trainer(config,
@@ -48,12 +48,3 @@ if __name__=="__main__":
                  experiment_type="crm",
                  experiment_indentifier=None)
     
-
-
-    config = experiment_cifar10_config(epochs=50, gamma=0.001)
-    config.trainer.debug = False
-    config.trainer.device = "cuda:0"
-    call_trainer(config,
-                 experiment_name="cifar10_gamma_0.001_logistic",
-                 experiment_type="crm",
-                 experiment_indentifier=None)
