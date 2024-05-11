@@ -18,4 +18,6 @@ bck_dir = os.path.join(results_path, "crm", "images", arg.bck_process, "run")
 crm_fwd = CRM(experiment_dir=fwd_dir, device=device)
 crm_bck = CRM(experiment_dir=bck_dir, device=device)
 
-get_log_likelihood(crm_fwd, crm_bck, in_batches=True, device=device)
+NLL = get_log_likelihood(crm_fwd, crm_bck, in_batches=True, device=device)
+print(NLL)
+

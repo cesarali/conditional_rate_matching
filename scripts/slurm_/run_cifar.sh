@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1                   # Total number of tasks across all nodes
 #SBATCH --cpus-per-task=1            # Cores per task
 #SBATCH --mem=40G                    # Real memory required
-#SBATCH --time=72:00:00              # Total run time limit
+#SBATCH --time=24:00:00              # Total run time limit
 #SBATCH --gres=gpu:1                                            # Number of GPUs
 #SBATCH --exclude=gpu009,gpu[005-006],cuda[001-008],volta[001-003]     # exclude specific GPUs
 #SBATCH --output=./log/%x_%N_jobid_%j.out                       # STDOUT output file
