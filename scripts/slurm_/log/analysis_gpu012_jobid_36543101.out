@@ -1,0 +1,58 @@
+Initial GPU Status:
+Sat May 11 14:50:16 2024       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.129.03             Driver Version: 535.129.03   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  NVIDIA GeForce RTX 2080 Ti     On  | 00000000:1B:00.0 Off |                  N/A |
+| 30%   43C    P2              68W / 250W |   1893MiB / 11264MiB |     14%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   1  NVIDIA GeForce RTX 2080 Ti     On  | 00000000:1C:00.0 Off |                  N/A |
+| 30%   43C    P2              68W / 250W |   1911MiB / 11264MiB |     21%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   2  NVIDIA GeForce RTX 2080 Ti     On  | 00000000:1D:00.0 Off |                  N/A |
+| 47%   64C    P2             145W / 250W |   9991MiB / 11264MiB |     42%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   3  NVIDIA GeForce RTX 2080 Ti     On  | 00000000:1E:00.0 Off |                  N/A |
+| 30%   28C    P8              12W / 250W |      3MiB / 11264MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   4  NVIDIA GeForce RTX 2080 Ti     On  | 00000000:89:00.0 Off |                  N/A |
+| 30%   28C    P8               9W / 250W |      3MiB / 11264MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   5  NVIDIA GeForce RTX 2080 Ti     On  | 00000000:8A:00.0 Off |                  N/A |
+| 30%   30C    P8               8W / 250W |      3MiB / 11264MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   6  NVIDIA GeForce RTX 2080 Ti     On  | 00000000:8B:00.0 Off |                  N/A |
+| 30%   31C    P8              25W / 250W |      1MiB / 11264MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   7  NVIDIA GeForce RTX 2080 Ti     On  | 00000000:8C:00.0 Off |                  N/A |
+| 30%   42C    P2              54W / 250W |   1921MiB / 11264MiB |     22%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|    0   N/A  N/A    161615      C   python                                     1890MiB |
+|    1   N/A  N/A    161614      C   python                                     1908MiB |
+|    2   N/A  N/A    161623      C   python                                     9988MiB |
+|    7   N/A  N/A     99951      C   python                                     1918MiB |
++---------------------------------------------------------------------------------------+
+Files already downloaded and verified
+Files already downloaded and verified
+Files already downloaded and verified
+Files already downloaded and verified
+Files already downloaded and verified
+Files already downloaded and verified

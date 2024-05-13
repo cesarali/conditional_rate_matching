@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/cache/home/df630/conditional_rate_matching/experiments/cifar/analysis_cifar.py", line 206, in <module>
+    gen_samples, _ , _ = generate_samples(path, source, num_timesteps=arg.num_timesteps, time_epsilon=arg.timepsilon, device="cuda:0")
+  File "/cache/home/df630/conditional_rate_matching/experiments/cifar/analysis_cifar.py", line 24, in generate_samples
+    crm = CRM(experiment_dir=experiment_dir, device=device)
+NameError: name 'experiment_dir' is not defined

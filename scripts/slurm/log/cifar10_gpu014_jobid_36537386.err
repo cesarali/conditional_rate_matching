@@ -1,0 +1,21 @@
+  0%|          | 0/50 [00:00<?, ?it/s]  0%|          | 0/50 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/cache/home/df630/conditional_rate_matching/src/conditional_rate_matching/configs/experiments_configs/crm/crm_experiments_Cifar.py", line 46, in <module>
+    call_trainer(config,
+  File "/cache/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/trainers/call_all_trainers.py", line 19, in call_trainer
+    results_, all_metrics = crm_trainer.train()
+  File "/cache/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/trainers/abstract_trainer.py", line 150, in train
+    loss = self.train_step(databatch,training_state.number_of_training_steps,epoch)
+  File "/cache/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/trainers/crm_trainer.py", line 139, in train_step
+    model_classification = self.generative_model.forward_rate.classify(sampled_x, time)
+  File "/cache/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/temporal_networks/rates/crm_rates.py", line 212, in classify
+    change_logits = self.temporal_to_rate(change_logits)
+  File "/home/df630/.conda/envs/conditional_rate_matching/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/df630/.conda/envs/conditional_rate_matching/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/cache/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/temporal_networks/rates/crm_rates.py", line 116, in forward
+    logits_1 = self._log_minus_exp(bin_right_logcdf, bin_left_logcdf)
+  File "/cache/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/temporal_networks/rates/crm_rates.py", line 131, in _log_minus_exp
+    return a + torch.log1p(-torch.exp(b-a) + eps)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 192.00 MiB. GPU 0 has a total capacity of 10.75 GiB of which 19.62 MiB is free. Including non-PyTorch memory, this process has 10.73 GiB memory in use. Of the allocated memory 9.90 GiB is allocated by PyTorch, and 651.11 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

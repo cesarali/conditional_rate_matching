@@ -48,16 +48,17 @@ class DiffusersUnet2D(nn.Module):
         if isinstance(config.temporal_network_to_rate,TemporalNetworkToRateConfig):
             if config.temporal_network_to_rate.type_of == "empty":
                 out_channels = in_chanels*vocab_size
+                self.expected_output_shape = [in_chanels*vocab_size,32,32]
+
             if config.temporal_network_to_rate.type_of == "logistic":
                 out_channels = in_chanels*2
+                self.expected_output_shape = [in_chanels*2,32,32]
             
         vocab_size = config.data1.vocab_size
 
         self.temp_net = UNet2DModel(in_channels=in_chanels,
                                     out_channels=out_channels,
                                     norm_num_groups=32).to(device)
-
-        self.expected_output_shape = [in_chanels*vocab_size,32,32]
 
     def forward(self, x, times):
         return self.temp_net(x, times).sample
