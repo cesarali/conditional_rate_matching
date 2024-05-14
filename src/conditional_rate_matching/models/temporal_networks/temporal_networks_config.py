@@ -158,3 +158,12 @@ class SequenceTransformerConfig:
     use_one_hot_input:bool = True
 
     ema_decay :float = 0.9999  # 0.9999
+
+@dataclass
+class SimpleTemporalGCNConfig:
+    name:str = "SimpleTemporalGCN"
+    time_embed_dim:int = 19
+    hidden_channels:int = 64
+    ema_decay :float = 0.9999  # 0.9999
+
+

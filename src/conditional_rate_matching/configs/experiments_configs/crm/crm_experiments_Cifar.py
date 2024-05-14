@@ -3,7 +3,7 @@ from conditional_rate_matching.data.image_dataloader_config import DiscreteCIFAR
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig, BasicPipelineConfig,TemporalNetworkToRateConfig
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import DiffusersUnet2DConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
-
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig
 
 def experiment_cifar10_config(epochs=100):
     batch_size = 2
@@ -29,7 +29,7 @@ def experiment_cifar10_config(epochs=100):
                                                     time_scale_factor=1000,
                                                     ema_decay=0.9999)
     config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="logistic")
-
+    config.thermostat =  ConstantThermostatConfig(gamma=1e-6)
     return config
 
 

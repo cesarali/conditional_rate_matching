@@ -51,7 +51,6 @@ class TemporalDenseGCNConv(torch.nn.Module):
         glorot(self.weight)
         zeros(self.bias)
 
-
     def forward(self, x, adj, time, mask=None, add_loop=True):
         r"""
         Args:
@@ -99,8 +98,7 @@ class TemporalDenseGCNConv(torch.nn.Module):
 
 
     def __repr__(self):
-        return '{}({}, {})'.format(self.__class__.__name__, self.in_channels,
-                                   self.out_channels)
+        return '{}({}, {})'.format(self.__class__.__name__, self.in_channels,self.out_channels)
 
 # -------- MLP layer --------
 

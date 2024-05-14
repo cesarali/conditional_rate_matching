@@ -44,7 +44,6 @@ class TemporalToRateLinear(nn.Module):
             if isinstance(intermediate_to_rate,float):
                 assert intermediate_to_rate < 1.
                 intermediate_to_rate = int(self.dimensions * self.vocab_size * intermediate_to_rate)
-
             self.temporal_to_rate = nn.Sequential(
                 nn.Linear(temporal_output_total, intermediate_to_rate),
                 nn.Linear(intermediate_to_rate, self.dimensions * self.vocab_size)
