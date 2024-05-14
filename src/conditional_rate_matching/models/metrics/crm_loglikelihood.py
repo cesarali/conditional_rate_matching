@@ -54,7 +54,7 @@ def evaluate_rate_in_batches(crm,crm_b,x_path_b_0,x_path_b_1,time_b_0,time_f_1,b
     # Concatenate all batch results into a single tensor
     rates_b = torch.cat(rates_b, dim=0)
     rates_f = torch.cat(rates_f, dim=0)
-    
+
     return rates_b,rates_f
 
 @torch.no_grad
@@ -119,7 +119,6 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
         rate_b = crm_b.forward_rate(x_path_b_0,time_b_0)
         rate_f = crm.forward_rate(x_path_b_1,time_f_1)
 
-    
     # we convert to probabilities based on the rule for the rates diagonal
     rate_f = rate_to_probabilities(rate_f,x_path_b_0,x_path_b_1,delta_t)
     rate_b = rate_to_probabilities(rate_b,x_path_b_0,x_path_b_1,delta_t)
@@ -145,8 +144,7 @@ def get_log_likelihood(crm:CRM,crm_b:CRM,delta_t=None,ignore_=1,in_batches=False
     """
     dimensions = crm.config.data0.dimensions
     vocab_size = crm.config.data0.vocab_size
-    probabilities_0 = torch.ones((dimensions,vocab_size), device=device)/vocab_size
-
+    probabilities_0 = torch.ones((dimensions,vocab_size))/vocab_size
     x0_distribution = Categorical(probabilities_0)
 
     LOG = 0.

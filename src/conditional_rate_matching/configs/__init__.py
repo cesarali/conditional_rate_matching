@@ -10,7 +10,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     SequenceTransformerConfig,
     DiffusersUnet2DConfig,
     UConvNISTNetConfig,
-    CFMUnetConfig
+    CFMUnetConfig,
+    SimpleTemporalGCNConfig
 )
 
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import (
@@ -39,7 +40,8 @@ temporal_network_configs = {
     "TemporalGraphConvNet":TemporalGraphConvNetConfig,
     "TemporalScoreNetworkA":TemporalScoreNetworkAConfig,
     "DiffusersUnet2D":DiffusersUnet2DConfig,
-    "UConvNISTNet":UConvNISTNetConfig
+    "UConvNISTNet":UConvNISTNetConfig,
+    "SimpleTemporalGCN":SimpleTemporalGCNConfig
 }
 
 thermostat_configs = {

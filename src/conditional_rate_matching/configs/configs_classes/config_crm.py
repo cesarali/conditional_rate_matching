@@ -19,7 +19,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     ConvNetAutoencoderConfig,
     DiffusersUnet2DConfig,
     TemporalScoreNetworkAConfig,
-    SequenceTransformerConfig
+    SequenceTransformerConfig,
+    SimpleTemporalGCNConfig
 )
 
 # data config
@@ -90,7 +91,7 @@ class CRMConfig:
     # temporal_to_rate
     temporal_network_to_rate : Union[int,float,TemporalNetworkToRateConfig] = None
     # temporal network
-    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig,SequenceTransformerConfig] = TemporalMLPConfig()
+    temporal_network: Union[TemporalMLPConfig,ConvNetAutoencoderConfig,DiffusersUnet2DConfig,TemporalScoreNetworkAConfig,SequenceTransformerConfig,SimpleTemporalGCNConfig] = TemporalMLPConfig()
     # conditional model
     conditional_network: MLPConfig = None
     # ot

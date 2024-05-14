@@ -6,22 +6,25 @@ from conditional_rate_matching.configs.configs_classes.config_crm import CRMConf
 def test_graph():
     from conditional_rate_matching.configs.config_files import ExperimentFiles
     from conditional_rate_matching.models.generative_models.crm import CRM
-    from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalScoreNetworkAConfig
+    from conditional_rate_matching.models.temporal_networks.temporal_networks_config import (
+        TemporalScoreNetworkAConfig,
+        SimpleTemporalGCNConfig
+    )
 
     experiment_files = ExperimentFiles(experiment_name="crm",
                                        experiment_type="graph_test")
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
-    config = experiment_comunity_small(number_of_epochs=50,network="gnn")
+    config = experiment_comunity_small(number_of_epochs=50,network="simple")
     #config = experiment_ego(number_of_epochs=50,network="gnn")
-
-    config.temporal_network = TemporalScoreNetworkAConfig(use_bn=False)
+    config.data0.batch_size = 9
+    config.data1.batch_size = 9
+    config.temporal_network = SimpleTemporalGCNConfig()
 
     #config.temporal_network_to_rate = None
     config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.5)
-    #config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="bernoulli")
-
-    generative_model = CRM(config,experiment_files=experiment_files)
+    config.temporal_network_to_rate = None
+    generative_model = CRM(config)
     databatch = next(generative_model.dataloader_1.train().__iter__())
 
     x = databatch[0].to(device)

@@ -226,3 +226,4 @@ class GraphDataloaders:
             train_graph_list = [obtain_power_law_graph(networkx_graph)[0] for networkx_graph in train_graph_list]
             test_graph_list = [obtain_power_law_graph(networkx_graph)[0] for networkx_graph in train_graph_list]
             return train_graph_list, test_graph_list,max_number_of_nodes,min_number_of_nodes
+

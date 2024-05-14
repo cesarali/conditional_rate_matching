@@ -1,10 +1,10 @@
-    from conditional_rate_matching.configs.configs_classes.config_crm import OptimalTransportSamplerConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import OptimalTransportSamplerConfig
 
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig, TemporalNetworkToRateConfig
 from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig, EgoConfig, GridConfig, EnzymesConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
-from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import TemporalScoreNetworkAConfig, TemporalDeepMLPConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import TemporalScoreNetworkAConfig,SimpleTemporalGCNConfig
 
 """
 
@@ -28,6 +28,10 @@ def experiment_ego(number_of_epochs=300, berlin=True, network="mlp",temporal_to_
         crm_config.data1 = EgoConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
         crm_config.temporal_network = TemporalScoreNetworkAConfig()
         crm_config.trainer.learning_rate = 1e-2
+    elif network == "simple":
+        crm_config.data1 = EgoConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
+        crm_config.temporal_network = SimpleTemporalGCNConfig()
+        crm_config.trainer.learning_rate = 1e-3
     else:
         crm_config.data1 = EgoConfig(flatten=True, as_image=False, full_adjacency=False, batch_size=20)
         crm_config.temporal_network.hidden_dim = 256
@@ -58,6 +62,10 @@ def experiment_comunity_small(number_of_epochs=300, berlin=True, network="mlp", 
         crm_config.data1 = CommunitySmallConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
         crm_config.temporal_network = TemporalScoreNetworkAConfig()
         crm_config.trainer.learning_rate = 1e-2
+    if network == "simple":
+        crm_config.data1 = CommunitySmallConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
+        crm_config.temporal_network = SimpleTemporalGCNConfig()
+        crm_config.trainer.learning_rate = 1e-3
     else:
         crm_config.temporal_network = TemporalDeepMLPConfig(num_layers=6, hidden_dim=128, time_embed_dim=128)
         crm_config.data1 = CommunitySmallConfig(flatten=True, as_image=False, full_adjacency=False, batch_size=20)
@@ -90,6 +98,10 @@ def experiment_grid(number_of_epochs=300, berlin=False, network="mlp", temporal_
         crm_config.data1 = GridConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
         crm_config.temporal_network = TemporalScoreNetworkAConfig()
         crm_config.trainer.learning_rate = 1e-2
+    elif network == "simple":
+        crm_config.data1 = GridConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
+        crm_config.temporal_network = SimpleTemporalGCNConfig()
+        crm_config.trainer.learning_rate = 1e-3
     else:
         crm_config.data1 = GridConfig(flatten=True, as_image=False, full_adjacency=False, batch_size=20)
         crm_config.temporal_network.hidden_dim = 50
@@ -121,6 +133,10 @@ def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", tempora
         crm_config.data1 = EnzymesConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
         crm_config.temporal_network = TemporalScoreNetworkAConfig()
         crm_config.trainer.learning_rate = 1e-2
+    elif network == "simple":
+        crm_config.data1 = EnzymesConfig(flatten=False, as_image=False, full_adjacency=True, batch_size=20)
+        crm_config.temporal_network = SimpleTemporalGCNConfig()
+        crm_config.trainer.learning_rate = 1e-3
     else:
         crm_config.temporal_network = TemporalDeepMLPConfig()
         crm_config.data1 = EnzymesConfig(flatten=True, as_image=False, full_adjacency=False, batch_size=20)
@@ -142,10 +158,10 @@ def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", tempora
 if __name__ == "__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-    config = experiment_comunity_small(number_of_epochs=200, network="mlp", temporal_to_rate='linear')
+    config = experiment_comunity_small(number_of_epochs=500, network="simple",temporal_to_rate="linear")
     # config = experiment_grid(number_of_epochs=10)
     # config = experiment_ego(number_of_epochs=10,network="gnn")
-    # config = experiment_enzymes(number_of_epochs=128, network="mlp", temporal_to_rate='linear')
+    # config = experiment_enzymes(number_of_epochs=100,network="simple")
 
     # config.trainer.orca_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_new_jersey/"
     config.trainer.orca_dir = "/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_new_jersey"
@@ -168,8 +184,8 @@ if __name__ == "__main__":
     config.trainer.device = "cuda:2"
 
     results, metrics = call_trainer(config,
-                                    experiment_name="new_jersey_experiment",
-                                    experiment_type="crm",
+                                    experiment_name="prenzlauer_experiment",
+                                    experiment_type="crm_graphs",
                                     experiment_indentifier=None)
     
 

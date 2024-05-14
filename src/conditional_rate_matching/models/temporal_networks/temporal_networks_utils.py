@@ -12,7 +12,8 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
     UConvNISTNetConfig,
     TemporalGraphConvNetConfig,
     TemporalDeepMLPConfig,
-    SequenceTransformerConfig
+    SequenceTransformerConfig,
+    SimpleTemporalGCNConfig
 )
 
 from conditional_rate_matching.models.temporal_networks.temporal_diffusers_wrappers import DiffusersUnet2D
@@ -24,6 +25,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_config
 from conditional_rate_matching.models.temporal_networks.temporal_transformers import SequenceTransformer
 
 from conditional_rate_matching.models.temporal_networks.unet import UNetModelWrapper
+from conditional_rate_matching.models.temporal_networks.temporal_gnn.geometric_gnn import SimpleTemporalGCN
 
 def load_temporal_network(config:CRMConfig, device):
     if isinstance(config.temporal_network,TemporalMLPConfig):
@@ -52,6 +54,8 @@ def load_temporal_network(config:CRMConfig, device):
         temporal_network = SequenceTransformer(config, device)
     elif isinstance(config.temporal_network,CFMUnetConfig):
         temporal_network = UNetModelWrapper(**config.temporal_network.__dict__).to(device)
+    elif isinstance(config.temporal_network,SimpleTemporalGCNConfig):
+        temporal_network = SimpleTemporalGCN(config).to(device)
     else:
         raise Exception("Temporal Network not Defined")
     return temporal_network
