@@ -348,7 +348,7 @@ class ClassificationForwardRate(EMA,nn.Module):
         x0 = x0.repeat_interleave(batch_size,0)
         x1 = x1.repeat((batch_size,1))
         cost = (x1 == x0).sum(axis=1).reshape(batch_size,batch_size)
-        return cost
+        return -cost
     
     #======================================================================
     # VARIANCE
