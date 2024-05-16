@@ -176,6 +176,7 @@ if __name__ == "__main__":
     # config.optimal_transport = OptimalTransportSamplerConfig(name="uniform",cost=None)
     config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
 
+    config.pipeline.set_diagonal = False
     config.thermostat.gamma = 1.
     config.trainer.learning_rate = 1e-3
     config.pipeline.number_of_steps = 1000

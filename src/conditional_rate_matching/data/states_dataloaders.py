@@ -43,10 +43,8 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
         if isinstance(probs,(np.ndarray,list)):
             probs = torch.Tensor(probs)
         probs = probs.squeeze()
-        #assert len(probs.shape) == 1
         assert probs.max() <= 1.
         assert probs.max() >= 0.
-        probs = probs.unsqueeze(0)
         
     # Sample from the categorical distribution using the Dirichlet samples as probabilities
     distribution_per_dimension = Categorical(probs)

@@ -64,6 +64,7 @@ class SimpleTemporalGCN(torch.nn.Module):
         x = self.conv(x, time_emb, edge_index)
 
         x = torch.stack(unbatch(x,batch=batch),dim=0)
+
         N = self.number_of_nodes
 
         x_i = x.unsqueeze(2)  # Shape becomes (batch_size, N, 1, D)
