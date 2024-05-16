@@ -4,7 +4,7 @@ from conditional_rate_matching.configs.configs_classes.config_crm import CRMConf
 from conditional_rate_matching.data.graph_dataloaders_config import CommunitySmallConfig, EgoConfig, GridConfig, EnzymesConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvaliable
-from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import TemporalScoreNetworkAConfig,SimpleTemporalGCNConfig
+from conditional_rate_matching.models.temporal_networks.temporal_networks_utils import TemporalScoreNetworkAConfig,SimpleTemporalGCNConfig, TemporalDeepMLPConfig
 
 """
 
@@ -39,7 +39,7 @@ def experiment_ego(number_of_epochs=300, berlin=True, network="mlp",temporal_to_
         crm_config.trainer.learning_rate = 1e-4
 
     if temporal_to_rate == "linear":
-        crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.5)
+        crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.25)
     elif temporal_to_rate == "bernoulli":
         crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear")
     
@@ -75,7 +75,7 @@ def experiment_comunity_small(number_of_epochs=300, berlin=True, network="mlp", 
         # crm_config.trainer.learning_rate = 1e-4
 
     if temporal_to_rate == "linear":
-        crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.5)
+        crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=0.25)
     elif temporal_to_rate == "bernoulli":
         crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="bernoulli")
     else:
@@ -85,7 +85,7 @@ def experiment_comunity_small(number_of_epochs=300, berlin=True, network="mlp", 
 
 def experiment_grid(number_of_epochs=300, berlin=False, network="mlp", temporal_to_rate=None):
     crm_config = CRMConfig()
-    crm_config.temporal_network_to_rate = 0.1
+    # crm_config.temporal_network_to_rate = 0.1
     crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.,batch_size=20)
 
     crm_config.trainer = CRMTrainerConfig(
@@ -119,7 +119,7 @@ def experiment_grid(number_of_epochs=300, berlin=False, network="mlp", temporal_
 
 def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", temporal_to_rate=None):
     crm_config = CRMConfig()
-    crm_config.temporal_network_to_rate = 0.1
+    # crm_config.temporal_network_to_rate = 0.1
     crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.,batch_size=20)
 
     crm_config.trainer = CRMTrainerConfig(
@@ -147,7 +147,7 @@ def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", tempora
     crm_config.pipeline.number_of_steps = 500
 
     if temporal_to_rate == "linear":
-        crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.5)
+        crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear",linear_reduction=.25)
     elif temporal_to_rate == "bernoulli":
         crm_config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="bernoulli")
     else:
@@ -158,23 +158,22 @@ def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", tempora
 if __name__ == "__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
 
-    config = experiment_comunity_small(number_of_epochs=500, network="simple",temporal_to_rate="linear")
+    config = experiment_comunity_small(number_of_epochs=1000, network="simple",temporal_to_rate='linear')
     # config = experiment_grid(number_of_epochs=10)
-    # config = experiment_ego(number_of_epochs=10,network="gnn")
-    # config = experiment_enzymes(number_of_epochs=100,network="simple")
+    # config = experiment_ego(number_of_epochs=1000, network="simple", temporal_to_rate="linear")
+    # config = experiment_enzymes(number_of_epochs=10, network="simple", temporal_to_rate="linear")
 
     # config.trainer.orca_dir = "C:/Users/cesar/Desktop/Projects/DiffusiveGenerativeModelling/Codes/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_new_jersey/"
     config.trainer.orca_dir = "/home/df630/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca_new_jersey"
     config.trainer.windows = False
-
-    config.trainer.save_model_test_stopping = True
+    config.temporal_network.hidden_channels = 128
+    config.temporal_network.time_embed_dim = 19
+    config.trainer.save_model_test_stopping = False
     config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
     #config.trainer.debug = True
     #config.temporal_network = TemporalScoreNetworkAConfig(num_layers=2,num_heads=4,depth=3)
 
-    config.thermostat.gamma = 0.01
-
-    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
+    config.optimal_transport = OptimalTransportSamplerConfig(name="uniform",cost=None)
     #config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
 
     config.thermostat.gamma = 1.
@@ -184,8 +183,7 @@ if __name__ == "__main__":
     config.trainer.device = "cuda:2"
 
     results, metrics = call_trainer(config,
-                                    experiment_name="prenzlauer_experiment",
+                                    experiment_name="gnn_simple",
                                     experiment_type="crm_graphs",
                                     experiment_indentifier=None)
     
-

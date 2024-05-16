@@ -46,7 +46,9 @@ class TemporalToRateLinear(nn.Module):
                 intermediate_to_rate = int(self.dimensions * self.vocab_size * intermediate_to_rate)
             self.temporal_to_rate = nn.Sequential(
                 nn.Linear(temporal_output_total, intermediate_to_rate),
-                nn.Linear(intermediate_to_rate, self.dimensions * self.vocab_size)
+                nn.Linear(intermediate_to_rate, self.dimensions * self.vocab_size),
+                nn.BatchNorm1d(self.dimensions * self.vocab_size),
+                nn.ReLU()
             )
 
     def forward(self,x):
