@@ -63,8 +63,9 @@ class CRM:
         self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1,self.parent_dataloader)
         if self.config.optimal_transport.cost == "log":
             B = self.forward_rate.log_cost_regularizer()
+            B = B.item() if isinstance(B,torch.Tensor) else B
             self.config.optimal_transport.method = "sinkhorn"
-            self.config.optimal_transport.reg = B.item() if isinstance(B,torch.Tensor) else B
+            self.config.optimal_transport.reg = 1./B
 
         self.op_sampler = OTPlanSampler(**asdict(self.config.optimal_transport))
 
