@@ -185,5 +185,5 @@ if __name__ == "__main__":
     results, metrics = call_trainer(config,
                                     experiment_name="gnn_simple",
                                     experiment_type="crm_graphs",
-                                    experiment_indentifier=None)
+                                    experiment_indentifier=f'gamma_{config.thermostat.gamma}_temb_{config.temporal_network.time_embed_dim}_hiddim_{config.temporal_network.hidden_channels}_lr_{config.trainer.learning_rate}_epochs_{config.trainer.number_of_epochs}',)
     
