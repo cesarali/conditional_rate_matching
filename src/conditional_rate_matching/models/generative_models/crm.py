@@ -61,6 +61,11 @@ class CRM:
 
         self.forward_rate = ClassificationForwardRate(self.config, self.device).to(self.device)
         self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1,self.parent_dataloader)
+        if self.config.optimal_transport.cost == "log":
+            B = self.forward_rate.log_cost_regularizer()
+            self.config.optimal_transport.method = "sinkhorn"
+            self.config.optimal_transport.reg = B.item() if isinstance(B,torch.Tensor) else B
+
         self.op_sampler = OTPlanSampler(**asdict(self.config.optimal_transport))
 
     def load_from_experiment(self,experiment_dir,device=None):
@@ -115,13 +120,6 @@ class CRM:
             if self.config.optimal_transport.cost == "log":
                 with torch.no_grad():
                     cost = self.forward_rate.log_cost(x0,x1)
-
-            torch.manual_seed(seed)
-            np.random.seed(seed)
-
-            #pi = self.op_sampler.get_map(x0, x1)
-            #indices_i, indices_j = crm.op_sampler.sample_map(pi, batch_size=batch_size, replace=True)
-            #new_x0, new_x1 = x0[indices_i], x1[indices_j]
 
             torch.manual_seed(seed)
             np.random.seed(seed)

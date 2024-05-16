@@ -95,12 +95,14 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
 
     # reshape states and vectors of paths (one step ahead)
     # we calculate the inverted time (the backward process was also trained 0. to 1.)
-    x_0 = x_path_b[:,-(ignore_+1),:]
-    x_path_b_0 = x_path_b[:,:-1,:]
-    time_b_0 = t_path_b[:,:-1] 
 
-    x_path_b_1 = x_path_b[:,1:,:]
-    time_f_1 = 1. - t_path_b[:,1:]
+    x_0 = x_path_b[:,-(ignore_+1),:] #noise is at the end of backward path
+
+    x_path_b_0 = x_path_b[:,:-1,:] #before step in backward
+    time_b_0 = t_path_b[:,:-1] #before time in backward
+
+    x_path_b_1 = x_path_b[:,1:,:] #after step in backward
+    time_f_1 = 1. - t_path_b[:,1:] #after time in backward
 
     x_path_b_0 = x_path_b_0.reshape(sample_size*(number_of_time_steps-1),dimensions)
     x_path_b_1 = x_path_b_1.reshape(sample_size*(number_of_time_steps-1),dimensions)
@@ -139,7 +141,7 @@ def calculate_batch_log_likelihood(crm:CRM,crm_b:CRM,databatch1,delta_t=None,ign
 
     return x_0,log_1_0
 
-def get_log_likelihood(crm:CRM,crm_b:CRM,delta_t=None,ignore_=1,in_batches=False):
+def get_log_likelihood(crm:CRM,crm_b:CRM,delta_t=None,ignore_=1,in_batches=False,debug=True):
     """
     """
     dimensions = crm.config.data0.dimensions
@@ -147,13 +149,18 @@ def get_log_likelihood(crm:CRM,crm_b:CRM,delta_t=None,ignore_=1,in_batches=False
     probabilities_0 = torch.ones((dimensions,vocab_size))/vocab_size
     x0_distribution = Categorical(probabilities_0)
 
+    probabilities_1 = torch.tensor(crm.config.data1.bernoulli_probability).squeeze()
+    x1_distribution = Categorical(probabilities_1)
+    
     LOG = 0.
     sample_size = 0
     for databatch1 in crm.dataloader_1.test():#<----------------------
 
         x_0, log_10 = calculate_batch_log_likelihood(crm,crm_b,databatch1,delta_t=delta_t,ignore_=ignore_,in_batches=in_batches)
         log_0 = x0_distribution.log_prob(x_0).sum(axis=-1)
-        
+        if debug:
+            x_1 = databatch1[0]
+            log_1_real = x1_distribution.log_prob(x_1).sum(axis=-1)
         log_1 = log_10 - log_0
 
         # average overall data set

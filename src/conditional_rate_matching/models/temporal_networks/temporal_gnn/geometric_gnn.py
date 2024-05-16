@@ -49,7 +49,7 @@ class SimpleTemporalGCN(torch.nn.Module):
         self.hidden_channels = config.temporal_network.hidden_channels
         self.time_dimension= config.temporal_network.time_embed_dim
 
-        self.conv1 = GCNConv(self.num_node_features, self.hidden_channels)
+        self.conv1 = GCNConv(self.num_node_features+self.time_dimension, self.hidden_channels)
         self.conv2 = GCNConv(self.hidden_channels, self.hidden_channels)
         self.conv3 = GCNConv(self.hidden_channels, self.hidden_channels)
 
@@ -60,10 +60,19 @@ class SimpleTemporalGCN(torch.nn.Module):
 
         self.expected_output_shape = [self.number_of_nodes,self.number_of_nodes,1]
 
+        self.mask_diagonal_off = torch.ones([self.number_of_nodes, self.number_of_nodes]) - torch.eye(self.number_of_nodes)
+        self.mask_diagonal_off.unsqueeze_(0)
+
     def forward(self, X, time):
         batch_size = X.size(0)
         x,edge_index,batch = sample_to_geometric(X,number_of_nodes=self.number_of_nodes)
+        x = x.to(X.device)
+        edge_index = edge_index.to(X.device)
+        batch = batch.to(X.device)
+
         time_emb = self.timeembed1(time)
+        time_emb_ = time_emb.repeat_interleave(self.number_of_nodes,0)
+        x = torch.cat([x,time_emb_],dim=1)
 
         # 1. Obtain node embeddings 
         x = self.conv1(x, edge_index)
@@ -75,6 +84,7 @@ class SimpleTemporalGCN(torch.nn.Module):
 
         # 2. Create outer concatenation for the edge encoding
         x = torch.stack(unbatch(x,batch=batch),dim=0)
+
         N = self.number_of_nodes
 
         x_i = x.unsqueeze(2)  # Shape becomes (batch_size, N, 1, D)
@@ -90,5 +100,7 @@ class SimpleTemporalGCN(torch.nn.Module):
         # Concatenate time_emb_expanded to B along the last dimension
         x = torch.cat((x, time_emb), dim=-1)  # Shape becomes (batch_size, N, N, D + time_emd_dim)
         x = self.edge_encoding(x).squeeze() # Shape becomes (batch_size, N, N,1)
-
+        self.mask_diagonal_off = self.mask_diagonal_off.to(X.device)
+        x = x * self.mask_diagonal_off
+        
         return x

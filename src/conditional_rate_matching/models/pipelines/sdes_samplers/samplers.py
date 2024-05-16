@@ -11,6 +11,29 @@ from conditional_rate_matching.configs.configs_classes.config_ctdd import CTDDCo
 from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate
 from conditional_rate_matching.models.temporal_networks.rates.crm_rates import ClassificationForwardRate
 
+def set_diagonal_rate(rates,x):
+    """
+    Ensures that we have the right diagonal rate
+    """
+    batch_size = rates.shape[0]
+    dimensions = rates.shape[1]
+
+    #set diagonal to sum of other values
+    batch_index = torch.arange(batch_size).repeat_interleave((dimensions))
+    dimension_index = torch.arange(dimensions).repeat((batch_size))
+    rates[batch_index,dimension_index,x.long().view(-1)] = 0.
+
+    #rate_diagonal = -rates.sum(axis=-1)
+    #rates[batch_index,dimension_index,x.long().view(-1)] = rate_diagonal[batch_index,dimension_index]
+    x_0max = torch.max(rates, dim=2)[1]
+    #rates = rates * h
+    #rates[batch_index,dimension_index,x.long().view(-1)] = 1. - rates[batch_index,dimension_index,x.long().view(-1)]
+
+    #removes negatives
+    #rates[torch.where(rates < 0.)]  = 0.
+
+    return  x_0max,rates
+
 
 def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
                rate_model:Union[ClassificationForwardRate,SchrodingerBridgeRate],
@@ -30,6 +53,7 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
     S = config.data0.vocab_size
     num_steps = config.pipeline.number_of_steps
     time_epsilon = config.pipeline.time_epsilon
+    set_diagonal = config.pipeline.set_diagonal
     min_t = 1./num_steps
     device = x_0.device
 
@@ -82,7 +106,7 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
 
             #TAU LEAPING
             diffs = torch.arange(S, device=device).view(1,1,S) - x.view(number_of_paths,D,1)
-            poisson_dist = torch.distributions.poisson.Poisson(rates * h)
+            poisson_dist = torch.distributions.poisson.Poisson(rates*h)
             jump_nums = poisson_dist.sample().to(device)
             adj_diffs = jump_nums * diffs
             overall_jump = torch.sum(adj_diffs, dim=2)
@@ -91,7 +115,7 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
 
             x = x_new
 
-        # last step
+        # last step ------------------------------------------------
         if conditional_tau_leaping:
             x[:,0:conditional_dimension] = conditioner
 
