@@ -40,11 +40,11 @@ if __name__=="__main__":
     
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     
-    config = experiment_cifar10_config(epochs=500, gamma=0.005)
+    config = experiment_cifar10_config(epochs=1000, gamma=0.001)
     config.trainer.debug = False
     config.trainer.device = "cuda:0"
     call_trainer(config,
-                 experiment_name="cifar10_gamma_0.01_logistic",
+                 experiment_name="cifar10_gamma_0.001_logistic",
                  experiment_type="crm",
                  experiment_indentifier=None)
     
