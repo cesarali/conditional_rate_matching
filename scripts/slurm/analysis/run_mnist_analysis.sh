@@ -12,11 +12,18 @@
 #SBATCH --output=./log/%x_%N_jobid_%j.out                       # STDOUT output file
 #SBATCH --error=./log/%x_%N_jobid_%j.err                        # STDERR output file
 
+echo "Job started on $(date)"
+echo "Job ID: $SLURM_JOB_ID"
+echo "Node List: $SLURM_JOB_NODELIST"
+echo "Job Name: $SLURM_JOB_NAME"
+
 source ~/.bashrc
 conda activate conditional_rate_matching
-cd ../../experiments/nist
+cd ../../../experiments/nist
 
 echo "Initial GPU Status:"
 nvidia-smi
 
 python3 analysis_nist.py --experiment "$1" --overwrite "$2" --timepsilon $3
+
+echo "Job finished on $(date)"
