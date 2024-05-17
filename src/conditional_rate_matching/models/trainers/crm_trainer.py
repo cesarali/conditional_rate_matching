@@ -262,7 +262,7 @@ class CRMTrainer(Trainer):
                         model_classification_ = model_classification.view(-1, self.config.data1.vocab_size)
                         sampled_x = sampled_x.view(-1)
                         loss = self.generative_model.loss(model_classification_, sampled_x)
-                        loss_batch.extend(loss.detach().numpy().tolist())
+                        loss_batch.extend(loss.detach().cpu().numpy().tolist())
                         if self.config.trainer.debug:
                             break
 

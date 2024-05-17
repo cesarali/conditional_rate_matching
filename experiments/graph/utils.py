@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
 
 
-def run_nist_analysis(experiment_dir,
+def run_graph_analysis(experiment_dir,
                       experiment_name,
                       num_timesteps = 100,
                       time_epsilon = None,
@@ -65,14 +65,13 @@ def run_nist_analysis(experiment_dir,
         if os.path.isfile(experiment_dir + "/sample_gen_x1.dat"): os.remove(experiment_dir + "/sample_gen_x1.dat")
         if os.path.isfile(experiment_dir + "/sample_gen_test.dat"): os.remove(experiment_dir + "/sample_gen_test.dat")
         if os.path.isfile(experiment_dir + "/bridge_example.png"): os.remove(experiment_dir + "/bridge_example.png")
-        if os.path.isfile(experiment_dir + "/class_ocurrence.png"): os.remove(experiment_dir + "/class_ocurrence.png")
         if os.path.isfile(experiment_dir + "/selected_sample.png"): os.remove(experiment_dir + "/selected_sample.png")
         if os.path.isfile(experiment_dir + "/metrics.txt"): os.remove(experiment_dir + "/metrics.txt")
 
     print('INFO: generating samples...')
 
     if not os.path.isfile(experiment_dir + "/sample_gen_x1.dat"):
-        x_0, x_1, x_test = generate_mnist_samples(path=experiment_dir,  
+        x_0, x_1, x_test = generate_graph_samples(path=experiment_dir,  
                                                 num_timesteps=num_timesteps,
                                                 time_epsilon=time_epsilon,  
                                                 device=device)
@@ -82,10 +81,7 @@ def run_nist_analysis(experiment_dir,
         x_test = torch.load(experiment_dir + "/sample_gen_test.dat")
 
     print('INFO: generating 100 example images...')
-    mnist_grid(x_1[:100], title=f'generated samples (t={1-time_epsilon})', save_path=experiment_dir, num_img=100, nrow=10, figsize=(4, 4))
-    
-    print('INFO: classifying digits...')
-    mnist_classifier(x_1, save_path=experiment_dir, plot_histogram=True)
+    graph_grid(x_1[:100], title=f'generated samples (t={1-time_epsilon})', save_path=experiment_dir, num_img=100, nrow=10, figsize=(4, 4))
     
     print('INFO: computing MNIST metrics...')
     get_nist_metrics(x_1, x_test, experiment_dir)
@@ -98,6 +94,40 @@ def run_nist_analysis(experiment_dir,
                         num_img=num_img_bridge, 
                         num_timesteps_displayed=num_intermediate_bridge, 
                         save_path=experiment_dir) 
+
+def generate_samples(path, 
+                     x_test,
+                     num_timesteps=100, 
+                     time_epsilon=0.0,
+                     device="cpu"):
+    
+    crm = CRM(experiment_dir=path, device=device)
+    crm.config.pipeline.time_epsilon = time_epsilon
+    crm.config.pipeline.num_intermediates = num_timesteps
+    crm.config.pipeline.number_of_steps = num_timesteps
+
+    x_1, x_t, t = crm.pipeline(x_test.shape[0], 
+                               return_intermediaries=True, 
+                               train=False, 
+                               x_0=x_test)
+    
+    x_1 = x_1.view(-1, 1, 28, 28)
+    x_t = x_t.view(-1, x_t.shape[1], 1, 28, 28)
+    return x_1, x_t, t
+
+
+
+def get_nist_metrics(x_1, x_test, save_path=None):
+    metrics = fid_nist(x_1, x_test, 'mnist', x_1.device)
+    metrics["mse"] = marginal_histograms(x_1, x_test)
+    print(metrics)
+    if save_path:
+        metrics_path = os.path.join(save_path, "metrics.txt")
+        with open(metrics_path, 'w') as f:
+            f.write(str(metrics))
+    return metrics
+
+
 
 
 def get_mnist_test_samples(trained_model, 
@@ -180,25 +210,6 @@ def generate_mnist_samples(path,
     
     return x_0, x_1, x_test
 
-def mnist_classifier(img, save_path=None, plot_histogram=False):
-    device = img.device
-    classifier = load_classifier('mnist', device=device)
-    classifier = classifier.to(device)
-    classifier.eval()
-    y = classifier(img)
-    classes = torch.argmax(y, dim=1).cpu().numpy()
-    classes = classes.tolist()
-    if plot_histogram:
-        plt.subplots(figsize=(3,3))
-        unique, counts = np.unique(classes, return_counts=True)
-        plt.bar(unique, counts, color='darkred')
-        plt.xticks(range(10))
-        plt.xlabel('digit ocurrence')
-        plt.tight_layout()
-        plt.savefig(save_path+'/class_ocurrence.png')
-        plt.show()
-    else:
-        return torch.Tensor(classes)
     
 def mnist_grid(sample, title='', save_path='.', num_img=5, nrow=8, figsize=(10,10)):
     _, _= plt.subplots(1,1, figsize=figsize)
@@ -249,20 +260,4 @@ def mnist_noise_bridge(path,
     else: plt.savefig(save_path+'/bridge_example.png')
 
 
-def get_fid(x_1, x_test, save_path=None):
-    fids = fid_nist(x_1, x_test, 'mnist', x_1.device)
-    if save_path:
-        fid_path = os.path.join(save_path, "fid.txt")
-        with open(fid_path, 'w') as f:
-            f.write(str(fids))
-    return fids
 
-def get_nist_metrics(x_1, x_test, save_path=None):
-    metrics = fid_nist(x_1, x_test, 'mnist', x_1.device)
-    metrics["mse"] = marginal_histograms(x_1, x_test)
-    print(metrics)
-    if save_path:
-        metrics_path = os.path.join(save_path, "metrics.txt")
-        with open(metrics_path, 'w') as f:
-            f.write(str(metrics))
-    return metrics

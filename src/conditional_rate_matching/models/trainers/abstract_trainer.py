@@ -202,7 +202,7 @@ class Trainer(ABC):
         experiment_dir = self.generative_model.experiment_files.experiment_dir
         if self.saved:
             self.generative_model = self.generative_model_class(experiment_dir=experiment_dir)
-        all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best", writer=self.writer)
+        # all_metrics = log_metrics(self.generative_model, all_metrics=all_metrics, epoch="best", writer=self.writer)
         self.writer.close()
 
         return results_,all_metrics

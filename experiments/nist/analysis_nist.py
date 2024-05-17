@@ -4,6 +4,7 @@ from utils import run_nist_analysis
 
 parser = argparse.ArgumentParser(description='Run MNIST results analysis')
 parser.add_argument('--experiment', type=str, required=True, help='Experiment to analyze')
+parser.add_argument('--results_dir', type=str, required=False, help='where to store results', default=None)
 parser.add_argument('--overwrite', type=str, required=False, help='Overwrite existing analysis', default='False')
 parser.add_argument('--num_timesteps', type=int, required=False, help='Number of generation time-steps', default=100)
 parser.add_argument('--timepsilon', type=float, required=False, help='Stop at time t=1-epsilon from target', default=None)        

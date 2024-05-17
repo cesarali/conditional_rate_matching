@@ -42,7 +42,7 @@ class TemporalToRateLinear(nn.Module):
         else:
 
             if isinstance(intermediate_to_rate,float):
-                assert intermediate_to_rate < 1.
+                assert intermediate_to_rate <= 1.
                 intermediate_to_rate = int(self.dimensions * self.vocab_size * intermediate_to_rate)
             self.temporal_to_rate = nn.Sequential(
                 nn.Linear(temporal_output_total, intermediate_to_rate),
@@ -88,15 +88,19 @@ class TemporalToRateLogistic(nn.Module):
         nn.Module.__init__(self)
         self.D = config.data1.dimensions
         self.S = config.data1.vocab_size
+        self.C = config.data1.temporal_net_expected_shape[0]
+        self.K = config.data1.temporal_net_expected_shape[1]
         self.device = device
         self.fix_logistic = config.temporal_network_to_rate.fix_logistic
-        
+
+
     def forward(self,net_out):
         B = net_out.shape[0]
         D = self.D
-        C = 3
+        C = self.C
         S = self.S
-        net_out = net_out.view(B,2*C,32,32)
+        K = self.K
+        net_out = net_out.view(B,2*C,K,K)
         
         mu = net_out[:, 0:C, :, :].unsqueeze(-1)
         log_scale = net_out[:, C:, :, :].unsqueeze(-1)
