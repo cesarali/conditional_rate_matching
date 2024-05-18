@@ -21,7 +21,7 @@ from conditional_rate_matching.models.schedulers.scheduler import CTDDScheduler
 from conditional_rate_matching.data.graph_dataloaders import GraphDataloaders
 from conditional_rate_matching.data.ctdd_target import CTDDTargetData
 
-from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import ReferenceProcess
 from conditional_rate_matching.models.temporal_networks.rates.ctdd_rates import BackwardRate
 from typing import Optional, Tuple, Union
@@ -68,7 +68,7 @@ class CTDDPipeline(DiffusionPipeline):
             dataloder_iterator = self.data1.train() if train else self.data1.test()
         else:
             dataloder_iterator = self.data1
-        x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
+        x_0 = sample_from_dataloader_iterator(dataloder_iterator, sample_size)
         #assert x_0.size(0) == sample_size
         return x_0
 

@@ -8,7 +8,7 @@ from conditional_rate_matching.models.metrics.distances import kmmd,marginal_his
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
 from conditional_rate_matching.utils.plots.histograms_plots import plot_categorical_histogram_per_dimension
 
-from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
 from conditional_rate_matching.utils.plots.paths_plots import histograms_per_time_step
 
 import torch.nn.functional as F
@@ -31,7 +31,7 @@ def sample_dsb(dsb,current_model,sinkhorn_iteration):
 
     config = dsb.config
     vocab_size, dimensions, max_test_size = config.data0.vocab_size, config.data0.dimensions, config.trainer.max_test_size
-    test_sample = sample_from_dataloader(start_dataloader.test(), sample_size=max_test_size).to(dsb.device)
+    test_sample = sample_from_dataloader_iterator(start_dataloader.test(), sample_size=max_test_size).to(dsb.device)
 
     generative_sample, generative_path, ts = dsb.pipeline(sample_size=test_sample.shape[0],
                                                           model=current_model,

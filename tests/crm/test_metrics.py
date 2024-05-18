@@ -26,13 +26,13 @@ class TestGraphsMetrics(unittest.TestCase):
     def test_graph(self):
         from experiments.testing_graphs import small_community
         from conditional_rate_matching.models.generative_models.crm import CRM
-        from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+        from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
         from conditional_rate_matching.models.metrics.graphs_metrics import eval_graph_list
 
         config = small_community()
         crm = CRM(config=config)
         dataloader = crm.dataloader_1.test()
-        test_sample = sample_from_dataloader(dataloader, sample_size=20).to(crm.device)
+        test_sample = sample_from_dataloader_iterator(dataloader, sample_size=20).to(crm.device)
         generative_sample, generative_path, ts = crm.pipeline(sample_size=test_sample.shape[0],
                                                               return_intermediaries=True,
                                                               train=False)

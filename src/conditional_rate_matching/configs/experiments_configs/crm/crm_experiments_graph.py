@@ -165,11 +165,11 @@ if __name__ == "__main__":
     #config.trainer.orca_dir = "/home/cvejoski/Projects/conditional_rate_matching/src/conditional_rate_matching/models/metrics/orca"
     #config.trainer.windows = True
 
-    config.trainer.save_model_test_stopping = True
+    config.trainer.save_model_test_stopping = False
     #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
     #config.trainer.debug = True
     #config.temporal_network = TemporalScoreNetworkAConfig(num_layers=2,num_heads=4,depth=3)
-    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
+    config.optimal_transport = OptimalTransportSamplerConfig(name="uniform",cost="log")
 
     config.pipeline.set_diagonal = False
     config.thermostat.gamma = 1.
