@@ -19,7 +19,7 @@ from conditional_rate_matching.configs.configs_classes.config_crm import CRMConf
 from functools import reduce
 from conditional_rate_matching.configs.config_files import ExperimentFiles
 from torch.distributions import Bernoulli
-from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
 from conditional_rate_matching.models.metrics.fid_metrics import fid_nist
 
 #python presample_noise.py -n  -c 2 -t 4000 --max_time 4 --out_path binary_mnist/
@@ -547,7 +547,7 @@ if __name__=="__main__":
     #====================================================
     # SAMPLES
     #====================================================
-    test_sample = sample_from_dataloader(training_dl, sample_size=max_test_size).to(torch.device(device))
+    test_sample = sample_from_dataloader_iterator(training_dl, sample_size=max_test_size).to(torch.device(device))
 
     sampler = Euler_Maruyama_sampler  ## Generate samples using the specified sampler.
 

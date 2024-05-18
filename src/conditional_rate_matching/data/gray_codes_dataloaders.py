@@ -237,7 +237,7 @@ class GrayCodeDataLoader:
 
 if __name__=="__main__":
     from conditional_rate_matching.data.gray_codes_dataloaders_config import GrayCodesDataloaderConfig,AvailableGrayCodes
-    from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+    from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
     from conditional_rate_matching.utils.plots.gray_code_plots import bin2float, plot_samples
 
     data_config = GrayCodesDataloaderConfig()
@@ -245,7 +245,7 @@ if __name__=="__main__":
 
     print(data_config)
     dataloader = GrayCodeDataLoader(data_config)
-    test_sample = sample_from_dataloader(dataloader.train(),4000)
+    test_sample = sample_from_dataloader_iterator(dataloader.train(),4000)
     test_sample = dataloader.get_images(test_sample)
     plot_samples(test_sample, None, lim=dataloader.db.f_scale)
 

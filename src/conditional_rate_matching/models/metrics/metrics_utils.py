@@ -10,7 +10,7 @@ from conditional_rate_matching.models.metrics.distances import kmmd,marginal_his
 from conditional_rate_matching.models.metrics.histograms import categorical_histogram_dataloader
 from conditional_rate_matching.utils.plots.histograms_plots import plot_categorical_histogram_per_dimension
 
-from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
 from conditional_rate_matching.utils.plots.paths_plots import histograms_per_time_step
 
 import torch.nn.functional as F
@@ -78,7 +78,7 @@ def sample_crm(crm,config):
     data_dataloader = crm.dataloader_1
     vocab_size, dimensions, max_test_size = config.data1.vocab_size, config.data1.dimensions, config.trainer.max_test_size
     dataloader = crm.dataloader_1.test()
-    test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(crm.device)
+    test_sample = sample_from_dataloader_iterator(dataloader, sample_size=max_test_size).to(crm.device)
     sizes = (vocab_size, dimensions, max_test_size)
     if hasattr(config.data1,"conditional_model"):
         if config.data1.conditional_model:
@@ -96,7 +96,7 @@ def sample_ctdd(ctdd,config):
     data_dataloader = ctdd.dataloader_0
     vocab_size, dimensions, max_test_size = config.data0.vocab_size, config.data0.dimensions, config.trainer.max_test_size
     dataloader = ctdd.dataloader_0.test()
-    test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(ctdd.device)
+    test_sample = sample_from_dataloader_iterator(dataloader, sample_size=max_test_size).to(ctdd.device)
     generative_sample = ctdd.pipeline(ctdd.backward_rate, sample_size=test_sample.shape[0],
                                                   device=ctdd.device)
     sizes = (vocab_size, dimensions, max_test_size)
@@ -107,16 +107,25 @@ def sample_oops(oops,config):
     data_dataloader = oops.dataloader_0.test
     vocab_size, dimensions, max_test_size = config.data0.vocab_size, config.data0.dimensions, config.trainer.max_test_size
     dataloader = oops.dataloader_0.test()
-    test_sample = sample_from_dataloader(dataloader, sample_size=max_test_size).to(oops.device)
+    test_sample = sample_from_dataloader_iterator(dataloader, sample_size=max_test_size).to(oops.device)
     generative_sample, ll = oops.pipeline(oops.model, max_test_size, return_path=False, get_ll=True)
     sizes = (vocab_size, dimensions, max_test_size)
     return sizes,source_dataloader, data_dataloader, generative_sample,test_sample
 
-def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch, all_metrics = {}, metrics_to_log=None, where_to_log=None, writer=None):
+def log_metrics(generative_model: Union[CRM,CTDD,Oops], epoch=None, all_metrics = {}, metrics_to_log=None, where_to_log=None, writer=None):
     """
-    After the training procedure is done, the model is updated
+    Logs metrics after the training procedure is done.
 
-    :return:
+    Args:
+        generative_model (Union[CRM, CTDD, Oops]): The generative model whose metrics are to be logged.
+        epoch (int, optional): The current epoch number. Default is None.
+        all_metrics (dict, optional): A dictionary containing all available metrics. Default is an empty dictionary.
+        metrics_to_log (dict, optional): A list of metric names to be logged. Default is None.
+        where_to_log (dict, optional): The destination where metrics should be logged. Default is None.
+        writer (optional): The writer object for logging metrics (e.g., TensorBoard writer). Default is None.
+
+    Returns:
+        all_metrics
     """
     config = generative_model.config
     if metrics_to_log is None:

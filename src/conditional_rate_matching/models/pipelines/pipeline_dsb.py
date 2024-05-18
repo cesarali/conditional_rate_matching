@@ -6,7 +6,7 @@ from typing import Union
 from conditional_rate_matching.configs.configs_classes.config_dsb import DSBConfig
 from conditional_rate_matching.utils.devices import check_model_devices
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers import TauLeaping
-from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
 
 from conditional_rate_matching.models.pipelines.reference_process.ctdd_reference import ReferenceProcess,GaussianTargetRate
 from conditional_rate_matching.models.temporal_networks.rates.dsb_rate import SchrodingerBridgeRate
@@ -37,7 +37,7 @@ class DSBPipeline:
             dataloader = self.dataloder_1
         # select the right iterator
         dataloder_iterator = dataloader.train() if train else dataloader.test()
-        x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
+        x_0 = sample_from_dataloader_iterator(dataloder_iterator, sample_size)
         return x_0
 
     def __call__(self,sample_size,model:Union[SchrodingerBridgeRate,ReferenceProcess],forward=True,

@@ -1,7 +1,7 @@
 import torch
 from conditional_rate_matching.utils.devices import check_model_devices
 from conditional_rate_matching.models.pipelines.sdes_samplers.samplers import TauLeaping
-from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig
 
 class CRMPipeline:
@@ -25,7 +25,7 @@ class CRMPipeline:
                 dataloder_iterator = self.dataloder_0.train() if train else self.dataloder_0.test()
             else:
                 dataloder_iterator = self.dataloder_0
-            x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
+            x_0 = sample_from_dataloader_iterator(dataloder_iterator, sample_size)
 
             return x_0,None
         else:
@@ -33,14 +33,14 @@ class CRMPipeline:
                 dataloder_iterator = self.dataloder_0.train() if train else self.dataloder_0.test()
             else:
                 dataloder_iterator = self.dataloder_0
-            x_0 = sample_from_dataloader(dataloder_iterator, sample_size)
+            x_0 = sample_from_dataloader_iterator(dataloder_iterator, sample_size)
 
             if hasattr(self.dataloder_1, "train"):
                 dataloder_iterator = self.dataloder_1.train() if train else self.dataloder_1.test()
             else:
                 dataloder_iterator = self.dataloder_1
 
-            x_1 = sample_from_dataloader(dataloder_iterator, sample_size)
+            x_1 = sample_from_dataloader_iterator(dataloder_iterator, sample_size)
             return x_0,x_1
 
 

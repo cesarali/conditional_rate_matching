@@ -5,7 +5,7 @@ from conditional_rate_matching.configs.configs_classes.config_crm import CRMConf
 
 # data
 from conditional_rate_matching.data.dataloaders_utils import get_dataloaders
-from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
 
 # models
 from conditional_rate_matching.models.generative_models.crm import (
@@ -54,8 +54,8 @@ if __name__ == "__main__":
     marginal_histograms = (histogram0, torch.zeros_like(histogram0), histogram1, torch.zeros_like(histogram1))
     plot_marginals_binary_histograms(marginal_histograms)
 
-    X_0 = sample_from_dataloader(crm.dataloader_0.train(),sample_size=250).to(device)
-    X_1 = sample_from_dataloader(crm.dataloader_1.train(),sample_size=250).to(device)
+    X_0 = sample_from_dataloader_iterator(crm.dataloader_0.train(),sample_size=250).to(device)
+    X_1 = sample_from_dataloader_iterator(crm.dataloader_1.train(),sample_size=250).to(device)
     time_steps = torch.linspace(0.,1.,10).to(device)
 
     telegram_histograms_path,time_grid = telegram_bridge_sample_paths(crm,X_0,X_1,time_steps,histogram=True)

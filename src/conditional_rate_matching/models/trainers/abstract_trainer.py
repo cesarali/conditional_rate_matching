@@ -33,6 +33,8 @@ class TrainerState:
     number_of_test_step:int = 0
     number_of_training_steps:int = 0
 
+    all_training_loss:List[float] = field(default_factory=lambda:[])
+
     def set_average_test_loss(self):
         if len(self.test_loss) > 0:
             self.average_test_loss = np.asarray(self.test_loss).mean()
@@ -43,10 +45,11 @@ class TrainerState:
     def finish_epoch(self):
         self.test_loss = []
         self.train_loss = []
-
+        
     def update_training_batch(self,loss):
         self.train_loss.append(loss)
         self.number_of_training_steps += 1
+        self.all_training_loss.append(loss)
 
     def update_test_batch(self,loss):
         self.number_of_test_step += 1
@@ -216,6 +219,7 @@ class Trainer(ABC):
             "best_loss": training_state.best_loss,
             "training_loss":training_state.average_train_loss,
             "test_loss":training_state.average_test_loss,
+            "all_training_loss":training_state.all_training_loss,
         }
         if checkpoint:
             best_model_path_checkpoint = self.generative_model.experiment_files.best_model_path_checkpoint.format(epoch)

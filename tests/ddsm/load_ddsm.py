@@ -25,7 +25,7 @@ if __name__=="__main__":
 
     from conditional_rate_matching.configs.config_files import ExperimentFiles
 
-    from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader
+    from conditional_rate_matching.models.pipelines.sdes_samplers.samplers_utils import sample_from_dataloader_iterator
     from conditional_rate_matching.configs.experiments_configs.crm.crm_experiments_nist import experiment_nist
     from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalMLPConfig, TemporalDeepMLPConfig
     from conditional_rate_matching.data.image_dataloader_config import NISTLoaderConfig
@@ -34,7 +34,7 @@ if __name__=="__main__":
     configs = experiment_nist(temporal_network_name="unet_conv")
     configs.data1 = NISTLoaderConfig(flatten=False, as_image=True)
     training_dl, test_dl = get_data(configs.data1)
-    test_sample = sample_from_dataloader(training_dl, sample_size=max_test_size).to(torch.device(device))
+    test_sample = sample_from_dataloader_iterator(training_dl, sample_size=max_test_size).to(torch.device(device))
     test_sample = test_sample.view(-1,1,28,28)
 
     experiment_files = ExperimentFiles(experiment_name="ddsm",experiment_type="test",experiment_indentifier="1705070668")
