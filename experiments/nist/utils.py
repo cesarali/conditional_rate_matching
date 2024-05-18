@@ -119,25 +119,6 @@ def get_mnist_test_samples(trained_model,
 
     return torch.cat(images, dim=0)[:sample_size].to(device) #if labeled else torch.tensor(images, device=device)
 
-def generate_samples(path, 
-                     x_test,
-                     num_timesteps=100, 
-                     time_epsilon=0.0,
-                     device="cpu"):
-    
-    crm = CRM(experiment_dir=path, device=device)
-    crm.config.pipeline.time_epsilon = time_epsilon
-    crm.config.pipeline.num_intermediates = num_timesteps
-    crm.config.pipeline.number_of_steps = num_timesteps
-
-    x_1, x_t, t = crm.pipeline(x_test.shape[0], 
-                               return_intermediaries=True, 
-                               train=False, 
-                               x_0=x_test)
-    
-    x_1 = x_1.view(-1, 1, 28, 28)
-    x_t = x_t.view(-1, x_t.shape[1], 1, 28, 28)
-    return x_1, x_t, t
 
 def generate_mnist_samples(path,
                            num_timesteps=100,
@@ -212,14 +193,14 @@ def mnist_grid(sample, title='', save_path='.', num_img=5, nrow=8, figsize=(10,1
     plt.show()
 
 def mnist_noise_bridge(path, 
-                       x_input, 
+                       x0_input, 
                        num_timesteps=1000,  
                        time_epsilon=0.0,
                        num_img=5,
                        num_timesteps_displayed=20,
                        save_path=None):
     
-    img_1, img_hist, time_steps = generate_samples(path, x_input[:num_img], num_timesteps=num_timesteps,  time_epsilon=time_epsilon, device=x_input.device)
+    img_1, img_hist, time_steps = generate_samples(path, x0_input[:num_img], num_timesteps=num_timesteps,  time_epsilon=time_epsilon, device=x0_input.device)
     _, axs = plt.subplots(num_img, num_timesteps_displayed+2, figsize=(num_timesteps_displayed, num_img))
     N = img_hist.size(1)
     dt = N // num_timesteps_displayed
@@ -248,6 +229,25 @@ def mnist_noise_bridge(path,
     if save_path is None: plt.show()
     else: plt.savefig(save_path+'/bridge_example.png')
 
+def generate_samples(path, 
+                     x0_input,
+                     num_timesteps=100, 
+                     time_epsilon=0.0,
+                     device="cpu"):
+    
+    crm = CRM(experiment_dir=path, device=device)
+    crm.config.pipeline.time_epsilon = time_epsilon
+    crm.config.pipeline.num_intermediates = num_timesteps
+    crm.config.pipeline.number_of_steps = num_timesteps
+
+    x_1, x_t, t = crm.pipeline(x0_input.shape[0], 
+                               return_intermediaries=True, 
+                               train=False, 
+                               x_0=x0_input)
+    
+    x_1 = x_1.view(-1, 1, 28, 28)
+    x_t = x_t.view(-1, x_t.shape[1], 1, 28, 28)
+    return x_1, x_t, t
 
 def get_fid(x_1, x_test, save_path=None):
     fids = fid_nist(x_1, x_test, 'mnist', x_1.device)
@@ -266,3 +266,5 @@ def get_nist_metrics(x_1, x_test, save_path=None):
         with open(metrics_path, 'w') as f:
             f.write(str(metrics))
     return metrics
+
+

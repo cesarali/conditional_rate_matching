@@ -17,7 +17,7 @@ def run_graph_analysis(experiment_dir,
                       experiment_name,
                       num_timesteps = 100,
                       time_epsilon = None,
-                      num_img_bridge = 6, 
+                      num_graph_bridge = 6, 
                       num_intermediate_bridge = 20,
                       device="cpu",
                       overwrite=False):
@@ -149,25 +149,6 @@ def get_mnist_test_samples(trained_model,
 
     return torch.cat(images, dim=0)[:sample_size].to(device) #if labeled else torch.tensor(images, device=device)
 
-def generate_samples(path, 
-                     x_test,
-                     num_timesteps=100, 
-                     time_epsilon=0.0,
-                     device="cpu"):
-    
-    crm = CRM(experiment_dir=path, device=device)
-    crm.config.pipeline.time_epsilon = time_epsilon
-    crm.config.pipeline.num_intermediates = num_timesteps
-    crm.config.pipeline.number_of_steps = num_timesteps
-
-    x_1, x_t, t = crm.pipeline(x_test.shape[0], 
-                               return_intermediaries=True, 
-                               train=False, 
-                               x_0=x_test)
-    
-    x_1 = x_1.view(-1, 1, 28, 28)
-    x_t = x_t.view(-1, x_t.shape[1], 1, 28, 28)
-    return x_1, x_t, t
 
 def generate_mnist_samples(path,
                            num_timesteps=100,

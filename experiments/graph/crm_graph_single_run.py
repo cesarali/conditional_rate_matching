@@ -74,7 +74,7 @@ def CRM_single_run(experiment_name="graph",
     if dataset0 == "community": crm_config.data0 = CommunitySmallConfig(flatten=flatten, as_image=False, full_adjacency=full_adj, batch_size=batch_size)
     elif dataset0 == "ego": crm_config.data0 = EgoConfig(flatten=flatten, as_image=False, full_adjacency=full_adj, batch_size=batch_size)
     elif dataset0 == "grid": crm_config.data0 = GridConfig(flatten=flatten, as_image=False, full_adjacency=full_adj, batch_size=batch_size)
-    else: crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.0, batch_size=batch_size)
+    else: crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=10.0, batch_size=batch_size)
 
     if dataset1 == "community": crm_config.data1 = CommunitySmallConfig(flatten=flatten, as_image=False, full_adjacency=full_adj, batch_size=batch_size)
     elif dataset1 == "ego": crm_config.data1 = EgoConfig(flatten=flatten, as_image=False, full_adjacency=full_adj, batch_size=batch_size)
