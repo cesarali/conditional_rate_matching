@@ -169,12 +169,12 @@ if __name__ == "__main__":
     #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
     #config.trainer.debug = True
     #config.temporal_network = TemporalScoreNetworkAConfig(num_layers=2,num_heads=4,depth=3)
-    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",method="log",normalize_cost=True)
+    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
 
     config.trainer.max_test_size = 100 
 
     config.pipeline.set_diagonal = False
-    config.thermostat.gamma = 0.1
+    config.thermostat.gamma = 0.01
     config.trainer.learning_rate = 1e-3
     config.pipeline.number_of_steps = 100
     config.trainer.loss_regularize_variance = False
