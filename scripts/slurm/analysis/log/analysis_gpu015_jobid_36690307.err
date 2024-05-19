@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/cache/home/df630/conditional_rate_matching/experiments/nist/analysis_nist.py", line 17, in <module>
+    run_nist_analysis(arg.experiment,
+TypeError: run_nist_analysis() missing 1 required positional argument: 'experiment_name'

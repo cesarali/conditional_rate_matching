@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Directory containing the folders
-DIRECTORY="/home/df630/conditional_rate_matching/results/crm/images"
+DIRECTORY="/scratch/df630/conditional_rate_matching/results/crm/images"
+#DIRECTORY="/home/df630/conditional_rate_matching/results/crm/images"
 
 # Loop over each folder in the directory
 for folder in "$DIRECTORY"/*; do
