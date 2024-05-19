@@ -45,7 +45,7 @@ class OTPlanSampler:
         if method == "exact":
             self.ot_fn = pot.emd
         elif method == "sinkhorn":
-            self.ot_fn = partial(pot.sinkhorn, reg=reg)
+            self.ot_fn = partial(pot.bregman.sinkhorn_stabilized, reg=reg, tau=1e3, stopThr=1e-9)
         elif method == "unbalanced":
             self.ot_fn = partial(pot.unbalanced.sinkhorn_knopp_unbalanced, reg=reg, reg_m=reg_m)
         elif method == "partial":

@@ -65,7 +65,9 @@ class CRM:
             B = self.forward_rate.log_cost_regularizer()
             B = B.item() if isinstance(B,torch.Tensor) else B
             self.config.optimal_transport.method = "sinkhorn"
-            self.config.optimal_transport.reg = 1./B
+            reg = 1./B
+            print("OT regularizer for Schrodinger Plan {0}".format(reg))
+            self.config.optimal_transport.reg = reg
 
         self.op_sampler = OTPlanSampler(**asdict(self.config.optimal_transport))
 

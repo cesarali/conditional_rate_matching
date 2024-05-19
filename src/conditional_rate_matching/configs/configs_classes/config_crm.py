@@ -64,7 +64,6 @@ class OptimalTransportSamplerConfig:
         if self.cost == "log":
             self.method = "sinkhorn"
 
-
 @dataclass
 class BasicPipelineConfig:
     name:str="BasicPipeline"
