@@ -1,12 +1,12 @@
 #!/bin/bash
-sources=("fashion" "noise" "emnist")   
+sources=("noise" "fashion" "emnist")   
 targets=("mnist") 
 models=("unet")
-couplings=("uniform")
+couplings=("OTl2")
 thermostats=("Constant")
-gammas=(0.001 0.005)
-epochs=500
-timesteps=500
+gammas=(0.001 0.005 0.01 0.05 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.25 1.5 1.75 2.0 2.5 3.0 3.5 4.0 4.5 5.0)
+epochs=100
+timesteps=100
 #
 for source in "${sources[@]}"
 do
