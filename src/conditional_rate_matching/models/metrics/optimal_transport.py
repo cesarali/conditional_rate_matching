@@ -19,6 +19,7 @@ class OTPlanSampler:
         reg: float = 0.05,
         reg_m: float = 1.0,
         normalize_cost: bool = False,
+        normalize_cost_constant:float = 1.,
         warn: bool = True,
     ) -> None:
         """Initialize the OTPlanSampler class.
@@ -45,7 +46,7 @@ class OTPlanSampler:
         if method == "exact":
             self.ot_fn = pot.emd
         elif method == "sinkhorn":
-            self.ot_fn = partial(pot.sinkhorn, reg=reg)
+            self.ot_fn = partial(pot.bregman.sinkhorn_stabilized, reg=reg, tau=1e3, stopThr=1e-9)
         elif method == "unbalanced":
             self.ot_fn = partial(pot.unbalanced.sinkhorn_knopp_unbalanced, reg=reg, reg_m=reg_m)
         elif method == "partial":
@@ -56,6 +57,7 @@ class OTPlanSampler:
         self.reg_m = reg_m
         self.normalize_cost = normalize_cost
         self.warn = warn
+        self.normalize_cost_constant = normalize_cost_constant
 
     def get_map(self, x0, x1,cost=None):
         """Compute the OT plan (wrt squared Euclidean cost) between a source and a target
@@ -86,7 +88,7 @@ class OTPlanSampler:
             M = cost
 
         if self.normalize_cost:
-            M = M / M.max()  # should not be normalized when using minibatches
+            M = M / self.normalize_cost_constant  # should not be normalized when using minibatches
 
         p = self.ot_fn(a, b, M.detach().cpu().numpy())
         if not np.all(np.isfinite(p)):

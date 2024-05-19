@@ -63,12 +63,12 @@ class OptimalTransportSamplerConfig:
     reg: float = 0.05
     reg_m: float = 1.0
     normalize_cost: bool = False
+    normalize_cost_constant: float = 1.
     warn: bool = True
 
     def __post_init__(self):
         if self.cost == "log":
             self.method = "sinkhorn"
-
 
 @dataclass
 class BasicPipelineConfig:

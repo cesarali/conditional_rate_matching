@@ -10,7 +10,7 @@ from conditional_rate_matching.models.temporal_networks.temporal_networks_utils 
 from conditional_rate_matching.models.networks.conditional_networks_utils import get_conditional_network
 from conditional_rate_matching.utils.integration import integrate_quad_tensor_vec
 from conditional_rate_matching.models.temporal_networks.ema import EMA
-
+from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat import ConstantThermostat
 from typing import Union,Tuple,List
 from functools import reduce
 from torch.distributions import Categorical
@@ -321,7 +321,10 @@ class ClassificationForwardRate(EMA,nn.Module):
         """
         Dummy integral for constant rate
         """
-        integral = integrate_quad_tensor_vec(self.thermostat, t0, t1, 100)
+        if isinstance(self.thermostat,ConstantThermostat):
+            integral = (t1 - t0)*self.thermostat.gamma
+        else:
+            integral = integrate_quad_tensor_vec(self.thermostat, t0, t1, 100)
         return integral
 
     def where_to_go_x(self, x):
@@ -353,7 +356,7 @@ class ClassificationForwardRate(EMA,nn.Module):
         batch_size = x0.shape[0]
         x0 = x0.repeat_interleave(batch_size,0)
         x1 = x1.repeat((batch_size,1))
-        cost = (x1 == x0).sum(axis=1).reshape(batch_size,batch_size)
+        cost = (x1 == x0).sum(axis=1).reshape(batch_size,batch_size).float()
         return -cost
     
     #======================================================================
