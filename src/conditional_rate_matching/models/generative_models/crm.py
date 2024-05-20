@@ -35,6 +35,7 @@ class CRM:
     op_sampler: OTPlanSampler = None
     pipeline:CRMPipeline = None
     device: torch.device = None
+    image_data_path: str = None
 
     def __post_init__(self):
         self.loss = nn.CrossEntropyLoss(reduction='none')
@@ -42,7 +43,7 @@ class CRM:
             self.pipeline = CRMPipeline(self.config, self.forward_rate, self.dataloader_0, self.dataloader_1)
         else:
             if self.experiment_dir is not None:
-                self.load_from_experiment(self.experiment_dir,self.device)
+                self.load_from_experiment(self.experiment_dir,self.device,self.image_data_path)
             elif self.config is not None:
                 self.initialize_from_config(config=self.config,device=self.device)
 
@@ -73,7 +74,7 @@ class CRM:
 
         self.op_sampler = OTPlanSampler(**asdict(self.config.optimal_transport))
 
-    def load_from_experiment(self,experiment_dir,device=None):
+    def load_from_experiment(self,experiment_dir,device=None,set_data_path=None):
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
         results_ = self.experiment_files.load_results()
 
@@ -83,7 +84,9 @@ class CRM:
         if hasattr(config_path_json,"delete"):
             config_path_json["delete"] = False
         self.config = CRMConfig(**config_path_json)
-
+        if set_data_path is not None:
+            self.config.data1.data_dir = set_data_path
+            self.config.data0.data_dir = set_data_path
         if device is None:
             self.device = torch.device(self.config.trainer.device) if torch.cuda.is_available() else torch.device("cpu")
         else:

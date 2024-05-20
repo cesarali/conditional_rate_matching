@@ -57,7 +57,6 @@ def CRM_single_run(dynamics="crm",
     elif model=="transformer":
         pass
 
-
     if thermostat == "log": crm_config.thermostat = LogThermostatConfig(time_exponential=thermostat_time_exponential, time_base=thermostat_time_base,)
     else: crm_config.thermostat = ConstantThermostatConfig(gamma=gamma)
 
