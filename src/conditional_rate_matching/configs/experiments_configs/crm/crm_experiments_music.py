@@ -54,15 +54,16 @@ if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     from conditional_rate_matching.models.temporal_networks.temporal_networks_config import SequenceTransformerConfig
 
-    config = experiment_music_conditional_config(200, temporal_network_name="transformer")
+    config = experiment_music_conditional_config(20, temporal_network_name="transformer")
 
     config.temporal_network = SequenceTransformerConfig(num_layers=5,num_heads=4)
     config.trainer.debug = False
-    config.trainer.device = "cuda:0"
+    config.trainer.device = "cuda:2"
 
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 
     call_trainer(config,
-                 experiment_name="test_piano_roll_transformer",
+                 experiment_name="test_piano_roll_transformer_1",
                  experiment_type="crm_music",
-                 experiment_indentifier="dario")
+                 experiment_indentifier="dario"
+                 )

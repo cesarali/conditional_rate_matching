@@ -59,7 +59,7 @@ class CRMTrainerConfig(BasicTrainerConfig):
 class OptimalTransportSamplerConfig:
     name: str = "uniform" # uniform,OTPlanSampler
     method: str = "exact" 
-    cost: str = "log" #log, None
+    cost: str = None #log, None
     reg: float = 0.05
     reg_m: float = 1.0
     normalize_cost: bool = False

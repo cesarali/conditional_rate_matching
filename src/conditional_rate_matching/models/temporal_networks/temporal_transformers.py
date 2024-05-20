@@ -105,7 +105,9 @@ class PositionalEncoding(nn.Module):
         Args:
             x: Tensor, shape [batch_size, seq_len, embedding_dim]
         """
+        self.pe = self.pe.to(x.device)
         x = x + self.pe[:, 0:x.size(1), :]
+
         return self.dropout(x)
 
 
@@ -292,7 +294,6 @@ class SequenceTransformer(nn.Module):
         """
         B, D = x.shape
         S = self.S
-
         logits = self.net(x.long(), times.long()) # (B, D, S)
-
-        return logits
+        
+        return logits.to(x.device)
