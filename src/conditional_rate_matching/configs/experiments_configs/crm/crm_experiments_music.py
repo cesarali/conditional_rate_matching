@@ -8,7 +8,7 @@ from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvalia
 from conditional_rate_matching.models.networks.mlp_config import MLPConfig
 
 def experiment_music_config(epochs=100, temporal_network_name="unet"):
-    batch_size = 32
+    batch_size = 128
     config = CRMConfig()
     config.data0 = LakhPianoRollConfig(dirichlet_alpha=100., batch_size=batch_size)
     config.data1 = config.data0
@@ -22,7 +22,7 @@ def experiment_music_config(epochs=100, temporal_network_name="unet"):
     config.temporal_network = TemporalDeepMLPConfig()
     return config
 
-def experiment_music_conditional_config(epochs=100,temporal_network_name="transformer",bridge_conditional=False):
+def experiment_music_conditional_config(epochs=100,temporal_network_name="transformer", bridge_conditional=False):
     batch_size = 128
     config = CRMConfig()
     config.data0 = LakhPianoRollConfig(batch_size=batch_size,
@@ -42,10 +42,7 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
     config.trainer = CRMTrainerConfig(
         number_of_epochs=epochs,
         learning_rate=1e-4,
-        metrics=[MetricsAvaliable.hellinger_distance,
-                 MetricsAvaliable.music_plot,
-                 MetricsAvaliable.outliers]
-    )
+        metrics=[ MetricsAvaliable.music_plot])
     config.pipeline = BasicPipelineConfig(number_of_steps=5)
     return config
 
@@ -54,7 +51,7 @@ if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     from conditional_rate_matching.models.temporal_networks.temporal_networks_config import SequenceTransformerConfig
 
-    config = experiment_music_conditional_config(20, temporal_network_name="transformer")
+    config = experiment_music_conditional_config(100, temporal_network_name="transformer")
 
     config.temporal_network = SequenceTransformerConfig(num_layers=5,num_heads=4)
     config.trainer.debug = False
@@ -63,7 +60,6 @@ if __name__=="__main__":
     #config.trainer.metrics.append(MetricsAvaliable.loss_variance_times)
 
     call_trainer(config,
-                 experiment_name="test_piano_roll_transformer_1",
-                 experiment_type="crm_music",
-                 experiment_indentifier="dario"
-                 )
+                 experiment_name="test_piano_roll_transformer",
+                 experiment_type="crm",
+                 experiment_indentifier=None)

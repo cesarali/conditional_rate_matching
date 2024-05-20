@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep 5h
 sources=("noise" "fashion" "emnist")   
 targets=("mnist") 
 models=("unet")
