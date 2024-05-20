@@ -31,8 +31,8 @@ def get_conditional_data(train_data,test_data,config:LakhPianoRollConfig):
     config.sample_size = config.total_data_size
     config.bernoulli_probability = None
 
-    training_noise,test_noise = sample_categorical_from_dirichlet(config=config,
-                                                                  return_tensor_samples=True)
+    training_noise,test_noise, _ = sample_categorical_from_dirichlet(config=config,
+                                                                     return_tensor_samples=True)
 
     assert training_noise.shape[0] == train_data.shape[0]
     assert test_noise.shape[0] == test_data.shape[0]
