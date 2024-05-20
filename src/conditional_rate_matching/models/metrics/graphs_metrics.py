@@ -16,7 +16,7 @@ from conditional_rate_matching.models.metrics.mmd2 import (
     process_tensor,
 )
 
-PRINT_TIME = True
+PRINT_TIME = False
 
 """
 g++ -O2 -std=c++11 -o orca_berlin orca_berlin.cpp -static-libstdc++ -static-libgcc
@@ -89,7 +89,7 @@ def degree_stats(graph_ref_list, graph_pred_list, windows=True, orca_dir=None, i
         for i in range(len(graph_pred_list_remove_empty)):
             degree_temp = np.array(nx.degree_histogram(graph_pred_list_remove_empty[i]))
             sample_pred.append(degree_temp)
-    print(len(sample_ref), len(sample_pred))
+    # print(len(sample_ref), len(sample_pred))
     mmd_dist = compute_mmd(sample_ref, sample_pred, kernel=gaussian_emd)
     elapsed = datetime.now() - prev
     if PRINT_TIME:
@@ -420,7 +420,7 @@ def eval_graph_list(graph_ref_list, grad_pred_list, methods=None, windows=True, 
         except Exception as e:
             print('>>> ', e)
             continue
-        print('>>> ', results)
+        # print('>>> ', results)
     return results
 
 
