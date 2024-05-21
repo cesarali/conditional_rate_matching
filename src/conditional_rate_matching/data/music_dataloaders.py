@@ -81,6 +81,9 @@ class LankhPianoRollDataloader:
         self.number_of_spins = self.music_config.dimensions
 
         train_data,test_data,descramble_key = get_data(music_config)
+        training_size = train_data.shape[0]
+        test_size = train_data.shape[0]
+        
         if self.music_config.conditional_model:
             data_1, data_0 = get_conditional_data(train_data,test_data,self.music_config)
             self.create_conditional_dataloaders(data_1,data_0)
