@@ -54,8 +54,8 @@ def hellinger_distance(generative,original,config:CRMConfig):
 
 
 def outlier_per_song(generated_song_notes, real_song_notes,config):
-    notes_in_generated_song = set(generated_song_notes.detach().numpy())
-    notes_in_real_song = set(real_song_notes.detach().numpy())
+    notes_in_generated_song = set(generated_song_notes.detach().cpu().numpy())
+    notes_in_real_song = set(real_song_notes.detach().cpu().numpy())
 
     notes_in_generated_not_in_real = notes_in_generated_song - notes_in_real_song
     number_of_notes_not = len(notes_in_generated_not_in_real)
