@@ -5,10 +5,9 @@
 #SBATCH --nodes=1                    # Number of nodes you require
 #SBATCH --ntasks=1                   # Total number of tasks across all nodes
 #SBATCH --cpus-per-task=1            # Cores per task
-#SBATCH --mem=16G                    # Real memory required
-#SBATCH --time=23:00:00              # Total run time limit
+#SBATCH --mem=10G                    # Real memory required
+#SBATCH --time=5:00:00              # Total run time limit
 #SBATCH --gres=gpu:1             
-#SBATCH --nodelist=gpu015,gpu016,gpu[019-026]  # Request specific nodes
 #SBATCH --output=/scratch/df630/log/music/train/%x_%N_jobid_%j.out                                # STDOUT output file
 #SBATCH --error=/scratch/df630/log/music/train/%x_%N_jobid_%j.err                                 # STDERR output file
 
