@@ -78,6 +78,7 @@ class CRM:
         self.experiment_files = ExperimentFiles(experiment_dir=experiment_dir)
         results_ = self.experiment_files.load_results()
 
+        
         self.forward_rate = results_["model"]
 
         config_path_json = json.load(open(self.experiment_files.config_path, "r"))
@@ -113,7 +114,7 @@ class CRM:
     def align_configs(self):
         pass
 
-    def sample_pair(self,batch_1, batch_0,device:torch.device,seed=1980):
+    def sample_pair(self,batch_1, batch_0,device:torch.device,seed=120):
         x1,x0 = uniform_pair_x0_x1(batch_1, batch_0, device=torch.device("cpu"))
         x1 = x1.float()
         x0 = x0.float()
@@ -129,8 +130,8 @@ class CRM:
                 with torch.no_grad():
                     cost = self.forward_rate.log_cost(x0,x1)
 
-            torch.manual_seed(seed)
-            np.random.seed(seed)
+            # torch.manual_seed(seed)
+            # np.random.seed(seed)
             x0, x1 = self.op_sampler.sample_plan(x0, x1, replace=False,cost=cost)
 
         x0 = x0.to(self.device)

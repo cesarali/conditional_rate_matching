@@ -54,6 +54,9 @@ class CRMTrainerConfig(BasicTrainerConfig):
     loss_regularize_variance:bool = False
     loss_regularize:bool = False
     loss_regularize_square:bool = False
+    max_iterations:int = 1000000
+    warm_up:int=0
+    
 
 @dataclass
 class OptimalTransportSamplerConfig:
@@ -67,8 +70,12 @@ class OptimalTransportSamplerConfig:
     warn: bool = True
 
     def __post_init__(self):
+        if self.name == "uniform":
+            self.cost = None
+            
         if self.cost == "log":
             self.method = "sinkhorn"
+        
 
 @dataclass
 class BasicPipelineConfig:

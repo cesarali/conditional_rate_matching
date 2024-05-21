@@ -32,13 +32,16 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
 
     # ensure we have the probabilites
     if probs is None:
-        if isinstance(alpha, float):
-            alpha = torch.full((vocab_size,), alpha)
+        if alpha is not None:
+            if isinstance(alpha, float):
+                alpha = torch.full((vocab_size,), alpha)
+            else:
+                assert len(alpha.shape) == 1
+                assert alpha.size(0) == vocab_size
+                # Sample from the Dirichlet distribution
+            probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
         else:
-            assert len(alpha.shape) == 1
-            assert alpha.size(0) == vocab_size
-        # Sample from the Dirichlet distribution
-        probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
+            probs = torch.ones((dimensions,vocab_size))*1./vocab_size
     else:
         if isinstance(probs,(np.ndarray,list)):
             probs = torch.Tensor(probs)
@@ -123,13 +126,16 @@ def set_probabilities(config:StatesDataloaderConfig,return_tensor_samples=False)
 
     # ensure we have the probabilites
     if probs is None:
-        if isinstance(alpha, float):
-            alpha = torch.full((vocab_size,), alpha)
+        if alpha is not None:
+            if isinstance(alpha, float):
+                alpha = torch.full((vocab_size,), alpha)
+            else:
+                assert len(alpha.shape) == 1
+                assert alpha.size(0) == vocab_size
+                # Sample from the Dirichlet distribution
+            probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
         else:
-            assert len(alpha.shape) == 1
-            assert alpha.size(0) == vocab_size
-        # Sample from the Dirichlet distribution
-        probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
+            probs = torch.ones((dimensions,vocab_size))*1./vocab_size
     else:
         if isinstance(probs,(np.ndarray,list)):
             probs = torch.Tensor(probs)
@@ -211,10 +217,9 @@ class StatesDataloader:
         """ Returns a DataLoader for the testing dataset. """
         return self.test_dataloader
 
-
 if __name__=="__main__":
     from  conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
-    data_config = StatesDataloaderConfig()
+    data_config = StatesDataloaderConfig(bernoulli_probability=None,dirichlet_alpha=None)
     dataloader = StatesDataloader(data_config)
     databatch = next(dataloader.train().__iter__())
     x_ = databatch

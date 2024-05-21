@@ -14,7 +14,7 @@ class StatesDataloaderConfig:
 
     max_test_size: int = None
     sample_size :int = None
-    dirichlet_alpha :float = 100.
+    dirichlet_alpha :float = None
     bernoulli_probability:float = None
 
     dimensions: int = 4

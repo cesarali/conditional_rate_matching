@@ -336,7 +336,7 @@ class ClassificationForwardRate(EMA,nn.Module):
     def log_cost_regularizer(self):
         S = self.vocab_size
         beta_integral_ = self.beta_integral(torch.Tensor([1.]), torch.Tensor([0.]))
-        w_10 = torch.exp(- S* beta_integral_)
+        w_10 = torch.exp(- float(S)* beta_integral_)
         A = torch.log(1./S + w_10*(-1./S))
         B = torch.log(1./S + w_10*(-1./S + 1.)) - A
         return B
