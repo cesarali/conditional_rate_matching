@@ -112,12 +112,11 @@ def TauLeaping(config:Union[DSBConfig,CTDDConfig,CRMConfig],
             overall_jump = torch.sum(adj_diffs, dim=2)
             xp = x + overall_jump
             x_new = torch.clamp(xp, min=0, max=S-1)
-
             x = x_new
 
-        # last step ------------------------------------------------
-        if conditional_tau_leaping:
-            x[:,0:conditional_dimension] = conditioner
+            # last step ------------------------------------------------
+            if conditional_tau_leaping:
+                x[:,0:conditional_dimension] = conditioner
 
         p_0gt = rate_model(x, min_t * torch.ones((number_of_paths,), device=device)) # (N, D, S)
         x_0max = torch.max(p_0gt, dim=2)[1]
