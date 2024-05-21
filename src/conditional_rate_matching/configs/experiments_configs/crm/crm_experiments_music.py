@@ -40,7 +40,7 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
     if temporal_network_name == "transformer":
         config.temporal_network = SequenceTransformerConfig()
 
-    config.optimal_transport = OptimalTransportSamplerConfig(meth)
+    config.optimal_transport = OptimalTransportSamplerConfig()
     config.trainer = CRMTrainerConfig(
         number_of_epochs=epochs,
         learning_rate=1e-4,
@@ -67,4 +67,4 @@ if __name__=="__main__":
     call_trainer(config,
                  experiment_name="prenzlauer_experiment",
                  experiment_type="crm_music",
-                 experiment_indentifier="dario")
+                 experiment_indentifier=None)

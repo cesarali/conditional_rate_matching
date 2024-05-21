@@ -39,7 +39,7 @@ def sample_categorical_from_dirichlet(config:StatesDataloaderConfig,return_tenso
                 assert len(alpha.shape) == 1
                 assert alpha.size(0) == vocab_size
                 # Sample from the Dirichlet distribution
-                probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
+            probs = torch.distributions.Dirichlet(alpha).sample([dimensions])
         else:
             probs = torch.ones((dimensions,vocab_size))*1./vocab_size
     else:
