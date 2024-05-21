@@ -50,7 +50,7 @@ def experiment_comunity_small(number_of_epochs=300, berlin=True, network="mlp", 
     crm_config = CRMConfig()
     crm_config.pipeline.number_of_steps = 1000
 
-    crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.0, batch_size=20)
+    crm_config.data0 = StatesDataloaderConfig(batch_size=20)
     crm_config.trainer = CRMTrainerConfig(
         number_of_epochs=number_of_epochs,
         windows=berlin,

@@ -67,8 +67,12 @@ class OptimalTransportSamplerConfig:
     warn: bool = True
 
     def __post_init__(self):
+        if self.name == "uniform":
+            self.cost = None
+            
         if self.cost == "log":
             self.method = "sinkhorn"
+        
 
 @dataclass
 class BasicPipelineConfig:
