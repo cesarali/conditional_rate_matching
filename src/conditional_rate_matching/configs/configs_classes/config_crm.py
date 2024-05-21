@@ -49,6 +49,9 @@ class CRMTrainerConfig(BasicTrainerConfig):
     loss_regularize_variance:bool = False
     loss_regularize:bool = False
     loss_regularize_square:bool = False
+    max_iterations:int = 1000000
+    warm_up:int=0
+    
 
 @dataclass
 class OptimalTransportSamplerConfig:

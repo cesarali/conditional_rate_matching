@@ -67,7 +67,8 @@ class CRMTrainer(Trainer):
         self.optimizer = Adam(self.generative_model.forward_rate.parameters(),
                               lr=self.config.trainer.learning_rate,
                               weight_decay=self.config.trainer.weight_decay)
-
+        
+        self.lr = self.config.trainer.learning_rate
         self.scheduler = None
 
         self.loss_stats = {}
@@ -167,6 +168,10 @@ class CRMTrainer(Trainer):
         loss.backward()
         if self.config.trainer.clip_grad:
             torch.nn.utils.clip_grad_norm_(self.generative_model.forward_rate.parameters(), self.config.trainer.clip_max_norm)
+
+        if self.config.trainer.warm_up > 0:
+            for g in self.optimizer.param_groups:
+                g['lr'] = self.lr * np.minimum(float(number_of_training_step) / self.config.trainer.warm_up, 1.0)
 
         self.optimizer.step()
 

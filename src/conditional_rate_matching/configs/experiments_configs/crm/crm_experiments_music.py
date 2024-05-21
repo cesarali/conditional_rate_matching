@@ -46,7 +46,8 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
         learning_rate=1e-4,
         metrics=[MetricsAvaliable.hellinger_distance,
                  MetricsAvaliable.music_plot,
-                 MetricsAvaliable.outliers]
+                 MetricsAvaliable.outliers],
+        warm_up=5,
     )
     config.pipeline = BasicPipelineConfig(number_of_steps=5)
     return config
