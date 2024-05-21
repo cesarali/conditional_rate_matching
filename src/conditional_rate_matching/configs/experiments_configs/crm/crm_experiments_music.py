@@ -1,5 +1,7 @@
+
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import TemporalDeepMLPConfig
 from conditional_rate_matching.configs.configs_classes.config_crm import CRMConfig, CRMTrainerConfig, BasicPipelineConfig
+from conditional_rate_matching.configs.configs_classes.config_crm import OptimalTransportSamplerConfig
 from conditional_rate_matching.data.states_dataloaders_config import StatesDataloaderConfig
 
 from conditional_rate_matching.models.temporal_networks.temporal_networks_config import SequenceTransformerConfig
@@ -38,7 +40,7 @@ def experiment_music_conditional_config(epochs=100,temporal_network_name="transf
     if temporal_network_name == "transformer":
         config.temporal_network = SequenceTransformerConfig()
 
-
+    config.optimal_transport = OptimalTransportSamplerConfig(meth)
     config.trainer = CRMTrainerConfig(
         number_of_epochs=epochs,
         learning_rate=1e-4,

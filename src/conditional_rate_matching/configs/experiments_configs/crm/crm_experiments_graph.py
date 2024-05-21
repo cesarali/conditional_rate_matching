@@ -50,7 +50,7 @@ def experiment_comunity_small(number_of_epochs=300, berlin=True, network="mlp", 
     crm_config = CRMConfig()
     crm_config.pipeline.number_of_steps = 1000
 
-    crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.0, batch_size=20)
+    crm_config.data0 = StatesDataloaderConfig(batch_size=20)
     crm_config.trainer = CRMTrainerConfig(
         number_of_epochs=number_of_epochs,
         windows=berlin,
@@ -84,7 +84,7 @@ def experiment_comunity_small(number_of_epochs=300, berlin=True, network="mlp", 
 def experiment_grid(number_of_epochs=300, berlin=True, network="mlp", temporal_to_rate=None):
     crm_config = CRMConfig()
     crm_config.temporal_network_to_rate = 0.1
-    crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.,batch_size=20)
+    crm_config.data0 = StatesDataloaderConfig(batch_size=20)
 
     crm_config.trainer = CRMTrainerConfig(
         number_of_epochs=number_of_epochs,
@@ -119,7 +119,7 @@ def experiment_grid(number_of_epochs=300, berlin=True, network="mlp", temporal_t
 def experiment_enzymes(number_of_epochs=300, berlin=True, network="mlp", temporal_to_rate=None):
     crm_config = CRMConfig()
     crm_config.temporal_network_to_rate = 0.1
-    crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=100.,batch_size=20)
+    crm_config.data0 = StatesDataloaderConfig(dirichlet_alpha=None,batch_size=20)
 
     crm_config.trainer = CRMTrainerConfig(
         number_of_epochs=number_of_epochs,
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     #config.trainer.metrics.append(MetricsAvaliable.graphs_metrics)
     #config.trainer.debug = True
     #config.temporal_network = TemporalScoreNetworkAConfig(num_layers=2,num_heads=4,depth=3)
-    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler",cost="log")
+    config.optimal_transport = OptimalTransportSamplerConfig(name="uniform")
 
     config.trainer.max_test_size = 100 
 
