@@ -61,26 +61,14 @@ if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     from conditional_rate_matching.models.temporal_networks.temporal_networks_config import SequenceTransformerConfig
 
-    config = experiment_music_conditional_config(epochs=1000, temporal_network_name="transformer", gamma=1./129., number_of_steps=1000)
+    config = experiment_music_conditional_config(epochs=10000, temporal_network_name="transformer", gamma=0.003, number_of_steps=1000)
     config.temporal_network = SequenceTransformerConfig(num_layers=6,num_heads=8)
     config.trainer.debug = False
-    config.trainer.device = "cuda:3"
+    config.trainer.device = "cuda:0"
     config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler", method='sinkhorn', cost='log')
 
     call_trainer(config,
-                 experiment_name="test_piano_roll_transformer_1k_epochs_OTlog",
+                 experiment_name="test_piano_roll_transformer_10k_epochs_OTlog_gamma_0.003",
                  experiment_type="crm",
                  experiment_indentifier=None)
     
-
-    config = experiment_music_conditional_config(epochs=1000, temporal_network_name="transformer", gamma=1./129., number_of_steps=1000)
-    config.temporal_network = SequenceTransformerConfig(num_layers=8,num_heads=16)
-    config.trainer.debug = False
-    config.trainer.device = "cuda:3"
-    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler", cost=None)
-
-    call_trainer(config,
-                 experiment_name="test_piano_roll_transformer_1k_epochs_OTlog_Large",
-                 experiment_type="crm",
-                 experiment_indentifier=None)
-

@@ -1,10 +1,10 @@
 #!/bin/bash
-sources=("noise" "fashion" "emnist")   
+sources=("fashion" "noise" "emnist")   
 targets=("mnist") 
 models=("unet")
-couplings=("uniform" "OTlog" "OTl2")
+couplings=("OTlog" "OTl2")
 thermostats=("Constant")
-gammas=(0.001 0.005 0.01 0.05 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.25 1.5 1.75 2.0 2.5 3.0 3.5 4.0)
+gammas=(0.01 0.05 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.25 1.5 1.75 2.0)
 epochs=100
 timesteps=100
 #

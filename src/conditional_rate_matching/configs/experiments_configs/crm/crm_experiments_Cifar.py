@@ -6,13 +6,16 @@ from conditional_rate_matching.models.metrics.metrics_utils import MetricsAvalia
 from conditional_rate_matching.models.pipelines.thermostat.crm_thermostat_config import ConstantThermostatConfig
                                                                                          
 
-def experiment_cifar10_config(epochs=100, gamma=0.01):
+def experiment_cifar10_config(epochs=100, gamma=1.0):
     batch_size = 128
     config = CRMConfig()
     config.data0 = StatesDataloaderConfig(dirichlet_alpha=100., batch_size=batch_size, max_test_size=None)
     config.data1 = DiscreteCIFAR10Config(batch_size=batch_size)
     config.trainer = CRMTrainerConfig(number_of_epochs=epochs,
                                       learning_rate=2e-4,
+                                      clip_grad = True,
+                                        clip_max_norm=1.0,
+                                        warm_up=5000,
                                       metrics=[]
                                       )
     config.pipeline = BasicPipelineConfig(number_of_steps=1000)
@@ -30,7 +33,7 @@ def experiment_cifar10_config(epochs=100, gamma=0.01):
                                                     time_scale_factor=1000,
                                                     ema_decay=0.9999)
     # config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="empty")
-    config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="logistic")
+    config.temporal_network_to_rate = TemporalNetworkToRateConfig(type_of="linear")
     config.thermostat=ConstantThermostatConfig(gamma=gamma)
 
     return config
@@ -40,11 +43,11 @@ if __name__=="__main__":
     
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     
-    config = experiment_cifar10_config(epochs=1000, gamma=0.001)
+    config = experiment_cifar10_config(epochs=1000, gamma=0.0039)
     config.trainer.debug = False
     config.trainer.device = "cuda:0"
     call_trainer(config,
-                 experiment_name="cifar10_gamma_0.001_logistic",
+                 experiment_name="cifar10_gamma_optimal",
                  experiment_type="crm",
                  experiment_indentifier=None)
     
