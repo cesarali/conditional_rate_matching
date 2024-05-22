@@ -39,6 +39,6 @@ class BasicTrainerConfig:
                                                         "categorical_histograms"])
     def __post_init__(self):
         self.berlin = self.windows
-        self.save_model_epochs = int(.5*self.number_of_epochs)
+        # self.save_model_epochs = int(.5*self.number_of_epochs)
         self.save_metric_epochs = self.number_of_epochs - 1
         self.save_model_test_stopping = not self.save_model_metrics_stopping
