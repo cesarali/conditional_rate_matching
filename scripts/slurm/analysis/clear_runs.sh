@@ -14,7 +14,7 @@ for folder in "$DIRECTORY"/*; do
             rm "$folder/model_checkpoint_100.tr"
             rm "$folder/sample_gen_x0.dat"
         else
-            echo "nothjing to delete"
+            echo "nothing to delete"
             rm -r "$folder"
         
         fi

@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1                   # Total number of tasks across all nodes
 #SBATCH --cpus-per-task=1            # Cores per task
 #SBATCH --mem=16G                    # Real memory required
-#SBATCH --time=6:00:00               # Total run time limit
+#SBATCH --time=12:00:00               # Total run time limit
 #SBATCH --gres=gpu:1                                    
 #SBATCH --exclude=gpu009,gpu[005-006],cuda[001-008],volta[001-003],gpuk[001-006]      # exclude specific GPUs
 #SBATCH --output=/scratch/df630/log/mnist/train/%x_%N_jobid_%j.out                                # STDOUT output file

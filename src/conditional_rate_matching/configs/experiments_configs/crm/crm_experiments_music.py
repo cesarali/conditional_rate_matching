@@ -46,6 +46,7 @@ def experiment_music_conditional_config(epochs=10, gamma=1/129., number_of_steps
                                     clip_grad = True,
                                     clip_max_norm=1.0,
                                     warm_up=5000, 
+                                    save_model_epochs = 250,
                                     metrics=[ MetricsAvaliable.music_plot, MetricsAvaliable.hellinger_distance, MetricsAvaliable.outliers])
     
     config.pipeline = BasicPipelineConfig(number_of_steps=number_of_steps)
@@ -61,14 +62,14 @@ if __name__=="__main__":
     from conditional_rate_matching.models.trainers.call_all_trainers import call_trainer
     from conditional_rate_matching.models.temporal_networks.temporal_networks_config import SequenceTransformerConfig
 
-    config = experiment_music_conditional_config(epochs=10000, temporal_network_name="transformer", gamma=0.003, number_of_steps=1000)
+    config = experiment_music_conditional_config(epochs=10000, temporal_network_name="transformer", gamma=0.02, number_of_steps=1000)
     config.temporal_network = SequenceTransformerConfig(num_layers=6,num_heads=8)
     config.trainer.debug = False
     config.trainer.device = "cuda:0"
-    config.optimal_transport = OptimalTransportSamplerConfig(name="OTPlanSampler", method='sinkhorn', cost='log')
+    config.optimal_transport = OptimalTransportSamplerConfig(name="uniform", cost=None)
 
     call_trainer(config,
-                 experiment_name="test_piano_roll_transformer_10k_epochs_OTlog_gamma_0.003",
+                 experiment_name="piano_roll_transformer_10k_epochs_uniform",
                  experiment_type="crm",
-                 experiment_indentifier=None)
+                 experiment_indentifier='gamma_0.02')
     

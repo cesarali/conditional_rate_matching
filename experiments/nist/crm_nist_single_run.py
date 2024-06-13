@@ -95,7 +95,10 @@ def CRM_single_run(experiment_name="nist",
                                           metrics=metrics,
                                           loss_regularize_square=False,
                                           loss_regularize=False,
-                                          save_model_epochs=1e6,)
+                                          clip_grad = False,
+                                          clip_max_norm=1.0,
+                                          warm_up=0 
+                                         )
     
     crm_config.pipeline.number_of_steps = num_timesteps
     crm_config.optimal_transport.name = 'OTPlanSampler' if 'OT' in coupling_method else 'uniform'
